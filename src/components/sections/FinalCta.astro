@@ -1,0 +1,46 @@
+---
+import Section from '../layout/Section.astro';
+import Reveal from '../ui/Reveal.tsx';
+import TelegramCTA from '../ui/TelegramCTA.tsx';
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+
+interface Props {
+  headline: string;
+  ctaLabel: string;
+}
+const { headline, ctaLabel } = Astro.props;
+---
+
+<Section class="final" narrow>
+  <Image src={engraving('seal')} alt="" class="seal" loading="lazy" widths={[200, 360]} sizes="260px" />
+  <Reveal client:visible>
+    <h2 class="t-display headline">{headline}</h2>
+    <div class="cta">
+      <TelegramCTA label={ctaLabel} variant="seal" client:visible />
+    </div>
+  </Reveal>
+</Section>
+
+<style>
+  .final {
+    text-align: center;
+    position: relative;
+  }
+  .seal {
+    width: 130px;
+    height: auto;
+    margin: 0 auto var(--space-lg);
+    display: block;
+    opacity: 0.95;
+  }
+  .headline {
+    max-width: 18ch;
+    margin-inline: auto;
+  }
+  .cta {
+    margin-top: var(--space-2xl);
+    display: flex;
+    justify-content: center;
+  }
+</style>

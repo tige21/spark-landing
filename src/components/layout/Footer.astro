@@ -1,0 +1,59 @@
+---
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+import { APP_NAME } from '../../config/site';
+
+interface Props {
+  lang: 'ru' | 'en';
+  tagline: string;
+}
+const { lang, tagline } = Astro.props;
+const year = '2026';
+---
+
+<footer class="footer">
+  <div class="footer-inner">
+    <Image
+      src={engraving('colophon')}
+      alt=""
+      widths={[180, 320]}
+      sizes="220px"
+      class="colophon"
+      loading="lazy"
+    />
+    <p class="tagline script">{tagline}</p>
+    <p class="legal">© {year} {APP_NAME}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--hairline);
+    padding-block: var(--space-3xl);
+    text-align: center;
+  }
+  .footer-inner {
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .colophon {
+    width: 220px;
+    height: auto;
+    opacity: 0.85;
+  }
+  .tagline {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  .legal {
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    color: var(--meta);
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+import Section from '../layout/Section.astro';
+import Reveal from '../ui/Reveal.tsx';
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+
+interface Step {
+  title: string;
+  body: string;
+}
+interface Props {
+  eyebrow: string;
+  steps: Step[];
+}
+const { eyebrow, steps } = Astro.props;
+
+const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
+---
+
+<Section id="how" class="how">
+  <Reveal client:visible>
+    <p class="eyebrow">{eyebrow}</p>
+  </Reveal>
+
+  <ol class="steps">
+    {steps.map((s, i) => (
+      <Reveal client:visible delay={0.06 * i}>
+        <li class="step">
+          <div class="art">
+            <Image
+              src={engraving(heroes[i] ?? 'seal')}
+              alt=""
+              widths={[160, 260]}
+              sizes="200px"
+              loading="lazy"
+            />
+            <span class="num">{i + 1}</span>
+          </div>
+          <h3 class="t-h3">{s.title}</h3>
+          <p class="t-caption">{s.body}</p>
+        </li>
+      </Reveal>
+    ))}
+  </ol>
+</Section>
+
+<style>
+  .how {
+    text-align: center;
+  }
+  .steps {
+    list-style: none;
+    margin: var(--space-3xl) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2xl);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .art {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .art :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .num {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-script);
+    font-size: 2rem;
+    color: var(--wine);
+  }
+  .step p {
+    max-width: 24ch;
+  }
+  @media (max-width: 880px) {
+    .steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .steps {
+      grid-template-columns: 1fr;
+      max-width: 320px;
+      margin-inline: auto;
+    }
+  }
+</style>

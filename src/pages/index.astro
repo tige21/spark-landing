@@ -1,16 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/hero/Hero.astro';
+import What from '../components/sections/What.astro';
+import How from '../components/sections/How.astro';
+import Decks from '../components/sections/Decks.astro';
+import Order from '../components/sections/Order.astro';
+import Premium from '../components/sections/Premium.astro';
+import FinalCta from '../components/sections/FinalCta.astro';
 import ru from '../content/ru.json';
 
 const t = ru;
 ---
 
-<Layout title={t.meta.title} description={t.meta.description} lang="ru">
-  <main style="max-width: var(--maxw); margin: 0 auto; padding: var(--space-3xl) var(--space-xl);">
-    <p class="eyebrow">{t.footer.tagline}</p>
-    <h1 style="font-family: var(--font-serif); font-weight: 700; font-size: 3rem; line-height: 1.1; margin: var(--space-md) 0;">
-      {t.hero.title}
-    </h1>
-    <p style="font-size: 1.25rem; color: var(--meta); max-width: 36ch;">{t.hero.subtitle}</p>
-  </main>
+<Layout
+  title={t.meta.title}
+  description={t.meta.description}
+  lang="ru"
+  footerTagline={t.footer.tagline}
+>
+  <Hero
+    eyebrow={t.order.eyebrow}
+    title={t.hero.title}
+    subtitle={t.hero.subtitle}
+    ctaLabel={t.hero.ctaPrimary}
+    scrollLabel={t.hero.ctaSecondary}
+  />
+  <What headline={t.what.headline} pills={t.what.pills} />
+  <How eyebrow={t.how.eyebrow} steps={t.how.steps} />
+  <Decks headline={t.decks.headline} caption={t.decks.caption} lang="ru" />
+  <Order eyebrow={t.order.eyebrow} headline={t.order.headline} body={t.order.body} />
+  <Premium headline={t.premium.headline} body={t.premium.body} />
+  <FinalCta headline={t.cta.headline} ctaLabel={t.cta.button} />
 </Layout>

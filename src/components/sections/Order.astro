@@ -1,0 +1,54 @@
+---
+import Section from '../layout/Section.astro';
+import Reveal from '../ui/Reveal.tsx';
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+
+interface Props {
+  eyebrow: string;
+  headline: string;
+  body: string;
+}
+const { eyebrow, headline, body } = Astro.props;
+---
+
+<Section id="order" class="order">
+  <div class="grid">
+    <Reveal client:visible class="copy">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 class="t-h1">{headline}</h2>
+      <p class="t-lead">{body}</p>
+    </Reveal>
+    <Reveal client:visible delay={0.1} class="art">
+      <Image src={engraving('phase-print')} alt="" widths={[360, 620]} sizes="(max-width: 800px) 80vw, 480px" loading="lazy" />
+    </Reveal>
+  </div>
+</Section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-3xl);
+  }
+  .copy :global(.t-lead) {
+    margin-top: var(--space-md);
+  }
+  .art :global(img) {
+    width: 100%;
+    height: auto;
+    max-width: 480px;
+    margin-inline: auto;
+    display: block;
+  }
+  @media (max-width: 800px) {
+    .grid {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .art {
+      order: -1;
+    }
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+import Section from '../layout/Section.astro';
+import Reveal from '../ui/Reveal.tsx';
+import { stamp } from '../../assets/images';
+
+interface Props {
+  headline: string;
+  pills: string[];
+}
+const { headline, pills } = Astro.props;
+
+const icons = [
+  stamp('stamp-couples-v2'),
+  stamp('stamp-classic'),
+  stamp('stamp-spicy'),
+];
+---
+
+<Section class="what">
+  <Reveal client:visible>
+    <h2 class="t-h1 headline">{headline}</h2>
+  </Reveal>
+
+  <div class="pills">
+    {pills.map((p, i) => (
+      <Reveal client:visible delay={0.08 * i}>
+        <div class="pill">
+          <img src={icons[i]} alt="" width="72" height="72" loading="lazy" />
+          <span class="t-h3">{p}</span>
+        </div>
+      </Reveal>
+    ))}
+  </div>
+</Section>
+
+<style>
+  .what {
+    text-align: center;
+  }
+  .headline {
+    max-width: 22ch;
+    margin-inline: auto;
+  }
+  .pills {
+    margin-top: var(--space-3xl);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+  .pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-xl);
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    height: 100%;
+  }
+  .pill img {
+    width: 72px;
+    height: 72px;
+  }
+  @media (max-width: 700px) {
+    .pills {
+      grid-template-columns: 1fr;
+      max-width: 360px;
+      margin-inline: auto;
+    }
+  }
+</style>

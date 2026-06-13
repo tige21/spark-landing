@@ -67,6 +67,17 @@
   --shadow-float: 0 3px 8px rgba(44, 38, 32, 0.12), 0 16px 36px rgba(44, 38, 32, 0.16);
 
   --maxw: 1180px;
+
+  --dur-fast: 150ms;
+  --dur-normal: 250ms;
+  --dur-slow: 350ms;
+  --dur-slower: 500ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --z-bg: 0;
+  --z-content: 10;
+  --z-nav: 100;
 }
 
 * { box-sizing: border-box; }
@@ -91,6 +102,53 @@ html, body {
 .script {
   font-family: var(--font-script);
   color: var(--wine);
+}
+
+.t-display {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+.t-h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.t-h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.18;
+}
+.t-h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+.t-body {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+.t-lead {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.15rem, 2vw, 1.375rem);
+  line-height: 1.5;
+  color: var(--meta);
+}
+.t-caption {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--meta);
 }
 
 @media (prefers-reduced-motion: reduce) {

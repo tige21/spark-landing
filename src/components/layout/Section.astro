@@ -1,0 +1,22 @@
+---
+import Container from './Container.astro';
+
+interface Props {
+  id?: string;
+  class?: string;
+  narrow?: boolean;
+  bleed?: boolean;
+}
+const { id, class: className = '', narrow = false, bleed = false } = Astro.props;
+---
+
+<section id={id} class:list={['section', className]}>
+  {bleed ? <slot /> : <Container narrow={narrow}><slot /></Container>}
+</section>
+
+<style>
+  .section {
+    position: relative;
+    padding-block: clamp(var(--space-3xl), 9vw, 120px);
+  }
+</style>

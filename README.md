@@ -1,43 +1,38 @@
-# Astro Starter Kit: Minimal
+# Spark Cards — Landing
 
-```sh
-npm create astro@latest -- --template minimal
+Premium one-page marketing site for **Spark Cards**, built in the app's Postcard/Letterpress engraving identity (postcardTokens + Lora/Tangerine). RU (`/`) + EN (`/en`). The primary call-to-action is the **Telegram bot**.
+
+## Stack
+- **Astro 6** (static output, island architecture) + **React 19** islands
+- **framer-motion** — scroll reveals & micro-interactions (`LazyMotion` for a small bundle)
+- **three.js / @react-three/fiber** — the 3D hero scene (lazy, desktop-only)
+- Design tokens ported from the app into `src/styles/tokens.css`
+
+## Structure
+```
+src/
+├── assets/engravings/   # reusable engravings (PNG) + 9 deck stamps (SVG)
+├── assets/images.ts     # image registry (auto WebP for PNGs)
+├── components/
+│   ├── layout/          # Nav, Footer, Section, Container
+│   ├── hero/            # Hero.astro + HeroScene/HeroCanvas (3D island)
+│   ├── sections/        # What, How, Decks, Order, Premium, FinalCta
+│   └── ui/              # Reveal, Parallax, TelegramCTA
+├── config/site.ts       # bot URL, nav, deck data (single source of truth)
+├── content/{ru,en}.json # all marketing copy
+└── pages/               # index.astro (ru) + en/index.astro
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
+| Command | Action |
+| :-- | :-- |
+| `npm install` | Install dependencies |
+| `npm run dev` | Dev server at `localhost:4321` |
+| `npm run build` | Build static site to `./dist/` |
+| `npm run preview` | Serve the built site |
+| `npm run test:e2e` | Playwright visual smoke (desktop + mobile, ru + en) |
 
-## 🚀 Project Structure
+## Performance
+The 3D hero (`three`, ~890 KB) is a lazy chunk loaded **only** on desktop with WebGL and motion allowed. Mobile / reduced-motion / no-WebGL get a static engraving poster (LCP), and three.js is never fetched.
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+See **[DEPLOY.md](./DEPLOY.md)** for build & hosting.

@@ -1,15 +1,20 @@
 ---
 import '../styles/tokens.css';
+import Nav from '../components/layout/Nav.astro';
+import Footer from '../components/layout/Footer.astro';
 
 interface Props {
   title: string;
   description: string;
   lang: 'ru' | 'en';
+  footerTagline: string;
 }
 
-const { title, description, lang } = Astro.props;
+const { title, description, lang, footerTagline } = Astro.props;
 const altLang = lang === 'ru' ? 'en' : 'ru';
 const altHref = lang === 'ru' ? '/en' : '/';
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL('/og.png', Astro.site).href;
 ---
 
 <!doctype html>
@@ -19,12 +24,32 @@ const altHref = lang === 'ru' ? '/en' : '/';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preload" href="/fonts/Lora-Bold.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/fonts/Lora-Regular.ttf" as="font" type="font/ttf" crossorigin />
+
+    <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang={altLang} href={altHref} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={lang === 'ru' ? 'ru_RU' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={altLang} href={new URL(altHref, Astro.site).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL('/', Astro.site).href} />
   </head>
   <body>
-    <slot />
+    <Nav lang={lang} />
+    <main>
+      <slot />
+    </main>
+    <Footer lang={lang} tagline={footerTagline} />
   </body>
 </html>
