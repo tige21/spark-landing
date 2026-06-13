@@ -1,0 +1,30 @@
+---
+import '../styles/tokens.css';
+
+interface Props {
+  title: string;
+  description: string;
+  lang: 'ru' | 'en';
+}
+
+const { title, description, lang } = Astro.props;
+const altLang = lang === 'ru' ? 'en' : 'ru';
+const altHref = lang === 'ru' ? '/en' : '/';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="alternate" hreflang={altLang} href={altHref} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

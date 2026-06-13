@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import en from '../../content/en.json';
+
+const t = en;
+---
+
+<Layout title={t.meta.title} description={t.meta.description} lang="en">
+  <main style="max-width: var(--maxw); margin: 0 auto; padding: var(--space-3xl) var(--space-xl);">
+    <p class="eyebrow">{t.footer.tagline}</p>
+    <h1 style="font-family: var(--font-serif); font-weight: 700; font-size: 3rem; line-height: 1.1; margin: var(--space-md) 0;">
+      {t.hero.title}
+    </h1>
+    <p style="font-size: 1.25rem; color: var(--meta); max-width: 36ch;">{t.hero.subtitle}</p>
+  </main>
+</Layout>

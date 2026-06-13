@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Spark Cards — cards that turn small talk into real talk",
+    "description": "Not a card game. The conversation you've been missing. Draw a card, answer honestly, and tonight hits different. Nine decks: from first-date safe to strictly grown-ups."
+  },
+  "nav": { "how": "How it works", "decks": "Decks", "order": "Your deck", "cta": "Download" },
+  "hero": {
+    "brand": "Spark Cards",
+    "title": "Cards that turn small talk into real talk.",
+    "subtitle": "One honest question beats an hour of weather chat.",
+    "ctaPrimary": "Download free",
+    "ctaSecondary": "See how it feels"
+  },
+  "what": {
+    "headline": "Not a card game. The conversation you've been missing.",
+    "pills": ["Just the two of you", "With friends", "Grown-ups only"]
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "steps": [
+      { "title": "Pick a deck", "body": "From easy icebreakers to deep dives." },
+      { "title": "Draw a card", "body": "One card, and the table goes quiet — in the best way." },
+      { "title": "Answer honestly", "body": "No right answers. Just you and the truth." },
+      { "title": "Meet each other again", "body": "The things you'd never just ask." }
+    ]
+  },
+  "game": { "headline": "One card, and the table goes quiet — in the best way.", "caption": "Here's how it looks in the app." },
+  "decks": { "headline": "Nine decks: from first-date safe to strictly grown-ups.", "caption": "Each with its own character and engraved stamp." },
+  "order": {
+    "eyebrow": "The Spark & Co. press",
+    "headline": "Your crew, your inside jokes — we'll print a deck just for you.",
+    "body": "Like a print shop, only smarter: an AI typesetter sets questions for your occasion and your people."
+  },
+  "premium": {
+    "headline": "Warm paper, fine engravings, zero cringe.",
+    "body": "Built like a letterpress postcard, not another app. Works offline, no ads, no clutter."
+  },
+  "cta": { "headline": "Install now — tonight's conversation hits different.", "button": "Download free" },
+  "footer": { "tagline": "Spark & Co. · printing conversations since 1889" }
+}
