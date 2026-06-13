@@ -14,14 +14,18 @@ const { eyebrow, headline, body } = Astro.props;
 
 <Section id="order" class="order">
   <div class="grid">
-    <Reveal client:visible class="copy">
-      <p class="eyebrow">{eyebrow}</p>
-      <h2 class="t-h1">{headline}</h2>
-      <p class="t-lead">{body}</p>
-    </Reveal>
-    <Reveal client:visible delay={0.1} class="art">
-      <Image src={engraving('phase-print')} alt="" widths={[360, 620]} sizes="(max-width: 800px) 80vw, 480px" loading="lazy" />
-    </Reveal>
+    <div class="copy">
+      <Reveal client:visible>
+        <p class="eyebrow">{eyebrow}</p>
+        <h2 class="t-h1">{headline}</h2>
+        <p class="t-lead">{body}</p>
+      </Reveal>
+    </div>
+    <div class="art">
+      <Reveal client:visible delay={0.1}>
+        <Image src={engraving('phase-print')} alt="" widths={[360, 620]} sizes="(max-width: 800px) 80vw, 480px" loading="lazy" />
+      </Reveal>
+    </div>
   </div>
 </Section>
 

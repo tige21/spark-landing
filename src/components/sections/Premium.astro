@@ -13,13 +13,17 @@ const { headline, body } = Astro.props;
 
 <Section class="premium">
   <div class="grid">
-    <Reveal client:visible delay={0.1} class="art">
-      <Image src={engraving('paywall-crest')} alt="" widths={[320, 560]} sizes="(max-width: 800px) 70vw, 420px" loading="lazy" />
-    </Reveal>
-    <Reveal client:visible class="copy">
-      <h2 class="t-h1">{headline}</h2>
-      <p class="t-lead">{body}</p>
-    </Reveal>
+    <div class="art">
+      <Reveal client:visible delay={0.1}>
+        <Image src={engraving('paywall-crest')} alt="" widths={[320, 560]} sizes="(max-width: 800px) 70vw, 420px" loading="lazy" />
+      </Reveal>
+    </div>
+    <div class="copy">
+      <Reveal client:visible>
+        <h2 class="t-h1">{headline}</h2>
+        <p class="t-lead">{body}</p>
+      </Reveal>
+    </div>
   </div>
 </Section>
 
