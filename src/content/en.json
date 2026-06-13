@@ -27,7 +27,7 @@
   "game": { "headline": "One card, and the table goes quiet — in the best way.", "caption": "Here's how it looks in the app." },
   "decks": { "headline": "Nine decks: from first-date safe to strictly grown-ups.", "caption": "Each with its own character and engraved stamp." },
   "order": {
-    "eyebrow": "The Spark & Co. press",
+    "eyebrow": "The Spark Press",
     "headline": "Your crew, your inside jokes — we'll print a deck just for you.",
     "body": "Like a print shop, only smarter: an AI typesetter sets questions for your occasion and your people."
   },
@@ -36,5 +36,5 @@
     "body": "Built like a letterpress postcard, not another app. Works offline, no ads, no clutter."
   },
   "cta": { "headline": "Install now — tonight's conversation hits different.", "button": "Download free" },
-  "footer": { "tagline": "Spark & Co. · printing conversations since 1889" }
+  "footer": { "tagline": "The Spark Press · printing conversations since 1889" }
 }
