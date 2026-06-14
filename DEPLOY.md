@@ -17,37 +17,37 @@ npx playwright install chromium   # once
 npm run test:e2e                  # desktop + mobile, ru + en
 ```
 
-## Production — sparkcards.space (VPS, nginx)
+## Production — sparkcards.space (Russian VPS, nginx)
 
-Hosted on the same VPS as the app staging (`root@185.214.108.29`), served by nginx. Build is local, never CI.
+Hosted on a **Russian VPS** (`root@83.217.215.66`) so the site loads from inside Russia. Debian 12 + nginx + certbot. Build is local, never CI. (Migrated 2026-06-14 from the foreign app-staging box, which was unreachable from RU.)
 
-### 1. DNS (reg.ru, one-time)
-Add A records pointing the domain at the server:
+### DNS (reg.ru)
+A records point the domain at the server:
 
 | Type | Host | Value |
 | :-- | :-- | :-- |
-| A | `@` | `185.214.108.29` |
-| A | `www` | `185.214.108.29` |
+| A | `@` | `83.217.215.66` |
+| A | `www` | `83.217.215.66` |
 
-Wait for propagation (`dig +short sparkcards.space` returns the IP).
+Check: `curl -s 'https://dns.google/resolve?name=sparkcards.space&type=A'`.
 
-### 2. Server setup (root, one-time — after DNS resolves)
+### Server setup (root, one-time — already done on 83.217.215.66)
+The vhost (`/etc/nginx/sites-available/sparkcards.space`, the certbot-built version with 443 + HTTP→HTTPS redirect) and the Let's Encrypt cert were migrated from the old box, so HTTPS was live the moment DNS flipped. To re-provision from scratch on a fresh server:
 ```bash
-# upload + enable the vhost
-scp deploy/nginx-sparkcards.space.conf root@185.214.108.29:/etc/nginx/sites-available/sparkcards.space
-ssh root@185.214.108.29 'ln -sf /etc/nginx/sites-available/sparkcards.space /etc/nginx/sites-enabled/ \
+scp deploy/nginx-sparkcards.space.conf root@<ip>:/etc/nginx/sites-available/sparkcards.space
+ssh root@<ip> 'ln -sf /etc/nginx/sites-available/sparkcards.space /etc/nginx/sites-enabled/ \
   && mkdir -p /var/www/sparkcards.space && nginx -t && systemctl reload nginx'
-# issue SSL (adds 443 + HTTP→HTTPS redirect)
-ssh root@185.214.108.29 'certbot --nginx -d sparkcards.space -d www.sparkcards.space \
-  --non-interactive --agree-tos -m you@example.com --redirect'
+# after DNS resolves to <ip>:
+ssh root@<ip> 'certbot --nginx -d sparkcards.space -d www.sparkcards.space \
+  --non-interactive --agree-tos -m mregoryt@gmail.com --redirect'
 ```
 
-### 3. Deploy (repeatable)
+### Deploy (repeatable)
 ```bash
-export STAGING_SSH_PASS='…'   # same server password as the app; never commit
+export LANDING_SSH_PASS='…'   # Russian VPS root password; never commit
 npm run deploy                # build → backup remote → rsync dist/ → reload nginx
 ```
-`scripts/deploy.sh` is the source of truth. `deploy/nginx-sparkcards.space.conf` is the vhost.
+`scripts/deploy.sh` is the source of truth (targets `83.217.215.66`).
 
 ## Notes
 - **i18n:** `/` = RU (default, no prefix), `/en` = EN. Both render the same section components from `src/content/{ru,en}.json`.
