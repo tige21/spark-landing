@@ -152,3 +152,27 @@
 ### Commit Plan (phase 6)
 - After #62 — `perf(landing): woff2 subset fonts + optimized favicon/og`
 - After #63 — `chore(landing): deploy perf pass + verify`
+
+---
+
+## Phase 7 — Cinematic "living engraving" hero (2026-06-14)
+
+**Goal:** bring the Kyle-Skelly/Seedance "insane website" trick into OUR identity — a hero with a perspective engraved grid (depth) + a subtly **animated engraving video** composited via `mix-blend-mode: multiply`, word-by-word headline, all on the Postcard/Letterpress palette. **No three.js** (removed). **Scope (user):** 1 hero centerpiece asset · grid OVER current celestial bg · visual + smoke. Logging minimal, no docs.
+
+**Source technique (from video F2OpUJsf68g, Kyle Skelly):** perspective grid + radial vignette; AI-generated character **stills → Seedance image→video** (static camera, subtle motion); pseudo-transparency via `mix-blend-mode: darken`; ffmpeg compress; word-by-word H1 + grid grow-in; deploy Cloudflare. **Our adaptation:** engravings instead of Pixar; `mix-blend-mode: **multiply**` (dark ink on cream); deploy to existing RU nginx.
+
+**Asset dependency:** user generates the hero asset on **Higgs Field** (Nano Banana still → Seedance 2.0 video) from prompts in #65; we process (ffmpeg) + embed.
+
+**Guards (mandatory):** video lazy (preload=none, play on visible/idle), `prefers-reduced-motion` → poster only (no video fetch), mobile → poster/light encode, pause offscreen; LCP stays the static poster; postcardTokens only.
+
+### Tasks
+- [x] **#65** Asset spec + exact Higgs Field prompts (Nano Banana still on CREAM bg + Seedance video, static camera) → `HERO_VIDEO_PROMPTS.md`; user generates in parallel.
+- [x] **#66** `HeroGrid.astro` — SVG perspective grid + radial vignette mask over celestial + grow-in (reduced-motion safe).
+- [x] **#67** `HeroVideo` — lazy `<video>` (autoplay/muted/loop/playsinline) + poster + `mix-blend-mode:multiply` + reduced-motion/mobile/offscreen guards (placeholder until asset).
+- [x] **#68** `WordReveal.tsx` (staggerChildren) on H1 + assemble hero layering. (blocked by #66, #67)
+- [ ] **#69** ffmpeg-process the Seedance MP4 (h264+webm, <1MB, poster) + wire real video. (blocked by #65 asset, #67)
+- [ ] **#70** Playwright visual + reduced-motion + perf (Lighthouse ≥90, LCP=poster) + smoke + deploy to RU VPS. (blocked by #68, #69)
+
+### Commit Plan (phase 7)
+- After #68 — `feat(landing): living-engraving hero — perspective grid, video centerpiece, word reveal`
+- After #70 — `feat(landing): wire Seedance hero video + deploy`
