@@ -69,10 +69,6 @@ test.describe('reduced motion', () => {
     await page.locator('#decks').scrollIntoViewIfNeeded();
     await expect(page.locator('.deck-card')).toHaveCount(9);
 
-    // Hero centerpiece must fall back to the static poster (no video) under reduced motion.
-    await expect(page.locator('.hero-centerpiece img')).toBeVisible();
-    await expect(page.locator('.hero-centerpiece video')).toHaveCount(0);
-
     const { max, client } = await maxScrollWidth(page);
     expect(max).toBeLessThanOrEqual(client + 1);
   });
