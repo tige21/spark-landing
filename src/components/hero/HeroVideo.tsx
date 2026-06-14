@@ -65,12 +65,24 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
   }, [load]);
 
   const blend: CSSProperties = { mixBlendMode: 'multiply' };
+  // Self-contained paper backdrop (matches the page) with feathered edges, isolated so the
+  // multiply blends against THIS paper — independent of ancestor stacking contexts. Kills the
+  // visible "white box" around the engraving.
+  const feather =
+    'radial-gradient(72% 72% at 50% 46%, #000 56%, transparent 100%)';
 
   return (
     <div
       ref={wrapRef}
       className={className}
-      style={{ position: 'relative', ...style }}
+      style={{
+        position: 'relative',
+        isolation: 'isolate',
+        background: 'var(--table)',
+        WebkitMaskImage: feather,
+        maskImage: feather,
+        ...style,
+      }}
       aria-hidden="true"
     >
       <img
