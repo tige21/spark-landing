@@ -59,9 +59,8 @@ test('no horizontal overflow through the whole page', async ({ page }) => {
 });
 
 test.describe('reduced motion', () => {
-  test.use({ reducedMotion: 'reduce' });
-
   test('content stays visible and layout holds with motion disabled', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await expect(page.locator('.hero h1')).toBeVisible();
     await expect(

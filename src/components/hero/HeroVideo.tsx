@@ -11,8 +11,9 @@ interface HeroVideoProps {
 }
 
 // Hero centerpiece "living engraving": static poster (LCP-safe) with a lazy, muted, looping
-// video layered on top via mix-blend-mode: multiply (the cream video background drops out onto
-// the paper). Video is never fetched when reduced-motion / small screen / no source — poster only.
+// video layered on top. The video's background is baked to the page cream (--table) in ffmpeg,
+// so it sits flush on the paper with no blend mode and a soft feather hides the frame edge.
+// Video is never fetched when reduced-motion / small screen / no source — poster only.
 export default function HeroVideo({ poster, mp4, webm, className, style }: HeroVideoProps) {
   const { reduced, small } = useMotionPrefs();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -64,12 +65,10 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
     };
   }, [load]);
 
-  const blend: CSSProperties = { mixBlendMode: 'multiply' };
-  // Self-contained paper backdrop (matches the page) with feathered edges, isolated so the
-  // multiply blends against THIS paper — independent of ancestor stacking contexts. Kills the
-  // visible "white box" around the engraving.
+  // Soft feather so the rectangular video frame dissolves into the cream page (the background
+  // is already baked to --table, so no blend mode is needed — this just hides any edge.)
   const feather =
-    'radial-gradient(72% 72% at 50% 46%, #000 56%, transparent 100%)';
+    'radial-gradient(78% 78% at 50% 46%, #000 62%, transparent 100%)';
 
   return (
     <div
@@ -77,8 +76,6 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
       className={className}
       style={{
         position: 'relative',
-        isolation: 'isolate',
-        background: 'var(--table)',
         WebkitMaskImage: feather,
         maskImage: feather,
         ...style,
@@ -94,7 +91,6 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
           display: 'block',
           opacity: ready ? 0 : 1,
           transition: 'opacity 0.5s ease',
-          ...blend,
         }}
       />
       {load && !noVideo && (
@@ -113,7 +109,6 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
             width: '100%',
             height: '100%',
             objectFit: 'contain',
-            ...blend,
           }}
         >
           {webm && <source src={webm} type="video/webm" />}
