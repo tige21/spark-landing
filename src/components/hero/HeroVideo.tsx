@@ -18,6 +18,7 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [load, setLoad] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const noVideo = reduced || small || (!mp4 && !webm);
 
@@ -75,7 +76,14 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
       <img
         src={poster}
         alt=""
-        style={{ width: '100%', height: 'auto', display: 'block', ...blend }}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          opacity: ready ? 0 : 1,
+          transition: 'opacity 0.5s ease',
+          ...blend,
+        }}
       />
       {load && !noVideo && (
         <video
@@ -86,6 +94,7 @@ export default function HeroVideo({ poster, mp4, webm, className, style }: HeroV
           autoPlay
           preload="none"
           poster={poster}
+          onLoadedData={() => setReady(true)}
           style={{
             position: 'absolute',
             inset: 0,

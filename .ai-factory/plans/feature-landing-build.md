@@ -170,7 +170,7 @@
 - [x] **#66** `HeroGrid.astro` — SVG perspective grid + radial vignette mask over celestial + grow-in (reduced-motion safe).
 - [x] **#67** `HeroVideo` — lazy `<video>` (autoplay/muted/loop/playsinline) + poster + `mix-blend-mode:multiply` + reduced-motion/mobile/offscreen guards (placeholder until asset).
 - [x] **#68** `WordReveal.tsx` (staggerChildren) on H1 + assemble hero layering. (blocked by #66, #67)
-- [ ] **#69** ffmpeg-process the Seedance MP4 (h264+webm, <1MB, poster) + wire real video. (blocked by #65 asset, #67)
+- [x] **#69** ffmpeg-process the Seedance MP4 (h264+webm, <1MB, poster) + wire real video. (blocked by #65 asset, #67)
 - [ ] **#70** Playwright visual + reduced-motion + perf (Lighthouse ≥90, LCP=poster) + smoke + deploy to RU VPS. (blocked by #68, #69)
 
 ### Commit Plan (phase 7)

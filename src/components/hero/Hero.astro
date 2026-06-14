@@ -1,5 +1,5 @@
 ---
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 import HeroGrid from './HeroGrid.astro';
 import HeroVideo from './HeroVideo.tsx';
@@ -15,10 +15,6 @@ interface Props {
   scrollLabel: string;
 }
 const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
-
-// Centerpiece poster — placeholder engraving until the Seedance video lands (task #69).
-// Optimised webp so it stays a cheap LCP element.
-const centerpiece = await getImage({ src: engraving('phase-print'), width: 600, format: 'webp' });
 ---
 
 <section class="hero">
@@ -37,7 +33,7 @@ const centerpiece = await getImage({ src: engraving('phase-print'), width: 600, 
   <div class="hero-content">
     <HeroContentMotion client:visible>
       <div class="hero-centerpiece">
-        <HeroVideo poster={centerpiece.src} client:visible />
+        <HeroVideo poster="/hero/printer-poster.webp" mp4="/hero/printer.mp4" client:visible />
       </div>
       <p class="eyebrow">{eyebrow}</p>
       <h1 class="t-display"><WordReveal text={title} client:idle /></h1>
