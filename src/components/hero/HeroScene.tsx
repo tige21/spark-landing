@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { useScroll, useTransform } from 'framer-motion';
 
 const HeroCanvas = lazy(() => import('./HeroCanvas'));
 
@@ -25,6 +26,9 @@ export default function HeroScene() {
   const [mount, setMount] = useState(false);
   const [active, setActive] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
+
+  const { scrollY } = useScroll();
+  const progress = useTransform(scrollY, [0, 700], [0, 1], { clamp: true });
 
   useEffect(() => {
     if (allowed()) setMount(true);
@@ -64,7 +68,7 @@ export default function HeroScene() {
       style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
       <Suspense fallback={null}>
-        <HeroCanvas active={active} />
+        <HeroCanvas active={active} progress={progress} />
       </Suspense>
     </div>
   );

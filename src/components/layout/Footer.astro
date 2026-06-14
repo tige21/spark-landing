@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 import { APP_NAME } from '../../config/site';
+import Parallax from '../ui/Parallax.tsx';
 
 interface Props {
   lang: 'ru' | 'en';
@@ -13,14 +14,16 @@ const year = '2026';
 
 <footer class="footer">
   <div class="footer-inner">
-    <Image
-      src={engraving('colophon')}
-      alt=""
-      widths={[180, 320]}
-      sizes="220px"
-      class="colophon"
-      loading="lazy"
-    />
+    <Parallax client:visible distance={36}>
+      <Image
+        src={engraving('colophon')}
+        alt=""
+        widths={[180, 320]}
+        sizes="220px"
+        class="colophon"
+        loading="lazy"
+      />
+    </Parallax>
     <p class="tagline script">{tagline}</p>
     <p class="legal">© {year} {APP_NAME}</p>
   </div>

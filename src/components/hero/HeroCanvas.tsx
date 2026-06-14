@@ -2,7 +2,11 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import type { MotionValue } from 'framer-motion';
 import celestialUrl from '../../assets/engravings/bg-celestial.png?url';
+
+type Progress = MotionValue<number> | null | undefined;
+const read = (p: Progress) => (p ? p.get() : 0);
 
 const INK = new THREE.Color('#2C2620');
 const GOLD = new THREE.Color('#E7C200');
@@ -30,7 +34,7 @@ function Backdrop() {
   );
 }
 
-function Sparks({ count = 520 }: { count?: number }) {
+function Sparks({ count = 520, progress }: { count?: number; progress?: Progress }) {
   const points = useRef<THREE.Points>(null);
 
   const { positions, colors, speeds } = useMemo(() => {
@@ -65,6 +69,11 @@ function Sparks({ count = 520 }: { count?: number }) {
     const py = state.pointer.y * 0.18;
     points.current.rotation.y += (px - points.current.rotation.y) * 0.04;
     points.current.rotation.x += (-py - points.current.rotation.x) * 0.04;
+
+    const p = read(progress);
+    const mat = points.current.material as THREE.PointsMaterial;
+    mat.opacity = 0.85 * (1 - p * 0.9);
+    points.current.position.y = p * 2.2;
   });
 
   return (
@@ -88,11 +97,14 @@ function Sparks({ count = 520 }: { count?: number }) {
   );
 }
 
-function Rig() {
+function Rig({ progress }: { progress?: Progress }) {
   const { camera } = useThree();
   useFrame((state) => {
+    const p = read(progress);
+    const targetZ = 6 + p * 5;
     camera.position.x += (state.pointer.x * 0.4 - camera.position.x) * 0.03;
     camera.position.y += (state.pointer.y * 0.3 - camera.position.y) * 0.03;
+    camera.position.z += (targetZ - camera.position.z) * 0.06;
     camera.lookAt(0, 0, 0);
   });
   return null;
@@ -100,9 +112,10 @@ function Rig() {
 
 interface HeroCanvasProps {
   active: boolean;
+  progress?: Progress;
 }
 
-export default function HeroCanvas({ active }: HeroCanvasProps) {
+export default function HeroCanvas({ active, progress }: HeroCanvasProps) {
   return (
     <Canvas
       frameloop={active ? 'always' : 'never'}
@@ -112,8 +125,8 @@ export default function HeroCanvas({ active }: HeroCanvasProps) {
       style={{ position: 'absolute', inset: 0 }}
     >
       <Backdrop />
-      <Sparks />
-      <Rig />
+      <Sparks progress={progress} />
+      <Rig progress={progress} />
     </Canvas>
   );
 }

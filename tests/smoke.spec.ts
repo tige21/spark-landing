@@ -39,3 +39,38 @@ test.describe('landing — en', () => {
     await expect(cta).toHaveAttribute('href', BOT_URL);
   });
 });
+
+async function maxScrollWidth(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    let max = 0;
+    for (const y of [0, 1200, 2400, 3600, 4800, 6000]) {
+      window.scrollTo(0, y);
+      max = Math.max(max, document.documentElement.scrollWidth);
+    }
+    window.scrollTo(0, 0);
+    return { max, client: document.documentElement.clientWidth };
+  });
+}
+
+test('no horizontal overflow through the whole page', async ({ page }) => {
+  await page.goto('/');
+  const { max, client } = await maxScrollWidth(page);
+  expect(max).toBeLessThanOrEqual(client + 1);
+});
+
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('content stays visible and layout holds with motion disabled', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.hero h1')).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Открыть в Telegram' }).first()
+    ).toBeVisible();
+    await page.locator('#decks').scrollIntoViewIfNeeded();
+    await expect(page.locator('.deck-card')).toHaveCount(9);
+
+    const { max, client } = await maxScrollWidth(page);
+    expect(max).toBeLessThanOrEqual(client + 1);
+  });
+});

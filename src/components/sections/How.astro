@@ -1,6 +1,8 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
+import StampReveal from '../ui/StampReveal.tsx';
+import PostalRoute from './PostalRoute.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
@@ -22,35 +24,55 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
     <p class="eyebrow">{eyebrow}</p>
   </Reveal>
 
-  <ol class="steps">
-    {steps.map((s, i) => (
-      <Reveal client:visible delay={0.06 * i}>
-        <li class="step">
-          <div class="art">
-            <Image
-              src={engraving(heroes[i] ?? 'seal')}
-              alt=""
-              widths={[160, 260]}
-              sizes="200px"
-              loading="lazy"
-            />
-            <span class="num">{i + 1}</span>
-          </div>
-          <h3 class="t-h3">{s.title}</h3>
-          <p class="t-caption">{s.body}</p>
-        </li>
-      </Reveal>
-    ))}
-  </ol>
+  <div class="steps-wrap">
+    <div class="route-band">
+      <PostalRoute client:visible />
+    </div>
+    <ol class="steps">
+      {steps.map((s, i) => (
+        <StampReveal client:visible delay={0.12 * i}>
+          <li class="step">
+            <div class="art">
+              <Image
+                src={engraving(heroes[i] ?? 'seal')}
+                alt=""
+                widths={[160, 260]}
+                sizes="200px"
+                loading="lazy"
+              />
+              <span class="num">{i + 1}</span>
+            </div>
+            <h3 class="t-h3">{s.title}</h3>
+            <p class="t-caption">{s.body}</p>
+          </li>
+        </StampReveal>
+      ))}
+    </ol>
+  </div>
 </Section>
 
 <style>
   .how {
     text-align: center;
   }
+  .steps-wrap {
+    position: relative;
+    margin-top: var(--space-3xl);
+  }
+  .route-band {
+    position: absolute;
+    top: 28px;
+    left: 2%;
+    right: 2%;
+    height: 150px;
+    z-index: 0;
+    pointer-events: none;
+  }
   .steps {
+    position: relative;
+    z-index: 1;
     list-style: none;
-    margin: var(--space-3xl) 0 0;
+    margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -90,6 +112,9 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
   @media (max-width: 880px) {
     .steps {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .route-band {
+      display: none;
     }
   }
   @media (max-width: 480px) {

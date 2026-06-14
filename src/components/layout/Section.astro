@@ -11,6 +11,7 @@ const { id, class: className = '', narrow = false, bleed = false } = Astro.props
 ---
 
 <section id={id} class:list={['section', className]}>
+  <slot name="decor" />
   {bleed ? <slot /> : <Container narrow={narrow}><slot /></Container>}
 </section>
 

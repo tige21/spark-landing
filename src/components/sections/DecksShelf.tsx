@@ -1,14 +1,30 @@
-import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 import { useState } from 'react';
 import { DECKS } from '../../config/site';
 import { stamp } from '../../assets/images';
+import { useMotionPrefs } from '../../lib/motion-guards';
 
 interface Props {
   lang: 'ru' | 'en';
 }
 
+const container = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+};
+
+const item = {
+  hidden: { opacity: 0, scale: 1.08, rotate: -3 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { type: 'spring', stiffness: 240, damping: 18, mass: 0.7 },
+  },
+};
+
 export default function DecksShelf({ lang }: Props) {
-  const reduce = useReducedMotion();
+  const { reduced } = useMotionPrefs();
   const [active, setActive] = useState<string | null>(null);
 
   const cards = DECKS.map((d) => ({
@@ -20,19 +36,31 @@ export default function DecksShelf({ lang }: Props) {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <ul className="deck-grid">
+      <m.ul
+        className="deck-grid"
+        variants={reduced ? undefined : container}
+        initial={reduced ? false : 'hidden'}
+        whileInView={reduced ? undefined : 'visible'}
+        viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+      >
         {cards.map((c) => {
           const isActive = active === c.id;
           return (
-            <li key={c.id} className="deck-cell">
+            <m.li
+              key={c.id}
+              className="deck-cell"
+              variants={reduced ? undefined : item}
+            >
               <m.button
                 type="button"
                 className={`deck-card${isActive ? ' is-active' : ''}`}
                 onClick={() => setActive(isActive ? null : c.id)}
                 onMouseEnter={() => setActive(c.id)}
-                onMouseLeave={() => setActive((prev) => (prev === c.id ? null : prev))}
+                onMouseLeave={() =>
+                  setActive((prev) => (prev === c.id ? null : prev))
+                }
                 aria-expanded={isActive}
-                whileHover={reduce ? undefined : { y: -6 }}
+                whileHover={reduced ? undefined : { y: -6 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 22 }}
               >
                 <img src={c.url} alt={c.name} width="120" height="120" loading="lazy" />
@@ -41,10 +69,10 @@ export default function DecksShelf({ lang }: Props) {
                   {c.sample}
                 </span>
               </m.button>
-            </li>
+            </m.li>
           );
         })}
-      </ul>
+      </m.ul>
     </LazyMotion>
   );
 }

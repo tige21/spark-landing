@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 import HeroScene from './HeroScene.tsx';
+import HeroContentMotion from './HeroContentMotion.tsx';
 import TelegramCTA from '../ui/TelegramCTA.tsx';
 
 interface Props {
@@ -28,13 +29,15 @@ const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
   <HeroScene client:only="react" />
 
   <div class="hero-content">
-    <p class="eyebrow">{eyebrow}</p>
-    <h1 class="t-display">{title}</h1>
-    <p class="t-lead subtitle">{subtitle}</p>
-    <div class="hero-cta">
-      <TelegramCTA label={ctaLabel} variant="hero" client:idle />
-    </div>
-    <a class="scroll-cue" href="#how">{scrollLabel}</a>
+    <HeroContentMotion client:visible>
+      <p class="eyebrow">{eyebrow}</p>
+      <h1 class="t-display">{title}</h1>
+      <p class="t-lead subtitle">{subtitle}</p>
+      <div class="hero-cta">
+        <TelegramCTA label={ctaLabel} variant="hero" client:idle />
+      </div>
+      <a class="scroll-cue" href="#how">{scrollLabel}</a>
+    </HeroContentMotion>
   </div>
 </section>
 

@@ -1,6 +1,7 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
+import Parallax from '../ui/Parallax.tsx';
 import DecksShelf from './DecksShelf.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
@@ -14,7 +15,13 @@ const { headline, caption, lang } = Astro.props;
 ---
 
 <Section id="decks" class="decks">
-  <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
+  <div class="crest-clip" aria-hidden="true">
+    <div class="crest-holder">
+      <Parallax client:visible distance={0} rotate={22}>
+        <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
+      </Parallax>
+    </div>
+  </div>
   <div class="decks-head">
     <Reveal client:visible>
       <h2 class="t-h1">{headline}</h2>
@@ -30,16 +37,25 @@ const { headline, caption, lang } = Astro.props;
     text-align: center;
     overflow: hidden;
   }
-  .crest {
+  .crest-clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: var(--z-bg);
+    pointer-events: none;
+  }
+  .crest-holder {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: min(900px, 90%);
+  }
+  .crest {
+    width: 100%;
     height: auto;
     opacity: 0.12;
-    z-index: var(--z-bg);
-    pointer-events: none;
+    display: block;
   }
   .decks-head {
     position: relative;

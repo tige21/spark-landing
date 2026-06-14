@@ -91,6 +91,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+main {
+  overflow-x: clip;
+}
+
 .eyebrow {
   font-family: var(--font-serif);
   text-transform: uppercase;

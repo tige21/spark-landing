@@ -1,6 +1,7 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
+import SectionDecor from '../ui/SectionDecor.tsx';
 import { stamp } from '../../assets/images';
 
 interface Props {
@@ -17,6 +18,14 @@ const icons = [
 ---
 
 <Section class="what">
+  <SectionDecor
+    slot="decor"
+    layers={[
+      { name: 'postmark', width: 210, top: '10%', right: '-3%', speed: 0.5, rotate: 8, opacity: 0.08 },
+      { name: 'spark-mark', width: 150, bottom: '8%', left: '-2%', speed: 0.8, rotate: -10, opacity: 0.1 },
+    ]}
+    client:visible
+  />
   <Reveal client:visible>
     <h2 class="t-h1 headline">{headline}</h2>
   </Reveal>

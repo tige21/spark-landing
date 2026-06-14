@@ -1,6 +1,9 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
+import StampReveal from '../ui/StampReveal.tsx';
+import Parallax from '../ui/Parallax.tsx';
+import SectionDecor from '../ui/SectionDecor.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
@@ -12,15 +15,24 @@ const { headline, body } = Astro.props;
 ---
 
 <Section class="premium">
+  <SectionDecor
+    slot="decor"
+    layers={[
+      { name: 'spark-mark', width: 140, top: '14%', right: '4%', speed: 0.7, rotate: 10, opacity: 0.08 },
+    ]}
+    client:visible
+  />
   <div class="grid">
     <div class="art">
-      <Reveal client:visible delay={0.1}>
+      <Parallax client:visible distance={70}>
         <Image src={engraving('paywall-crest')} alt="" widths={[320, 560]} sizes="(max-width: 800px) 70vw, 420px" loading="lazy" />
-      </Reveal>
+      </Parallax>
     </div>
     <div class="copy">
-      <Reveal client:visible>
+      <StampReveal client:visible>
         <h2 class="t-h1">{headline}</h2>
+      </StampReveal>
+      <Reveal client:visible delay={0.12}>
         <p class="t-lead">{body}</p>
       </Reveal>
     </div>
