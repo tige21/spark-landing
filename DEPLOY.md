@@ -40,6 +40,8 @@ ssh root@<ip> 'ln -sf /etc/nginx/sites-available/sparkcards.space /etc/nginx/sit
 # after DNS resolves to <ip>:
 ssh root@<ip> 'certbot --nginx -d sparkcards.space -d www.sparkcards.space \
   --non-interactive --agree-tos -m mregoryt@gmail.com --redirect'
+# certbot writes `listen 443 ssl;` WITHOUT http2 — enable it:
+ssh root@<ip> "sed -i 's/listen 443 ssl;/listen 443 ssl http2;/; s/listen \[::\]:443 ssl;/listen [::]:443 ssl http2;/' /etc/nginx/sites-available/sparkcards.space && nginx -t && systemctl reload nginx"
 ```
 
 ### Deploy (repeatable)
