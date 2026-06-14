@@ -1,0 +1,60 @@
+---
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+import Parallax from './Parallax.tsx';
+
+export interface DecorLayer {
+  name: string;
+  width: number;
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  speed?: number;
+  rotate?: number;
+  opacity?: number;
+}
+
+interface Props {
+  layers: DecorLayer[];
+}
+const { layers } = Astro.props;
+---
+
+<div class="section-decor" aria-hidden="true">
+  {layers.map((l) => (
+    <Parallax
+      client:visible
+      distance={(l.speed ?? 0.3) * 240}
+      rotate={l.rotate ?? 0}
+      style={{
+        position: 'absolute',
+        top: l.top,
+        left: l.left,
+        right: l.right,
+        bottom: l.bottom,
+        width: `${l.width}px`,
+        opacity: l.opacity ?? 0.1,
+      }}
+    >
+      <Image
+        src={engraving(l.name)}
+        alt=""
+        widths={[l.width, l.width * 2]}
+        sizes={`${l.width}px`}
+        loading="lazy"
+        style="width:100%;height:auto;display:block;"
+      />
+    </Parallax>
+  ))}
+</div>
+
+<style>
+  .section-decor {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+</style>

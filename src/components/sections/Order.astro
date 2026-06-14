@@ -3,7 +3,7 @@ import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
 import StampReveal from '../ui/StampReveal.tsx';
 import Parallax from '../ui/Parallax.tsx';
-import SectionDecor from '../ui/SectionDecor.tsx';
+import SectionDecor from '../ui/SectionDecor.astro';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
@@ -21,7 +21,6 @@ const { eyebrow, headline, body } = Astro.props;
     layers={[
       { name: 'postmark', width: 180, top: '12%', left: '-2%', speed: 0.6, rotate: -6, opacity: 0.07 },
     ]}
-    client:visible
   />
   <div class="grid">
     <div class="copy">
