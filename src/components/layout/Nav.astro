@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
 import { NAV_LINKS, APP_NAME } from '../../config/site';
 import TelegramCTA from '../ui/TelegramCTA.tsx';
 
@@ -16,8 +18,11 @@ const homeHref = lang === 'ru' ? '/' : '/en';
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href={homeHref} aria-label={APP_NAME}>
-      <span class="brand-name">{APP_NAME}</span>
-      <span class="brand-press script">Печатня «Искра»</span>
+      <Image src={engraving('logo-seal')} alt="" class="brand-logo" loading="eager" widths={[40, 80]} sizes="40px" />
+      <span class="brand-text">
+        <span class="brand-name">{APP_NAME}</span>
+        <span class="brand-press script">Печатня «Искра»</span>
+      </span>
     </a>
 
     <nav class="links" aria-label={lang === 'ru' ? 'Навигация' : 'Navigation'}>
@@ -55,10 +60,21 @@ const homeHref = lang === 'ru' ? '/' : '/en';
   }
   .brand {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-sm);
     line-height: 1;
     text-decoration: none;
     color: var(--ink);
+  }
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+  .brand-text {
+    display: flex;
+    flex-direction: column;
   }
   .brand-name {
     font-family: var(--font-serif);

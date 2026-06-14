@@ -4,8 +4,7 @@ Premium one-page marketing site for **Spark Cards**, built in the app's Postcard
 
 ## Stack
 - **Astro 6** (static output, island architecture) + **React 19** islands
-- **framer-motion** — scroll reveals & micro-interactions (`LazyMotion` for a small bundle)
-- **three.js / @react-three/fiber** — the 3D hero scene (lazy, desktop-only)
+- **framer-motion** — all animation: scroll-driven parallax, stamp-in reveals, hero dissolve, the postal-route draw (`LazyMotion` for a small bundle)
 - Design tokens ported from the app into `src/styles/tokens.css`
 
 ## Structure
@@ -15,9 +14,9 @@ src/
 ├── assets/images.ts     # image registry (auto WebP for PNGs)
 ├── components/
 │   ├── layout/          # Nav, Footer, Section, Container
-│   ├── hero/            # Hero.astro + HeroScene/HeroCanvas (3D island)
-│   ├── sections/        # What, How, Decks, Order, Premium, FinalCta
-│   └── ui/              # Reveal, Parallax, TelegramCTA
+│   ├── hero/            # Hero.astro + HeroContentMotion (scroll dissolve)
+│   ├── sections/        # What, How, Decks, Order, Premium, FinalCta, PostalRoute
+│   └── ui/              # Reveal, StampReveal, Parallax, SectionDecor, TelegramCTA
 ├── config/site.ts       # bot URL, nav, deck data (single source of truth)
 ├── content/{ru,en}.json # all marketing copy
 └── pages/               # index.astro (ru) + en/index.astro
@@ -33,6 +32,6 @@ src/
 | `npm run test:e2e` | Playwright visual smoke (desktop + mobile, ru + en) |
 
 ## Performance
-The 3D hero (`three`, ~890 KB) is a lazy chunk loaded **only** on desktop with WebGL and motion allowed. Mobile / reduced-motion / no-WebGL get a static engraving poster (LCP), and three.js is never fetched.
+Static-first: zero JS by default, React islands only where animation is needed. The hero is a static engraving poster (LCP) + the logo seal. All motion is framer-motion (transform/opacity only), honours `prefers-reduced-motion`, and reduces magnitude on mobile. No WebGL/three.js — the heaviest chunk is React itself (~180 KB).
 
 See **[DEPLOY.md](./DEPLOY.md)** for build & hosting.

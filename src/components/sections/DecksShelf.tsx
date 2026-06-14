@@ -1,5 +1,4 @@
 import { LazyMotion, domAnimation, m } from 'framer-motion';
-import { useState } from 'react';
 import { DECKS } from '../../config/site';
 import { stamp } from '../../assets/images';
 import { useMotionPrefs } from '../../lib/motion-guards';
@@ -25,7 +24,6 @@ const item = {
 
 export default function DecksShelf({ lang }: Props) {
   const { reduced } = useMotionPrefs();
-  const [active, setActive] = useState<string | null>(null);
 
   const cards = DECKS.map((d) => ({
     id: d.id,
@@ -43,35 +41,23 @@ export default function DecksShelf({ lang }: Props) {
         whileInView={reduced ? undefined : 'visible'}
         viewport={{ once: true, margin: '0px 0px -10% 0px' }}
       >
-        {cards.map((c) => {
-          const isActive = active === c.id;
-          return (
-            <m.li
-              key={c.id}
-              className="deck-cell"
-              variants={reduced ? undefined : item}
+        {cards.map((c) => (
+          <m.li
+            key={c.id}
+            className="deck-cell"
+            variants={reduced ? undefined : item}
+          >
+            <m.div
+              className="deck-card"
+              whileHover={reduced ? undefined : { y: -6 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
             >
-              <m.button
-                type="button"
-                className={`deck-card${isActive ? ' is-active' : ''}`}
-                onClick={() => setActive(isActive ? null : c.id)}
-                onMouseEnter={() => setActive(c.id)}
-                onMouseLeave={() =>
-                  setActive((prev) => (prev === c.id ? null : prev))
-                }
-                aria-expanded={isActive}
-                whileHover={reduced ? undefined : { y: -6 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-              >
-                <img src={c.url} alt={c.name} width="120" height="120" loading="lazy" />
-                <span className="deck-name">{c.name}</span>
-                <span className={`deck-sample${isActive ? ' show' : ''}`}>
-                  {c.sample}
-                </span>
-              </m.button>
-            </m.li>
-          );
-        })}
+              <img src={c.url} alt={c.name} width="110" height="110" loading="lazy" />
+              <span className="deck-name">{c.name}</span>
+              <span className="deck-sample">{c.sample}</span>
+            </m.div>
+          </m.li>
+        ))}
       </m.ul>
     </LazyMotion>
   );
