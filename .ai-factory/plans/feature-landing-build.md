@@ -113,3 +113,38 @@
 - After #52 — `feat(landing): scroll animation primitives (parallax, stamp-reveal)`
 - After #58 — `feat(landing): scroll-driven wow — layered parallax, hero dissolve, postal route`
 - After #59 — `test(landing): reduced-motion smoke + scroll perf verify`
+
+---
+
+## Phase 6 — Performance pass (2026-06-14, prod live)
+
+**Goal:** measure & improve load performance of https://sparkcards.space. **Scope (user):** keep React (no Preact); focus fonts/favicon/images. **Verify:** Lighthouse (≥90) + curl size-diff + smoke. Logging minimal, no docs.
+
+### Measured baseline (curl, gzipped over the wire)
+- HTML 41.5 KB gz, ~0.5s · hero poster webp **11 KB** · `/_astro` + `/fonts` cached `immutable 1y` ✓
+- Eager JS **~62 KB gz** — 58 KB is the React runtime (`client.js`); 8 island chunks 0.5–1 KB each → **leave as-is (user kept React)**
+- 🔴 Fonts **~517 KB raw TTF** (Lora 131+132+132, Tangerine 59+63); **263 KB preloaded** (Lora-Bold+Regular) — LCP contention
+- 🔴 favicon.png **112 KB** (256px) · 🟡 og.png 178 KB (social only)
+
+### Bottlenecks → fixes
+1. **Fonts** (biggest): TTF → subsetted **woff2** (Latin+Cyrillic+punctuation), woff2-only `@font-face`, preload only Lora-Bold. Expect ~517 KB → ~120-180 KB + faster LCP text.
+2. **favicon** 112 KB → 48px + apple-touch-icon 180px, pngquant → few KB.
+3. **og.png** 178 KB → pngquant ~60-90 KB (off critical path).
+4. **JS** — React kept by decision; islands already `client:visible`, runtime unavoidable. No change.
+5. Caching/HTML/on-page images already good — no change.
+
+### Lighthouse baseline (prod, 2026-06-14, local LH via system Chrome)
+- **Mobile:** Perf **81**, A11y **86**, BP 100, SEO 100 · LCP **4.4s** 🔴, FCP 2.1s, SI 4.5s, TBT 0, CLS 0 · total 843 KiB
+- **Desktop:** Perf **99** · LCP 0.9s, total 1060 KiB — already great
+- Root cause of mobile LCP/bytes = fonts (517 KB TTF). A11y issues: color-contrast (`.lang`, `.legal`) + list semantics (How `<ol>`→island div→`<li>`).
+
+### Tasks
+- [x] **#60** Lighthouse baseline (mobile+desktop) on prod — recorded above.
+- [x] **#61** Fonts → woff2 + Latin/Cyrillic subset (pyftsubset+brotli) + woff2 `@font-face` + preload tuning + drop .ttf. (blocked by #60)
+- [x] **#62** Optimize favicon (48px) + apple-touch-icon (180px) + og.png (pngquant). (blocked by #60)
+- [x] **#64** A11y: contrast (`--meta-strong` for `.lang`/`.legal`) + valid How list semantics (`<li>` direct child of `<ol>`). (blocked by #60)
+- [ ] **#63** Build + deploy to prod + Lighthouse-after vs baseline + curl size-diff + smoke. (blocked by #61, #62, #64)
+
+### Commit Plan (phase 6)
+- After #62 — `perf(landing): woff2 subset fonts + optimized favicon/og`
+- After #63 — `chore(landing): deploy perf pass + verify`

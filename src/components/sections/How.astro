@@ -30,8 +30,12 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
     </div>
     <ol class="steps">
       {steps.map((s, i) => (
-        <StampReveal client:visible delay={0.12 * i}>
-          <li class="step">
+        <li class="step">
+          <StampReveal
+            client:visible
+            delay={0.12 * i}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-sm)' }}
+          >
             <div class="art">
               <Image
                 src={engraving(heroes[i] ?? 'seal')}
@@ -44,8 +48,8 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
             </div>
             <h3 class="t-h3">{s.title}</h3>
             <p class="t-caption">{s.body}</p>
-          </li>
-        </StampReveal>
+          </StampReveal>
+        </li>
       ))}
     </ol>
   </div>

@@ -1,31 +1,25 @@
 @font-face {
   font-family: 'Lora';
-  src: url('/fonts/Lora-Regular.ttf') format('truetype');
+  src: url('/fonts/Lora-Regular.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: 'Lora';
-  src: url('/fonts/Lora-SemiBold.ttf') format('truetype');
+  src: url('/fonts/Lora-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-display: swap;
 }
 @font-face {
   font-family: 'Lora';
-  src: url('/fonts/Lora-Bold.ttf') format('truetype');
+  src: url('/fonts/Lora-Bold.woff2') format('woff2');
   font-weight: 700;
   font-display: swap;
 }
 @font-face {
   font-family: 'Tangerine';
-  src: url('/fonts/Tangerine-Regular.ttf') format('truetype');
+  src: url('/fonts/Tangerine-Regular.woff2') format('woff2');
   font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Tangerine';
-  src: url('/fonts/Tangerine-Bold.ttf') format('truetype');
-  font-weight: 700;
   font-display: swap;
 }
 
@@ -35,6 +29,7 @@
   --ink: #2C2620;
   --hairline: #E0D6C4;
   --meta: #9A8C78;
+  --meta-strong: #5E5240;
   --gold: #E7C200;
   --wine: #7E3B4E;
 
