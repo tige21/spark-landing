@@ -5,7 +5,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://sparkcards.app',
+  site: 'https://sparkcards.space',
   i18n: {
     defaultLocale: 'ru',
     locales: ['ru', 'en'],

@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.7",

@@ -17,18 +17,37 @@ npx playwright install chromium   # once
 npm run test:e2e                  # desktop + mobile, ru + en
 ```
 
-## Deploy
+## Production — sparkcards.space (VPS, nginx)
 
-The output is fully static — `dist/` can go to any static host.
+Hosted on the same VPS as the app staging (`root@185.214.108.29`), served by nginx. Build is local, never CI.
 
-**Option A — nginx (same box as the app staging):**
+### 1. DNS (reg.ru, one-time)
+Add A records pointing the domain at the server:
+
+| Type | Host | Value |
+| :-- | :-- | :-- |
+| A | `@` | `185.214.108.29` |
+| A | `www` | `185.214.108.29` |
+
+Wait for propagation (`dig +short sparkcards.space` returns the IP).
+
+### 2. Server setup (root, one-time — after DNS resolves)
 ```bash
-npm run build
-rsync -az --delete dist/ <user>@<host>:/var/www/spark-landing/
-# nginx: root /var/www/spark-landing;  try_files $uri $uri/ /index.html;
+# upload + enable the vhost
+scp deploy/nginx-sparkcards.space.conf root@185.214.108.29:/etc/nginx/sites-available/sparkcards.space
+ssh root@185.214.108.29 'ln -sf /etc/nginx/sites-available/sparkcards.space /etc/nginx/sites-enabled/ \
+  && mkdir -p /var/www/sparkcards.space && nginx -t && systemctl reload nginx'
+# issue SSL (adds 443 + HTTP→HTTPS redirect)
+ssh root@185.214.108.29 'certbot --nginx -d sparkcards.space -d www.sparkcards.space \
+  --non-interactive --agree-tos -m you@example.com --redirect'
 ```
 
-**Option B — Netlify / Vercel / Cloudflare Pages:** point at the repo, build command `npm run build`, publish dir `dist`. No env vars required.
+### 3. Deploy (repeatable)
+```bash
+export STAGING_SSH_PASS='…'   # same server password as the app; never commit
+npm run deploy                # build → backup remote → rsync dist/ → reload nginx
+```
+`scripts/deploy.sh` is the source of truth. `deploy/nginx-sparkcards.space.conf` is the vhost.
 
 ## Notes
 - **i18n:** `/` = RU (default, no prefix), `/en` = EN. Both render the same section components from `src/content/{ru,en}.json`.
