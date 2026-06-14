@@ -138,12 +138,16 @@
 - **Desktop:** Perf **99** · LCP 0.9s, total 1060 KiB — already great
 - Root cause of mobile LCP/bytes = fonts (517 KB TTF). A11y issues: color-contrast (`.lang`, `.legal`) + list semantics (How `<ol>`→island div→`<li>`).
 
+### Result (after, deployed to prod 2026-06-14)
+- **Mobile:** Perf **81→99**, A11y **86→100**, BP 100, SEO 100 · LCP **4.4s→1.7s**, FCP 2.1→1.4s, SI 4.5→2.6s · total **843→405 KiB**
+- Fonts 517 KB TTF → **124 KB woff2** subset; favicon 112 KB → **5 KB**; old .ttf removed (404). Desktop already 99. Smoke 10/10.
+
 ### Tasks
 - [x] **#60** Lighthouse baseline (mobile+desktop) on prod — recorded above.
 - [x] **#61** Fonts → woff2 + Latin/Cyrillic subset (pyftsubset+brotli) + woff2 `@font-face` + preload tuning + drop .ttf. (blocked by #60)
-- [x] **#62** Optimize favicon (48px) + apple-touch-icon (180px) + og.png (pngquant). (blocked by #60)
+- [x] **#62** Optimize favicon (48px) + apple-touch-icon (180px) + og.png. (blocked by #60)
 - [x] **#64** A11y: contrast (`--meta-strong` for `.lang`/`.legal`) + valid How list semantics (`<li>` direct child of `<ol>`). (blocked by #60)
-- [ ] **#63** Build + deploy to prod + Lighthouse-after vs baseline + curl size-diff + smoke. (blocked by #61, #62, #64)
+- [x] **#63** Build + deploy to prod + Lighthouse-after vs baseline + curl size-diff + smoke. (blocked by #61, #62, #64)
 
 ### Commit Plan (phase 6)
 - After #62 — `perf(landing): woff2 subset fonts + optimized favicon/og`
