@@ -30,4 +30,9 @@ const { id, class: className = '', narrow = false, bleed = false, flat = false }
     position: relative;
     padding-block: clamp(var(--space-2xl), 4vw, 56px);
   }
+  @media (max-width: 760px) {
+    .section {
+      padding-block: var(--space-xl);
+    }
+  }
 </style>
