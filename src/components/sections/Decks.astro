@@ -77,6 +77,20 @@ const { headline, caption, lang } = Astro.props;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-xl);
+    perspective: 1100px;
+  }
+  .deck-cell {
+    list-style: none;
+    perspective: 700px;
+    opacity: 0;
+    transform: translateY(22px) rotateX(20deg);
+    transform-origin: 50% 100%;
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 0.05s);
+  }
+  .deck-grid.is-in .deck-cell {
+    opacity: 1;
+    transform: none;
   }
   .deck-card {
     width: 100%;
@@ -93,11 +107,18 @@ const { headline, caption, lang } = Astro.props;
     box-shadow: var(--shadow-card);
     text-align: center;
     transition: box-shadow var(--dur-normal) var(--ease-out),
-      border-color var(--dur-normal) var(--ease-out);
+      border-color var(--dur-normal) var(--ease-out),
+      transform var(--dur-normal) var(--ease-out);
   }
   .deck-card:hover {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
+    transform: translateY(-8px) rotateX(-6deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck-cell { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .deck-card { transition: none !important; }
+    .deck-card:hover { transform: none !important; }
   }
   .deck-card img {
     width: 110px;

@@ -1,4 +1,3 @@
-import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
 import type { CSSProperties } from 'react';
 import { TELEGRAM_BOT_URL } from '../../config/site';
 
@@ -35,14 +34,10 @@ function PaperPlane({ size = 20 }: { size?: number }) {
   );
 }
 
-export default function TelegramCTA({
-  label,
-  variant = 'primary',
-  className,
-}: TelegramCTAProps) {
-  const reduce = useReducedMotion();
-
-  const baseStyle: CSSProperties = {
+// Primary CTA. Hover/tap micro-interaction is pure CSS (.tg-cta — see tokens.css),
+// no framer-motion.
+export default function TelegramCTA({ label, variant = 'primary', className }: TelegramCTAProps) {
+  const style: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '10px',
@@ -60,41 +55,17 @@ export default function TelegramCTA({
     ...SIZES[variant],
   };
 
-  const content = (
-    <>
+  return (
+    <a
+      href={TELEGRAM_BOT_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className ? `tg-cta ${className}` : 'tg-cta'}
+      aria-label={label}
+      style={style}
+    >
       <PaperPlane size={variant === 'seal' ? 24 : 20} />
       <span>{label}</span>
-    </>
-  );
-
-  const props = {
-    href: TELEGRAM_BOT_URL,
-    target: '_blank',
-    rel: 'noopener noreferrer',
-    className,
-    'aria-label': label,
-  };
-
-  if (reduce) {
-    return (
-      <a {...props} style={baseStyle}>
-        {content}
-      </a>
-    );
-  }
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <m.a
-        {...props}
-        style={baseStyle}
-        initial={{ scale: 1 }}
-        whileHover={{ scale: 1.02, y: -1 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-      >
-        {content}
-      </m.a>
-    </LazyMotion>
+    </a>
   );
 }

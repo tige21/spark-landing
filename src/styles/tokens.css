@@ -198,3 +198,39 @@ html.lenis body {
   background-color: color-mix(in srgb, var(--wine) 70%, transparent);
   background-clip: padding-box;
 }
+
+/* Scroll-reveal (vanilla IntersectionObserver toggles .is-in) — replaces framer whileInView. */
+.reveal,
+.reveal-stamp,
+.reveal-tilt,
+.reveal-seal {
+  will-change: opacity, transform;
+}
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-slower) var(--ease-out), transform var(--dur-slower) var(--ease-out); }
+.reveal-stamp { opacity: 0; transform: scale(1.08) rotate(-3deg); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
+.reveal-tilt { opacity: 0; transform: perspective(1000px) rotateX(8deg) translateY(36px); transform-origin: 50% 100%; transition: opacity var(--dur-slower) var(--ease-out), transform 0.7s var(--ease-out); }
+.reveal-seal { opacity: 0; transform: scale(1.35) rotate(-8deg); filter: drop-shadow(0 18px 22px color-mix(in srgb, var(--ink) 0%, transparent)); transition: opacity 0.5s ease, transform 0.6s var(--ease-out), filter 0.6s var(--ease-out); }
+.reveal.is-in,
+.reveal-stamp.is-in,
+.reveal-tilt.is-in,
+.reveal-seal.is-in { opacity: 1; transform: none; }
+.reveal-seal.is-in { filter: drop-shadow(0 6px 9px color-mix(in srgb, var(--ink) 28%, transparent)); }
+
+/* Word-by-word headline (animates on mount; above the fold). */
+.word-reveal { display: inline-block; }
+.word-reveal > span { display: inline-block; white-space: pre; opacity: 0; transform: translateY(0.5em); animation: word-in 0.62s var(--ease-out) both; animation-delay: calc(var(--i) * 0.07s + 0.08s); }
+@keyframes word-in { to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-stamp, .reveal-tilt, .reveal-seal { opacity: 1 !important; transform: none !important; transition: none !important; filter: none !important; }
+  .word-reveal > span { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* Primary CTA hover/tap (replaces framer whileHover/whileTap). */
+.tg-cta { transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.tg-cta:hover { transform: translateY(-1px) scale(1.02); }
+.tg-cta:active { transform: scale(0.98); }
+@media (prefers-reduced-motion: reduce) {
+  .tg-cta { transition: none; }
+  .tg-cta:hover, .tg-cta:active { transform: none; }
+}

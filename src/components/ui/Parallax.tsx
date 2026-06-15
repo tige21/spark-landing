@@ -1,14 +1,8 @@
-import {
-  LazyMotion,
-  domAnimation,
-  m,
-  useScroll,
-  useSpring,
-  useTransform,
-} from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useMotionPrefs } from '../../lib/motion-guards';
+import { createScrollValue } from '../../lib/scroll-progress';
+import { animateOnScroll } from '../../lib/scroll-anim';
 
 interface ParallaxProps {
   children: ReactNode;
@@ -21,6 +15,8 @@ interface ParallaxProps {
   style?: CSSProperties;
 }
 
+// Scroll-linked parallax (vanilla ScrollValue + rAF spring — no framer). Under
+// reduced-motion / small (factor === 0) it renders a plain static div.
 export default function Parallax({
   children,
   axis = 'y',
@@ -33,32 +29,38 @@ export default function Parallax({
 }: ParallaxProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { factor } = useMotionPrefs();
+  const isStatic = factor === 0;
+  const hasScale = scaleFrom != null || scaleTo != null;
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  });
+  useEffect(() => {
+    if (isStatic) return;
+    const el = ref.current;
+    if (!el) return;
 
-  const d = distance * factor;
-  const rawMove = useTransform(scrollYProgress, [0, 1], [d / 2, -d / 2]);
-  const move = useSpring(rawMove, {
-    stiffness: 120,
-    damping: 30,
-    restDelta: 0.001,
-    skipInitialAnimation: true,
-  });
-  const rot = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [-rotate * 0.5 * factor, rotate * 0.5 * factor]
-  );
-  const scl = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [scaleFrom ?? 1, scaleTo ?? 1]
-  );
+    const sv = createScrollValue(['start end', 'end start']);
+    sv.attach(el);
 
-  if (factor === 0) {
+    const d = distance * factor;
+    const stop = animateOnScroll(sv, {
+      channels: {
+        move: { from: d / 2, to: -d / 2, spring: true },
+        rot: { from: -rotate * 0.5 * factor, to: rotate * 0.5 * factor },
+        scale: { from: scaleFrom ?? 1, to: scaleTo ?? 1 },
+      },
+      render: (v) => {
+        const t = axis === 'y' ? `translateY(${v.move}px)` : `translateX(${v.move}px)`;
+        el.style.transform =
+          `${t}${rotate ? ` rotate(${v.rot}deg)` : ''}${hasScale ? ` scale(${v.scale})` : ''}`;
+      },
+    });
+
+    return () => {
+      stop();
+      sv.destroy();
+    };
+  }, [axis, distance, rotate, scaleFrom, scaleTo, factor, isStatic, hasScale]);
+
+  if (isStatic) {
     return (
       <div className={className} style={style}>
         {children}
@@ -66,19 +68,9 @@ export default function Parallax({
     );
   }
 
-  const motionStyle: Record<string, unknown> = {
-    ...style,
-    willChange: 'transform',
-  };
-  motionStyle[axis] = move;
-  if (rotate) motionStyle.rotate = rot;
-  if (scaleFrom != null || scaleTo != null) motionStyle.scale = scl;
-
   return (
-    <LazyMotion features={domAnimation} strict>
-      <m.div ref={ref} className={className} style={motionStyle}>
-        {children}
-      </m.div>
-    </LazyMotion>
+    <div ref={ref} className={className} style={{ ...style, willChange: 'transform' }}>
+      {children}
+    </div>
   );
 }

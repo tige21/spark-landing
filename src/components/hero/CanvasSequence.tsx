@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { MotionValue } from 'framer-motion';
+import type { ScrollValue } from '../../lib/scroll-progress';
 import { useMotionPrefs } from '../../lib/motion-guards';
 import { DEBUG_SCROLL } from '../../lib/smooth-scroll';
 
@@ -13,7 +13,7 @@ interface Manifest {
 }
 
 interface CanvasSequenceProps {
-  progress: MotionValue<number>; // 0..1 scene scroll progress
+  progress: ScrollValue; // 0..1 scene scroll progress
   poster: string; // LCP-safe still (desktop)
   posterMobile?: string;
   name?: string;
