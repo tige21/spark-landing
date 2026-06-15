@@ -13,13 +13,15 @@ interface Props {
 }
 const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
 
-const posterDesktop = await getImage({ src: engraving('bg-celestial'), width: 1600, format: 'webp' });
-const posterMobile = await getImage({ src: engraving('bg-celestial'), width: 820, format: 'webp' });
 const spark = await getImage({ src: engraving('spark-mark'), width: 180, format: 'webp' });
 
-// Scroll-scrub sequences are optional — fall back to the poster until they exist.
+// Posters = first frame of each sequence (matches the scroll-0 state); fall back
+// to bg-celestial if a poster hasn't been generated yet.
 const hasFrames = existsSync('public/hero-frames/hero/manifest.json');
 const hasFramesMobile = existsSync('public/hero-frames/hero-mobile/manifest.json');
+const bg = await getImage({ src: engraving('bg-celestial'), width: 1280, format: 'webp' });
+const posterDesktop = existsSync('public/hero/hero-poster.webp') ? '/hero/hero-poster.webp' : bg.src;
+const posterMobile = existsSync('public/hero/hero-poster-mobile.webp') ? '/hero/hero-poster-mobile.webp' : bg.src;
 ---
 
 <HeroScroll
@@ -28,8 +30,8 @@ const hasFramesMobile = existsSync('public/hero-frames/hero-mobile/manifest.json
   subtitle={subtitle}
   ctaLabel={ctaLabel}
   scrollLabel={scrollLabel}
-  posterDesktop={posterDesktop.src}
-  posterMobile={posterMobile.src}
+  posterDesktop={posterDesktop}
+  posterMobile={posterMobile}
   sparkSrc={spark.src}
   hasFrames={hasFrames}
   hasFramesMobile={hasFramesMobile}
