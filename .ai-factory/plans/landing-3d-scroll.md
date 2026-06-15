@@ -31,9 +31,9 @@ Replace the (removed) background hero video with **real scroll-driven 3D effects
 - [x] #77 Build 3D scene primitives — `Scene3D.tsx` (perspective/preserve-3d), `Layer.tsx` (translateZ depth, extends Parallax), `lib/use-scroll-scene.ts` (pin + 0..1 progress). *(blocked by #76)*
 
 ### Phase 1 — Hero diorama + canvas scrubbing
-- [ ] #78 Hero asset spec + frame pipeline — `.ai-factory/HERO_3D_PROMPTS.md` (prompt for NEW engraving animation) + `scripts/extract-frames.sh` (ffmpeg → WebP frames + manifest). *(user supplies new source)*
-- [ ] #79 CanvasSequence scrub component — `hero/CanvasSequence.tsx`, scroll-scrubbed canvas, preload/decode, poster fallback, reduced/small → static. *(blocked by #77; real frames from #78)*
-- [ ] #80 Hero 3D diorama composition — pinned layered planes (celestial + HeroGrid floor → mid scene/canvas → foreground filigree/sparks/dove), camera push on scroll, keep WordReveal/CTA; replace current static hero. *(blocked by #79)*
+- [x] #78 Hero asset spec + frame pipeline — `.ai-factory/HERO_3D_PROMPTS.md` (prompt for NEW engraving animation) + `scripts/extract-frames.sh` (ffmpeg → WebP frames + manifest). *(user supplies new source)*
+- [x] #79 CanvasSequence scrub component — `hero/CanvasSequence.tsx`, scroll-scrubbed canvas, preload/decode, poster fallback, reduced/small → static. *(blocked by #77; real frames from #78)*
+- [x] #80 Hero 3D diorama composition — pinned layered planes (celestial + HeroGrid floor → mid scene/canvas → foreground filigree/sparks/dove), camera push on scroll, keep WordReveal/CTA; replace current static hero. *(blocked by #79)*
 
 ### Phase 2 — Page-wide 3D
 - [ ] #81 Section perspective-entrance primitive — postcard tilt (rotateX/Y + translateZ + opacity) on scroll-in, wired into Section.astro. *(blocked by #77)*

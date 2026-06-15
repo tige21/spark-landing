@@ -1,7 +1,8 @@
 ---
-import { Image } from 'astro:assets';
+import { existsSync } from 'node:fs';
+import { getImage } from 'astro:assets';
 import { engraving } from '../../assets/images';
-import HeroGrid from './HeroGrid.astro';
+import HeroScene from './HeroScene.tsx';
 import HeroContentMotion from './HeroContentMotion.tsx';
 import WordReveal from '../ui/WordReveal.tsx';
 import TelegramCTA from '../ui/TelegramCTA.tsx';
@@ -14,19 +15,18 @@ interface Props {
   scrollLabel: string;
 }
 const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
+
+const bg = await getImage({ src: engraving('bg-celestial'), width: 1600, format: 'webp' });
+const press = await getImage({ src: engraving('phase-print'), width: 760, format: 'webp' });
+const spark = await getImage({ src: engraving('spark-mark'), width: 180, format: 'webp' });
+
+// Frame sequence is optional — only fetch/scrub when the user has produced it
+// (scripts/extract-frames.sh). Avoids a 404 when only the poster exists.
+const hasFrames = existsSync('public/hero-frames/hero/manifest.json');
 ---
 
 <section class="hero">
-  <Image
-    src={engraving('bg-celestial')}
-    alt=""
-    class="poster"
-    loading="eager"
-    fetchpriority="high"
-    widths={[768, 1280, 1920]}
-    sizes="100vw"
-  />
-  <HeroGrid />
+  <HeroScene bgSrc={bg.src} pressSrc={press.src} sparkSrc={spark.src} hasFrames={hasFrames} client:visible />
   <div class="scrim"></div>
 
   <div class="hero-content">
@@ -45,7 +45,7 @@ const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
 <style>
   .hero {
     position: relative;
-    min-height: 78vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -53,24 +53,15 @@ const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
     overflow: hidden;
     isolation: isolate;
   }
-  .poster {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.5;
-    z-index: var(--z-bg);
-    mix-blend-mode: multiply;
-  }
   .scrim {
     position: absolute;
     inset: 0;
     z-index: 2;
+    pointer-events: none;
     background: radial-gradient(
       120% 80% at 50% 45%,
-      color-mix(in srgb, var(--table) 35%, transparent) 0%,
-      color-mix(in srgb, var(--table) 70%, transparent) 70%,
+      color-mix(in srgb, var(--table) 25%, transparent) 0%,
+      color-mix(in srgb, var(--table) 65%, transparent) 68%,
       var(--table) 100%
     );
   }
