@@ -76,6 +76,8 @@
 .hero-content .subtitle {
   max-width: 30ch;
   margin-inline: auto;
+  color: var(--meta-strong);
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--table) 75%, transparent);
 }
 .hero-cta {
   margin-top: var(--space-2xl);

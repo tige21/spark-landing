@@ -17,7 +17,7 @@ const { headline, caption, lang } = Astro.props;
 <Section id="decks" class="decks">
   <div class="crest-clip" aria-hidden="true">
     <div class="crest-holder">
-      <Parallax client:visible distance={0} rotate={22}>
+      <Parallax client:visible distance={0} rotate={8}>
         <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
       </Parallax>
     </div>
@@ -49,7 +49,7 @@ const { headline, caption, lang } = Astro.props;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(900px, 90%);
+    width: min(560px, 64%);
   }
   .crest {
     width: 100%;
@@ -60,6 +60,7 @@ const { headline, caption, lang } = Astro.props;
   .decks-head {
     position: relative;
     z-index: var(--z-content);
+    text-align: center;
   }
   .caption {
     max-width: 32ch;
@@ -110,7 +111,8 @@ const { headline, caption, lang } = Astro.props;
       border-color var(--dur-normal) var(--ease-out),
       transform var(--dur-normal) var(--ease-out);
   }
-  .deck-card:hover {
+  .deck-card:hover,
+  .deck-card:active {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
     transform: translateY(-8px) rotateX(-6deg);

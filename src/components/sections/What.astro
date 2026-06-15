@@ -48,6 +48,7 @@ const icons = [
   .headline {
     max-width: 22ch;
     margin-inline: auto;
+    text-align: center;
   }
   .pills {
     margin-top: var(--space-2xl);
@@ -66,6 +67,26 @@ const icons = [
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     height: 100%;
+    transition: box-shadow var(--dur-normal) var(--ease-out),
+      border-color var(--dur-normal) var(--ease-out),
+      transform var(--dur-normal) var(--ease-out);
+  }
+  /* Same tilt-lift press feedback as the deck cards (perspective() keeps it
+     self-contained — no ancestor 3D context needed through the Reveal island). */
+  .pill:hover,
+  .pill:active {
+    box-shadow: var(--shadow-float);
+    border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
+    transform: perspective(760px) translateY(-8px) rotateX(-6deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pill {
+      transition: none;
+    }
+    .pill:hover,
+    .pill:active {
+      transform: none;
+    }
   }
   .pill img {
     width: 72px;

@@ -60,9 +60,15 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
   .how {
     text-align: center;
   }
+  /* Section-class text-align doesn't reach content (the <section> is rendered by
+     Section.astro, so How's scope can't tag it). Center the owned elements. */
+  .eyebrow,
+  .steps-wrap {
+    text-align: center;
+  }
   .steps-wrap {
     position: relative;
-    margin-top: var(--space-2xl);
+    margin-top: var(--space-xl);
   }
   .route-band {
     position: absolute;
@@ -113,6 +119,7 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
   }
   .step p {
     max-width: 24ch;
+    margin-inline: auto;
   }
   @media (max-width: 880px) {
     .steps {
