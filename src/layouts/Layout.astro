@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import Nav from '../components/layout/Nav.astro';
 import Footer from '../components/layout/Footer.astro';
+import SmoothScroll from '../components/ui/SmoothScroll.tsx';
 
 interface Props {
   title: string;
@@ -46,6 +47,7 @@ const ogImage = new URL('/og.png', Astro.site).href;
     <link rel="alternate" hreflang="x-default" href={new URL('/', Astro.site).href} />
   </head>
   <body>
+    <SmoothScroll client:load />
     <Nav lang={lang} />
     <main>
       <slot />
