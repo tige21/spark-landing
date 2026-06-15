@@ -14,22 +14,30 @@ interface Manifest {
 
 interface CanvasSequenceProps {
   progress: MotionValue<number>; // 0..1 scene scroll progress
-  poster: string; // LCP-safe still; shown until frames are ready / always under guards
-  name?: string; // frames folder under /hero-frames/
-  enabled?: boolean; // frame sequence exists (skip fetch/scrub when false)
+  poster: string; // LCP-safe still (desktop)
+  posterMobile?: string; // optional mobile poster
+  name?: string; // desktop frames folder under /hero-frames/
+  nameMobile?: string; // mobile frames folder
+  enabled?: boolean; // desktop sequence exists (build-time check)
+  enabledMobile?: boolean; // mobile sequence exists
+  fit?: 'cover' | 'contain';
   className?: string;
   style?: CSSProperties;
 }
 
-// Apple-style scroll scrubbing: draws the frame matching scroll progress to a
-// <canvas>. Frames + manifest are produced by scripts/extract-frames.sh. Until a
-// manifest exists (or under reduced-motion / small) it just shows the poster —
-// no fetch, no canvas, no errors.
+// Scroll-scrubbed frame player. Full-bleed friendly (object-fit), responsive
+// (separate desktop / mobile sequences), and ENABLED on mobile (only reduced
+// motion or a missing sequence falls back to the static poster). Frames + manifest
+// are produced by scripts/extract-frames.sh.
 export default function CanvasSequence({
   progress,
   poster,
+  posterMobile,
   name = 'hero',
+  nameMobile = 'hero-mobile',
   enabled = true,
+  enabledMobile = true,
+  fit = 'cover',
   className,
   style,
 }: CanvasSequenceProps) {
@@ -37,8 +45,13 @@ export default function CanvasSequence({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
 
+  const activeName = small ? nameMobile : name;
+  const activeEnabled = small ? enabledMobile : enabled;
+  const activePoster = small && posterMobile ? posterMobile : poster;
+
   useEffect(() => {
-    if (reduced || small || !enabled) return; // poster only
+    setReady(false);
+    if (reduced || !activeEnabled) return; // poster only
 
     let cancelled = false;
     let raf = 0;
@@ -63,9 +76,9 @@ export default function CanvasSequence({
 
     (async () => {
       try {
-        const res = await fetch(`/hero-frames/${name}/manifest.json`);
+        const res = await fetch(`/hero-frames/${activeName}/manifest.json`);
         if (!res.ok) {
-          if (DEBUG_SCROLL) console.log('[canvas-seq] no manifest — poster only');
+          if (DEBUG_SCROLL) console.log('[canvas-seq] no manifest', activeName);
           return;
         }
         const m: Manifest = await res.json();
@@ -73,7 +86,7 @@ export default function CanvasSequence({
         count = m.count;
         const pad = m.pad ?? 4;
         const url = (i: number) =>
-          `/hero-frames/${name}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
+          `/hero-frames/${activeName}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
 
         const first = new Image();
         first.src = url(0);
@@ -83,11 +96,13 @@ export default function CanvasSequence({
         if (canvas) {
           canvas.width = first.naturalWidth;
           canvas.height = first.naturalHeight;
-          canvas.style.aspectRatio = `${first.naturalWidth} / ${first.naturalHeight}`;
         }
         frames[0] = first;
         for (let i = 1; i < count; i++) {
           const img = new Image();
+          // Redraw the current frame once a frame finishes loading, so the canvas
+          // isn't stuck on an early frame when the user stops scrolling mid-load.
+          img.onload = () => schedule(progress.get());
           img.src = url(i);
           frames[i] = img;
         }
@@ -97,9 +112,9 @@ export default function CanvasSequence({
         if (cancelled) return;
         setReady(true);
         draw(progress.get());
-        if (DEBUG_SCROLL) console.log('[canvas-seq] frames ready:', count);
+        if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count);
       } catch (err) {
-        if (DEBUG_SCROLL) console.log('[canvas-seq] load error', err);
+        if (DEBUG_SCROLL) console.log('[canvas-seq] error', err);
       }
     })();
 
@@ -109,33 +124,28 @@ export default function CanvasSequence({
       cancelAnimationFrame(raf);
       unsub();
     };
-  }, [reduced, small, enabled, name, progress]);
+  }, [reduced, activeEnabled, activeName, progress]);
+
+  const media: CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: fit,
+  };
 
   return (
-    <div className={className} style={{ position: 'relative', ...style }}>
+    <div className={className} style={{ position: 'relative', width: '100%', height: '100%', ...style }}>
       <img
-        src={poster}
+        src={activePoster}
         alt=""
-        style={{
-          width: '100%',
-          height: 'auto',
-          display: 'block',
-          opacity: ready ? 0 : 1,
-          transition: 'opacity 0.4s ease',
-        }}
+        style={{ ...media, opacity: ready ? 0 : 1, transition: 'opacity 0.5s ease' }}
       />
-      {!(reduced || small) && enabled && (
+      {!reduced && activeEnabled && (
         <canvas
           ref={canvasRef}
           aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            opacity: ready ? 1 : 0,
-            transition: 'opacity 0.4s ease',
-          }}
+          style={{ ...media, opacity: ready ? 1 : 0, transition: 'opacity 0.5s ease' }}
         />
       )}
     </div>

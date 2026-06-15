@@ -15,8 +15,8 @@ Lenis smooth-scroll + an optional `<canvas>` frame-scrub for the hero.
 | `src/components/ui/TiltIn.tsx` | Section perspective-entrance ("postcard laid onto the table"); wired into every `Section.astro` (opt out with `flat`). |
 | `src/components/ui/SealPress.tsx` | Wax-seal 3D press beat (used by the last How step). |
 | `src/components/ui/Parallax.tsx` | Pre-existing 2.5D parallax (decor crests via `SectionDecor`). |
-| `src/components/hero/HeroScene.tsx` | The hero diorama: layered engravings (bg → grid floor → press centerpiece → sparks) in one `Scene3D`, camera dolly on scroll. |
-| `src/components/hero/CanvasSequence.tsx` | Scroll-scrubbed `<canvas>` frame player for the hero centerpiece. |
+| `src/components/hero/HeroScroll.tsx` (+ `.css`) | Full-bleed **pinned** scroll-scrub hero: a card-creation engraving sequence plays as the background while you scroll ~2 viewports; headline fades out over the second half; foreground sparks add depth. Works on mobile. Falls back to a normal 100vh poster hero under reduced-motion / no sequence. |
+| `src/components/hero/CanvasSequence.tsx` | Scroll-scrubbed `<canvas>` frame player. `fit="cover"` for full-bleed; picks the desktop (`hero`) or mobile (`hero-mobile`) sequence by screen size; **enabled on mobile** (only reduced-motion / missing sequence → poster). |
 
 ## Motion guards (a11y + perf)
 
@@ -31,12 +31,20 @@ Only GPU-composited props (`transform`, `opacity`) are animated; debug `console`
 
 ## Adding the hero scroll-scrub animation
 
-The hero centerpiece shows the static `phase-print` poster until a frame sequence exists.
+The hero is a static 100vh poster (`bg-celestial`) until frame sequences exist. Two
+sources cover every device (see `.ai-factory/HERO_3D_PROMPTS.md`): desktop 16:9 +
+mobile vertical.
 
-1. Produce a new engraving animation per `.ai-factory/HERO_3D_PROMPTS.md` (do **not** reuse old assets).
-2. Run: `scripts/extract-frames.sh <source-video> hero 1100 24`
-   → writes `public/hero-frames/hero/0001.webp …` + `manifest.json`.
-3. Rebuild. `Hero.astro` detects the manifest at build time (`hasFrames`) and enables scrubbing automatically. Keep the sequence **< ~1.5 MB** for the RU load budget.
+```bash
+scripts/extract-frames.sh <desktop-video> hero        1280 24
+scripts/extract-frames.sh <mobile-video>  hero-mobile 760  24
+```
+
+→ writes `public/hero-frames/hero/…` and `…/hero-mobile/…` (WebP via cwebp, since this
+ffmpeg lacks libwebp) + `manifest.json` each. `Hero.astro` detects each manifest at
+build time and enables it; the hero then becomes a pinned ~2× scroll-scrub. Keep
+desktop **< ~1.5 MB**, mobile **< ~900 KB** for the RU budget. `public/hero-frames/`
+is gitignored (built into `dist` locally on deploy).
 
 ## See also
 - `.ai-factory/HERO_3D_PROMPTS.md` — asset spec & prompt

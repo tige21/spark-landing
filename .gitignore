@@ -27,3 +27,6 @@ pnpm-debug.log*
 test-results/
 playwright-report/
 .playwright-mcp/
+
+# Generated hero scroll-scrub frames (built into dist locally; not committed)
+public/hero-frames/

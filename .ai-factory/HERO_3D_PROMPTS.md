@@ -1,49 +1,56 @@
-# Hero 3D scroll asset — spec & prompt
+# Hero scroll-scrub asset — spec & pipeline
 
-The hero centerpiece is a **scroll-scrubbed frame sequence** (Apple-style): the
-user scrolls and the engraving animation plays forward/back, drawn frame-by-frame
-to a `<canvas>` (`CanvasSequence.tsx`). This file is the spec for generating the
-**new** source animation (we do NOT reuse the old Kling video) and the pipeline
-to turn it into web frames.
+The hero is a **full-screen pinned scroll-scrub background**: as the visitor scrolls
+~2 viewports, an engraving animation plays frame-by-frame on a `<canvas>` behind the
+headline (which fades out to reveal the cinematic frame). Works on desktop **and
+mobile**. This file specs the source animation and the pipeline.
 
-## What to generate
+Until a frame sequence exists, the hero is a normal 100vh screen with a static poster
+(`bg-celestial`) — no pin, no scrub. Drop the asset → run the script → rebuild → it goes live.
 
-A short, **seamless, loopable** animation of a 19th-century **letterpress / printing
-press** in the spark engraving identity — "Печатня Искра" printing a card. The motion
-should read as a slow **camera push toward the press** (dolly-in) so scroll feels like
-travelling into the scene.
+## What to generate — "how the cards are created"
 
-- **Style:** dense copperplate/steel engraving, sepia ink `#2C2620` + wine accent
-  `#7E3B4E`, on **solid cream `#E4D7BE`** background (so it sits flush on the page;
-  we bake/keep that bg — same trick as the static engravings).
-- **Composition:** press centered, slight 3/4 angle; a printed card with a small
-  engraved **spark/star emblem** emerging. No playing-card suits/pips.
-- **Motion:** gentle, continuous; subtle dolly-in + a few moving parts (press arm,
-  paper, ink sparks). ~4–6 s. Must **loop seamlessly** (start frame ≈ end frame) OR
-  be ping-pong-able.
-- **Hard NOs:** no text, no captions, no watermark/signature, no fire, no smoke,
-  no real playing cards, no photoreal — engraving only.
-- **Format:** 16:9, ≥1280px wide, mp4/mov (or PNG sequence).
+A beautiful, **seamless/loopable** sequence that shows cards being made in the
+"Печатня Искра" world, engraving identity:
 
-## Generation
+- Idea: ink/press → a card takes shape → the spark/star emblem strikes → the finished
+  card. A slow **camera move** (push/pan) so scroll feels like travelling through it.
+- **Style:** dense copperplate/steel engraving; sepia ink `#2C2620` + wine `#7E3B4E`;
+  on **solid cream `#E4D7BE`** (fills the screen seamlessly — same paper as the page).
+- **Hard NOs:** no text/captions, no watermark/signature, no fire/smoke, no real
+  playing-card suits/pips, no photoreal.
+- Calm, continuous motion, ~4–6 s, seamless start↔end.
 
-Higgs Field / Kling / Seedance (image→video) from a Nano Banana still that matches the
-identity, or a Blender render with a toon/engraving pass. Deliver the file into
-`~/Downloads` (or anywhere) and run the pipeline below.
+## Two sources (cover the full screen on every device)
+
+You picked **separate cuts** so nothing important is cropped:
+
+1. **Desktop — 16:9 landscape**, ≥1280px wide.
+2. **Mobile — vertical** (9:16 or 4:5), composition centered/safe for tall phones.
+
+Both are background (`object-fit: cover`), so edges may crop slightly — keep the focal
+action central.
 
 ## Pipeline → web frames
 
 ```bash
-scripts/extract-frames.sh <source-video> hero 1100 24
+# desktop
+scripts/extract-frames.sh <desktop-video> hero 1280 24
+# mobile (vertical)
+scripts/extract-frames.sh <mobile-video> hero-mobile 760 24
 ```
 
-- Writes `public/hero-frames/hero/0001.webp …` + `public/hero-frames/hero/manifest.json`.
-- `manifest.json` shape: `{ "name", "count", "width", "ext": "webp", "pad": 4 }`.
-- `CanvasSequence.tsx` fetches the manifest, preloads/decodes frames, and scrubs them
-  to scroll progress. Until a manifest exists, the hero shows the static poster
-  (`phase-print` engraving) — no canvas, no errors.
+- Writes `public/hero-frames/hero/0001.webp …` + `manifest.json`, and the same under
+  `hero-mobile/`. (ffmpeg → PNG → cwebp, since this ffmpeg lacks libwebp.)
+- `CanvasSequence` auto-selects `hero` on desktop and `hero-mobile` on ≤760px, fetches
+  the manifest, preloads/decodes, and scrubs to scroll. `Hero.astro` detects each
+  manifest at build time and enables it.
 
 ### Tuning targets
-- **120–180 frames** total (more = smoother scrub, heavier payload). 24fps × ~5s ≈ 120.
-- Keep each WebP small; total sequence ideally **< 1.5 MB** for the RU load budget.
-- If too heavy: lower `width` (e.g. 900) or `fps` (e.g. 18), or shorten the clip.
+- **Desktop:** ~120 frames, total **< ~1.5 MB**.
+- **Mobile:** ~80–90 frames at width 760, total **< ~900 KB** (RU mobile budget).
+- Too heavy → lower width / fps, or shorten the clip. Frame count = `fps × seconds`.
+
+## See also
+- `docs/3d-scroll.md` — system architecture & guards
+- `.ai-factory/plans/landing-3d-scroll.md` — implementation plan

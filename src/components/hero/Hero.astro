@@ -2,10 +2,7 @@
 import { existsSync } from 'node:fs';
 import { getImage } from 'astro:assets';
 import { engraving } from '../../assets/images';
-import HeroScene from './HeroScene.tsx';
-import HeroContentMotion from './HeroContentMotion.tsx';
-import WordReveal from '../ui/WordReveal.tsx';
-import TelegramCTA from '../ui/TelegramCTA.tsx';
+import HeroScroll from './HeroScroll.tsx';
 
 interface Props {
   eyebrow: string;
@@ -16,91 +13,25 @@ interface Props {
 }
 const { eyebrow, title, subtitle, ctaLabel, scrollLabel } = Astro.props;
 
-const bg = await getImage({ src: engraving('bg-celestial'), width: 1600, format: 'webp' });
-const press = await getImage({ src: engraving('phase-print'), width: 760, format: 'webp' });
+const posterDesktop = await getImage({ src: engraving('bg-celestial'), width: 1600, format: 'webp' });
+const posterMobile = await getImage({ src: engraving('bg-celestial'), width: 820, format: 'webp' });
 const spark = await getImage({ src: engraving('spark-mark'), width: 180, format: 'webp' });
 
-// Frame sequence is optional — only fetch/scrub when the user has produced it
-// (scripts/extract-frames.sh). Avoids a 404 when only the poster exists.
+// Scroll-scrub sequences are optional — fall back to the poster until they exist.
 const hasFrames = existsSync('public/hero-frames/hero/manifest.json');
+const hasFramesMobile = existsSync('public/hero-frames/hero-mobile/manifest.json');
 ---
 
-<section class="hero">
-  <HeroScene bgSrc={bg.src} pressSrc={press.src} sparkSrc={spark.src} hasFrames={hasFrames} client:visible />
-  <div class="scrim"></div>
-
-  <div class="hero-content">
-    <HeroContentMotion client:visible>
-      <p class="eyebrow">{eyebrow}</p>
-      <h1 class="t-display"><WordReveal text={title} client:idle /></h1>
-      <p class="t-lead subtitle">{subtitle}</p>
-      <div class="hero-cta">
-        <TelegramCTA label={ctaLabel} variant="hero" client:idle />
-      </div>
-      <a class="scroll-cue" href="#how">{scrollLabel}</a>
-    </HeroContentMotion>
-  </div>
-</section>
-
-<style>
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background: radial-gradient(
-      120% 80% at 50% 45%,
-      color-mix(in srgb, var(--table) 25%, transparent) 0%,
-      color-mix(in srgb, var(--table) 65%, transparent) 68%,
-      var(--table) 100%
-    );
-  }
-  .hero-content {
-    position: relative;
-    z-index: var(--z-content);
-    text-align: center;
-    max-width: 820px;
-    padding: var(--space-2xl) var(--space-xl);
-  }
-  .hero-content h1 {
-    margin: var(--space-md) 0 var(--space-lg);
-  }
-  .subtitle {
-    max-width: 30ch;
-    margin-inline: auto;
-  }
-  .hero-cta {
-    margin-top: var(--space-2xl);
-    display: flex;
-    justify-content: center;
-  }
-  .scroll-cue {
-    display: inline-block;
-    margin-top: var(--space-2xl);
-    font-family: var(--font-serif);
-    font-size: 0.95rem;
-    color: var(--meta);
-    text-decoration: none;
-    letter-spacing: 0.02em;
-  }
-  .scroll-cue::after {
-    content: '↓';
-    display: block;
-    margin-top: var(--space-xs);
-    animation: bob 1.8s var(--ease-in-out) infinite;
-  }
-  @keyframes bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(5px); }
-  }
-</style>
+<HeroScroll
+  eyebrow={eyebrow}
+  title={title}
+  subtitle={subtitle}
+  ctaLabel={ctaLabel}
+  scrollLabel={scrollLabel}
+  posterDesktop={posterDesktop.src}
+  posterMobile={posterMobile.src}
+  sparkSrc={spark.src}
+  hasFrames={hasFrames}
+  hasFramesMobile={hasFramesMobile}
+  client:load
+/>
