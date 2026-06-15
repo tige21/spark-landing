@@ -1,4 +1,3 @@
-import { LazyMotion, domAnimation, m, useTransform } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useScrollScene } from '../../lib/use-scroll-scene';
 import { useMotionPrefs } from '../../lib/motion-guards';
@@ -50,9 +49,6 @@ export default function HeroScroll({
   const pinned = mounted && !reduced && !!activeHasFrames;
   const scrub = small ? 1.4 : SCRUB; // shorter pin on mobile (lighter, less scroll-hijack)
 
-  const contentOpacity = useTransform(progress, [0, 0.5, 0.82], [1, 1, 0]);
-  const contentY = useTransform(progress, [0, 0.82], [0, -40]);
-
   const sectionStyle = pinned
     ? { height: `${(1 + scrub) * 100}vh` }
     : { minHeight: '100vh' };
@@ -61,8 +57,7 @@ export default function HeroScroll({
     : ({ position: 'relative', minHeight: '100vh' } as const);
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <section ref={ref} className="hero" style={sectionStyle}>
+    <section ref={ref} className="hero" style={sectionStyle}>
         <div className="hero-stage" style={stageStyle}>
           <div className="hero-bg">
             <CanvasSequence
@@ -104,10 +99,7 @@ export default function HeroScroll({
             </Scene3D>
           )}
 
-          <m.div
-            className="hero-content"
-            style={pinned ? { opacity: contentOpacity, y: contentY } : undefined}
-          >
+          <div className="hero-content">
             <p className="eyebrow">{eyebrow}</p>
             <h1 className="t-display">
               <WordReveal text={title} />
@@ -116,12 +108,8 @@ export default function HeroScroll({
             <div className="hero-cta">
               <TelegramCTA label={ctaLabel} variant="hero" />
             </div>
-            <a className="scroll-cue" href="#how">
-              {scrollLabel}
-            </a>
-          </m.div>
+          </div>
         </div>
       </section>
-    </LazyMotion>
   );
 }
