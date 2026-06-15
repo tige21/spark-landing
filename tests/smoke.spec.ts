@@ -8,7 +8,7 @@ test.describe('landing — ru', () => {
 
     await expect(page.locator('.hero h1')).toBeVisible();
 
-    const cta = page.getByRole('link', { name: 'Открыть в Telegram' }).first();
+    const cta = page.getByRole('link', { name: 'Играть' }).first();
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute('href', BOT_URL);
     await expect(cta).toHaveAttribute('target', '_blank');
@@ -34,7 +34,7 @@ test.describe('landing — en', () => {
 
     await expect(page.locator('.hero h1')).toContainText('real talk');
 
-    const cta = page.getByRole('link', { name: 'Open in Telegram' }).first();
+    const cta = page.getByRole('link', { name: 'Play' }).first();
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute('href', BOT_URL);
   });
@@ -64,7 +64,7 @@ test.describe('reduced motion', () => {
     await page.goto('/');
     await expect(page.locator('.hero h1')).toBeVisible();
     await expect(
-      page.getByRole('link', { name: 'Открыть в Telegram' }).first()
+      page.getByRole('link', { name: 'Играть' }).first()
     ).toBeVisible();
     await page.locator('#decks').scrollIntoViewIfNeeded();
     await expect(page.locator('.deck-card')).toHaveCount(9);
