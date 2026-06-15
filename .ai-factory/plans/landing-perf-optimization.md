@@ -18,7 +18,7 @@ critical path, defer/cut JS (~100KB gz today), lighten frames/fonts/images.
 
 ## Tasks (priority order)
 - [x] #108 **P0** LCP poster as static `<img>` + `<link rel=preload as=image>` (responsive); Hero `client:load→visible`, SmoothScroll `client:load→idle`. *(biggest win, low effort)*
-- [ ] #109 Defer + throttle hero-frame fetching (idle start, batched), trim mobile.
+- [x] #109 Defer + throttle hero-frame fetching (idle start, batched), trim mobile.
 - [ ] #110 Replace simple in-view framer (Reveal/StampReveal/TiltIn/WordReveal) with IntersectionObserver + CSS.
 - [ ] #111 Replace scroll-linked framer (Parallax/Layer/useScrollScene/DecksShelf/PostalRoute) with vanilla rAF driver → **remove framer-motion dep** (−26KB gz + internals). *(blocked by #110)*
 - [ ] #112 Subset fonts (Cyrillic+Latin, drop unused weight) + AVIF for engravings.

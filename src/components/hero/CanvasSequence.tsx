@@ -61,6 +61,7 @@ export default function CanvasSequence({
 
     let cancelled = false;
     let rafId = 0;
+    let idleId: number | undefined;
     let running = false;
     let count = 0;
     let curr = 0; // displayed index (float)
@@ -135,13 +136,30 @@ export default function CanvasSequence({
         drawIndex(0); lastDrawn = 0;
         ensureRunning();
 
-        for (let i = 1; i < count; i++) {
-          decode(url(i), tw, th).then((f) => {
-            if (cancelled) { if (f && 'close' in f) (f as ImageBitmap).close(); return; }
-            frames[i] = f;
-            if (Math.round(curr) === i) ensureRunning(); // draw if it's the current target
-          });
-        }
+        // Defer the rest off the critical path (idle) + cap concurrency so the
+        // frame downloads don't contend with first paint / LCP.
+        const startBatch = () => {
+          let next = 1;
+          let inflight = 0;
+          const CONCURRENCY = 4;
+          const pump = () => {
+            while (!cancelled && inflight < CONCURRENCY && next < count) {
+              const i = next++;
+              inflight++;
+              decode(url(i), tw, th).then((f) => {
+                inflight--;
+                if (cancelled) { if (f && 'close' in f) (f as ImageBitmap).close(); return; }
+                frames[i] = f;
+                if (Math.round(curr) === i) ensureRunning();
+                pump();
+              });
+            }
+          };
+          pump();
+        };
+        idleId = 'requestIdleCallback' in window
+          ? (window as Window & typeof globalThis).requestIdleCallback(startBatch, { timeout: 1500 })
+          : (setTimeout(startBatch, 300) as unknown as number);
         if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count, `${tw}x${th}`);
       } catch (err) {
         if (DEBUG_SCROLL) console.log('[canvas-seq] error', err);
@@ -152,6 +170,10 @@ export default function CanvasSequence({
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
+      if (idleId !== undefined) {
+        if ('cancelIdleCallback' in window) cancelIdleCallback(idleId);
+        else clearTimeout(idleId);
+      }
       unsub();
       frames.forEach((f) => { if (f && 'close' in f) (f as ImageBitmap).close(); });
     };
