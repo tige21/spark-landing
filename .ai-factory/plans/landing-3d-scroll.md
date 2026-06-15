@@ -43,7 +43,7 @@ Replace the (removed) background hero video with **real scroll-driven 3D effects
 - [x] #85 Depth for remaining sections — delivered by global TiltIn entrance + existing SectionDecor parallax. *(blocked by #81)*
 
 ### Phase 3 — Perf / a11y / ship
-- [ ] #86 Perf + a11y guard pass — reduced/small fully static, rAF throttle, will-change hygiene, lazy+preload frames, CLS/aspect-ratio, dpr cap, no prod console. *(blocked by #80,#82,#83,#84,#85)*
+- [x] #86 Perf + a11y guard pass — reduced/small fully static, rAF throttle, will-change hygiene, lazy+preload frames, CLS/aspect-ratio, dpr cap, no prod console. *(blocked by #80,#82,#83,#84,#85)*
 - [ ] #87 Build, verify (Playwright desktop+mobile + existing smoke 10/10 + Lighthouse ~99), deploy, verify live; docs checkpoint. *(blocked by #86)*
 
 ## Commit Plan
