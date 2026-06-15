@@ -56,6 +56,7 @@ export default function TelegramCTA({
     border: '1px solid color-mix(in srgb, var(--wine) 78%, #000)',
     cursor: 'pointer',
     letterSpacing: '0.01em',
+    whiteSpace: 'nowrap',
     ...SIZES[variant],
   };
 

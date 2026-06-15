@@ -157,12 +157,13 @@ export default function CanvasSequence({
     };
   }, [reduced, activeEnabled, activeName, small, progress]);
 
+  // object-fit/position are driven by CSS (see HeroScroll.css) — a media query is
+  // reliable across SSR/hydration, unlike a JS `small` flag on an inline style.
   const media: CSSProperties = {
     position: 'absolute',
     inset: 0,
     width: '100%',
     height: '100%',
-    objectFit: fit,
   };
 
   return (

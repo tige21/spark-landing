@@ -8,7 +8,7 @@
     "brand": "Spark Cards",
     "title": "Cards that turn small talk into real talk.",
     "subtitle": "One honest question beats an hour of weather chat.",
-    "ctaPrimary": "Open in Telegram",
+    "ctaPrimary": "Play",
     "ctaSecondary": "See how it feels"
   },
   "what": {
@@ -35,6 +35,6 @@
     "headline": "Warm paper, fine engravings, zero cringe.",
     "body": "Built like a letterpress postcard, not another app. Works offline, no ads, no clutter."
   },
-  "cta": { "headline": "Open it now — tonight's conversation hits different.", "button": "Open in Telegram" },
+  "cta": { "headline": "Open it now — tonight's conversation hits different.", "button": "Play" },
   "footer": { "tagline": "The Spark Press · printing conversations since 1889" }
 }

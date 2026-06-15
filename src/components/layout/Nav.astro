@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 
 const altLang = lang === 'ru' ? 'en' : 'ru';
 const altHref = lang === 'ru' ? '/en' : '/';
-const ctaLabel = lang === 'ru' ? 'Открыть в Telegram' : 'Open in Telegram';
+const ctaLabel = lang === 'ru' ? 'Играть' : 'Play';
 const homeHref = lang === 'ru' ? '/' : '/en';
 ---
 
@@ -20,7 +20,7 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     <a class="brand" href={homeHref} aria-label={APP_NAME}>
       <Image src={engraving('logo-seal')} alt="" class="brand-logo" loading="eager" widths={[40, 80]} sizes="40px" />
       <span class="brand-text">
-        <span class="brand-name">{APP_NAME}</span>
+        <span class="brand-name">Spark<span class="brand-cards"> Cards</span></span>
         <span class="brand-press script">Печатня «Искра»</span>
       </span>
     </a>
@@ -121,10 +121,14 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     color: var(--ink);
   }
   @media (max-width: 760px) {
+    .nav-inner {
+      padding: var(--space-xs) var(--space-lg);
+    }
     .links {
       display: none;
     }
-    .brand-press {
+    .brand-press,
+    .brand-cards {
       display: none;
     }
   }

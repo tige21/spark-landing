@@ -14,6 +14,11 @@
   inset: 0;
   z-index: 0;
 }
+.hero-bg img,
+.hero-bg canvas {
+  object-fit: cover;
+  object-position: center;
+}
 .hero-scrim {
   position: absolute;
   inset: 0;
@@ -66,4 +71,21 @@
   margin-top: var(--space-2xl);
   display: flex;
   justify-content: center;
+}
+
+/* Mobile: raise the copy to the top so it sits above the (contained) press. */
+@media (max-width: 760px) {
+  .hero-stage {
+    align-items: flex-start;
+  }
+  .hero-content {
+    padding-top: 9vh;
+    padding-bottom: 0;
+  }
+  /* Show the full press (not cover-cropped), sitting in the lower half below the copy. */
+  .hero-bg img,
+  .hero-bg canvas {
+    object-fit: contain;
+    object-position: 50% 78%;
+  }
 }
