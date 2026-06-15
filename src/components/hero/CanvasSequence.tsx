@@ -171,6 +171,8 @@ export default function CanvasSequence({
       <img
         src={activePoster}
         alt=""
+        fetchPriority="high"
+        decoding="async"
         style={{ ...media, opacity: ready ? 0 : 1, transition: 'opacity 0.5s ease' }}
       />
       {!reduced && activeEnabled && (
