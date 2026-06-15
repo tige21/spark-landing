@@ -44,7 +44,7 @@ Replace the (removed) background hero video with **real scroll-driven 3D effects
 
 ### Phase 3 — Perf / a11y / ship
 - [x] #86 Perf + a11y guard pass — reduced/small fully static, rAF throttle, will-change hygiene, lazy+preload frames, CLS/aspect-ratio, dpr cap, no prod console. *(blocked by #80,#82,#83,#84,#85)*
-- [ ] #87 Build, verify (Playwright desktop+mobile + existing smoke 10/10 + Lighthouse ~99), deploy, verify live; docs checkpoint. *(blocked by #86)*
+- [x] #87 Build, verify (Playwright desktop+mobile + existing smoke 10/10 + Lighthouse ~99), deploy, verify live; docs checkpoint. *(blocked by #86)*
 
 ## Commit Plan
 - After #77 — `feat(landing): smooth-scroll + 3D scene primitives`
