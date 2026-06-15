@@ -16,7 +16,7 @@ Lenis smooth-scroll + an optional `<canvas>` frame-scrub for the hero.
 | `src/components/ui/SealPress.tsx` | Wax-seal 3D press beat (used by the last How step). |
 | `src/components/ui/Parallax.tsx` | Pre-existing 2.5D parallax (decor crests via `SectionDecor`). |
 | `src/components/hero/HeroScroll.tsx` (+ `.css`) | Full-bleed **pinned** scroll-scrub hero: a card-creation engraving sequence plays as the background while you scroll ~2 viewports; headline fades out over the second half; foreground sparks add depth. Works on mobile. Falls back to a normal 100vh poster hero under reduced-motion / no sequence. |
-| `src/components/hero/CanvasSequence.tsx` | Scroll-scrubbed `<canvas>` frame player. `fit="cover"` for full-bleed; picks the desktop (`hero`) or mobile (`hero-mobile`) sequence by screen size; **enabled on mobile** (only reduced-motion / missing sequence → poster). |
+| `src/components/hero/CanvasSequence.tsx` | Scroll-scrubbed `<canvas>` frame player. `fit="cover"` for full-bleed; picks the desktop (`hero`) or mobile (`hero-mobile`) sequence by screen size; **enabled on mobile** (only reduced-motion / missing sequence → poster). Smoothness: frames pre-decoded to **ImageBitmap** (resize-capped to bound memory), a **single rAF loop eases** a displayed index toward the scroll target and draws only on frame change (snaps to endpoints, parks when idle). |
 
 ## Motion guards (a11y + perf)
 
