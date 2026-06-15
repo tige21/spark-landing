@@ -75,17 +75,21 @@
 
 /* Mobile: raise the copy to the top so it sits above the (contained) press. */
 @media (max-width: 760px) {
+  /* Copy sits at the TOP (kills the big empty gap); the press fills the bottom. */
   .hero-stage {
-    align-items: flex-start;
+    justify-content: flex-start;
   }
   .hero-content {
-    padding-top: 9vh;
+    padding-top: 5vh;
     padding-bottom: 0;
   }
-  /* Show the full press (not cover-cropped), sitting in the lower half below the copy. */
+  /* Full press (no side crop) anchored to the bottom, scaled up to fill the lower
+     area so it doesn't read as tiny. */
   .hero-bg img,
   .hero-bg canvas {
     object-fit: contain;
-    object-position: 50% 78%;
+    object-position: 50% 100%;
+    transform: scale(1.18);
+    transform-origin: 50% 100%;
   }
 }
