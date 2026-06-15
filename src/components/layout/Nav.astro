@@ -52,7 +52,7 @@ const homeHref = lang === 'ru' ? '/' : '/en';
   .nav-inner {
     max-width: var(--maxw);
     margin-inline: auto;
-    padding: var(--space-md) var(--space-xl);
+    padding: var(--space-sm) var(--space-xl);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -68,8 +68,8 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     color: var(--ink);
   }
   .brand-logo {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
   }
   .brand-text {
@@ -79,12 +79,13 @@ const homeHref = lang === 'ru' ? '/' : '/en';
   .brand-name {
     font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     letter-spacing: -0.01em;
   }
   .brand-press {
-    font-size: 1.15rem;
-    margin-top: 2px;
+    font-size: 1rem;
+    margin-top: 1px;
+    color: var(--meta);
   }
   .links {
     display: flex;
@@ -109,18 +110,15 @@ const homeHref = lang === 'ru' ? '/' : '/en';
   .lang {
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     letter-spacing: 0.08em;
-    color: var(--meta-strong);
+    color: var(--meta);
     text-decoration: none;
-    padding: 6px 10px;
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-full);
-    transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+    padding: 4px 4px;
+    transition: color var(--dur-fast) var(--ease-out);
   }
   .lang:hover {
     color: var(--ink);
-    border-color: var(--meta);
   }
   @media (max-width: 760px) {
     .links {

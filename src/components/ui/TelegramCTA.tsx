@@ -52,8 +52,8 @@ export default function TelegramCTA({
     background: 'var(--wine)',
     borderRadius: 'var(--radius-full)',
     textDecoration: 'none',
-    boxShadow: 'var(--shadow-float)',
-    border: '1.5px solid rgba(231, 194, 0, 0.55)',
+    boxShadow: '0 6px 16px -9px color-mix(in srgb, var(--wine) 55%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--wine) 78%, #000)',
     cursor: 'pointer',
     letterSpacing: '0.01em',
     ...SIZES[variant],
@@ -88,9 +88,9 @@ export default function TelegramCTA({
         {...props}
         style={baseStyle}
         initial={{ scale: 1 }}
-        whileHover={{ scale: 1.04, y: -2 }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+        whileHover={{ scale: 1.02, y: -1 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 24 }}
       >
         {content}
       </m.a>
