@@ -48,12 +48,13 @@ export default function HeroScroll({
 
   const activeHasFrames = small ? hasFramesMobile : hasFrames;
   const pinned = mounted && !reduced && !!activeHasFrames;
+  const scrub = small ? 1.4 : SCRUB; // shorter pin on mobile (lighter, less scroll-hijack)
 
   const contentOpacity = useTransform(progress, [0, 0.5, 0.82], [1, 1, 0]);
   const contentY = useTransform(progress, [0, 0.82], [0, -40]);
 
   const sectionStyle = pinned
-    ? { height: `${(1 + SCRUB) * 100}vh` }
+    ? { height: `${(1 + scrub) * 100}vh` }
     : { minHeight: '100vh' };
   const stageStyle = pinned
     ? ({ position: 'sticky', top: 0, height: '100vh' } as const)

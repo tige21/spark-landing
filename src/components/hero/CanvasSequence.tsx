@@ -15,20 +15,26 @@ interface Manifest {
 interface CanvasSequenceProps {
   progress: MotionValue<number>; // 0..1 scene scroll progress
   poster: string; // LCP-safe still (desktop)
-  posterMobile?: string; // optional mobile poster
-  name?: string; // desktop frames folder under /hero-frames/
-  nameMobile?: string; // mobile frames folder
-  enabled?: boolean; // desktop sequence exists (build-time check)
-  enabledMobile?: boolean; // mobile sequence exists
+  posterMobile?: string;
+  name?: string;
+  nameMobile?: string;
+  enabled?: boolean;
+  enabledMobile?: boolean;
   fit?: 'cover' | 'contain';
   className?: string;
   style?: CSSProperties;
 }
 
-// Scroll-scrubbed frame player. Full-bleed friendly (object-fit), responsive
-// (separate desktop / mobile sequences), and ENABLED on mobile (only reduced
-// motion or a missing sequence falls back to the static poster). Frames + manifest
-// are produced by scripts/extract-frames.sh.
+type Frame = ImageBitmap | HTMLImageElement;
+
+// Scroll-scrubbed frame player. Smoothness strategy:
+//  - frames are pre-decoded to ImageBitmap (GPU-ready, no re-decode jank), resize-
+//    capped so a phone holds ~tens of MB rather than ~100MB of bitmaps;
+//  - a single rAF loop reads scroll progress and EASES a displayed index toward the
+//    target, drawing only when the integer frame changes (decoupled from the flood
+//    of scroll events). It snaps to the exact endpoint so the final frame lands, and
+//    parks itself when settled to save battery.
+// Reduced-motion or a missing sequence → static poster only.
 export default function CanvasSequence({
   progress,
   poster,
@@ -54,77 +60,102 @@ export default function CanvasSequence({
     if (reduced || !activeEnabled) return; // poster only
 
     let cancelled = false;
-    let raf = 0;
-    const frames: HTMLImageElement[] = [];
+    let rafId = 0;
+    let running = false;
     let count = 0;
+    let curr = 0; // displayed index (float)
+    let lastDrawn = -1;
+    let ctx: CanvasRenderingContext2D | null = null;
+    const frames: (Frame | undefined)[] = [];
+    const capWidth = small ? 540 : 900; // bitmap resize cap → bounds memory
 
-    const draw = (p: number) => {
+    const drawIndex = (i: number): boolean => {
       const canvas = canvasRef.current;
-      if (!canvas || count === 0) return;
-      const idx = Math.min(count - 1, Math.max(0, Math.round(p * (count - 1))));
-      const img = frames[idx];
-      if (!img || !img.complete || img.naturalWidth === 0) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0);
+      const bmp = frames[i];
+      if (!canvas || !bmp) return false;
+      if (!ctx) ctx = canvas.getContext('2d');
+      if (!ctx) return false;
+      ctx.drawImage(bmp as CanvasImageSource, 0, 0, canvas.width, canvas.height);
+      return true;
     };
 
-    const schedule = (p: number) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => draw(p));
+    const tick = () => {
+      if (cancelled || count === 0) { running = false; return; }
+      const target = Math.min(count - 1, Math.max(0, progress.get() * (count - 1)));
+      curr += (target - curr) * 0.22; // ease toward target
+      if (Math.abs(target - curr) < 0.4) curr = target; // snap so endpoints land
+      const idx = Math.round(curr);
+      if (idx !== lastDrawn && drawIndex(idx)) lastDrawn = idx;
+      if (curr === target && lastDrawn === Math.round(target)) { running = false; return; } // park
+      rafId = requestAnimationFrame(tick);
+    };
+    const ensureRunning = () => {
+      if (!running && !cancelled && count > 0) { running = true; rafId = requestAnimationFrame(tick); }
+    };
+
+    const decode = async (url: string, w?: number, h?: number): Promise<Frame | undefined> => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return undefined;
+        const blob = await res.blob();
+        if ('createImageBitmap' in window) {
+          if (w && h) return await createImageBitmap(blob, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
+          return await createImageBitmap(blob);
+        }
+        const img = new Image();
+        img.src = URL.createObjectURL(blob);
+        await img.decode().catch(() => {});
+        return img;
+      } catch {
+        return undefined;
+      }
     };
 
     (async () => {
       try {
         const res = await fetch(`/hero-frames/${activeName}/manifest.json`);
-        if (!res.ok) {
-          if (DEBUG_SCROLL) console.log('[canvas-seq] no manifest', activeName);
-          return;
-        }
+        if (!res.ok) { if (DEBUG_SCROLL) console.log('[canvas-seq] no manifest', activeName); return; }
         const m: Manifest = await res.json();
         if (cancelled) return;
         count = m.count;
         const pad = m.pad ?? 4;
-        const url = (i: number) =>
-          `/hero-frames/${activeName}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
+        const url = (i: number) => `/hero-frames/${activeName}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
 
-        const first = new Image();
-        first.src = url(0);
-        await first.decode().catch(() => {});
-        if (cancelled) return;
+        const first = await decode(url(0));
+        if (cancelled || !first) return;
+        const nw = (first as ImageBitmap).width;
+        const nh = (first as ImageBitmap).height;
+        const tw = Math.min(nw, capWidth);
+        const th = Math.round((tw / nw) * nh);
         const canvas = canvasRef.current;
-        if (canvas) {
-          canvas.width = first.naturalWidth;
-          canvas.height = first.naturalHeight;
-        }
+        if (canvas) { canvas.width = tw; canvas.height = th; }
         frames[0] = first;
-        for (let i = 1; i < count; i++) {
-          const img = new Image();
-          // Redraw the current frame once a frame finishes loading, so the canvas
-          // isn't stuck on an early frame when the user stops scrolling mid-load.
-          img.onload = () => schedule(progress.get());
-          img.src = url(i);
-          frames[i] = img;
-        }
-        await Promise.allSettled(
-          frames.slice(0, Math.min(8, count)).map((f) => f.decode().catch(() => {}))
-        );
-        if (cancelled) return;
         setReady(true);
-        draw(progress.get());
-        if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count);
+        curr = progress.get() * (count - 1);
+        drawIndex(0); lastDrawn = 0;
+        ensureRunning();
+
+        for (let i = 1; i < count; i++) {
+          decode(url(i), tw, th).then((f) => {
+            if (cancelled) { if (f && 'close' in f) (f as ImageBitmap).close(); return; }
+            frames[i] = f;
+            if (Math.round(curr) === i) ensureRunning(); // draw if it's the current target
+          });
+        }
+        if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count, `${tw}x${th}`);
       } catch (err) {
         if (DEBUG_SCROLL) console.log('[canvas-seq] error', err);
       }
     })();
 
-    const unsub = progress.on('change', schedule);
+    const unsub = progress.on('change', ensureRunning);
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafId);
       unsub();
+      frames.forEach((f) => { if (f && 'close' in f) (f as ImageBitmap).close(); });
     };
-  }, [reduced, activeEnabled, activeName, progress]);
+  }, [reduced, activeEnabled, activeName, small, progress]);
 
   const media: CSSProperties = {
     position: 'absolute',
