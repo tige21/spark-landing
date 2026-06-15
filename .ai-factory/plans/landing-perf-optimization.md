@@ -21,7 +21,7 @@ critical path, defer/cut JS (~100KB gz today), lighten frames/fonts/images.
 - [x] #109 Defer + throttle hero-frame fetching (idle start, batched), trim mobile.
 - [ ] #110 Replace simple in-view framer (Reveal/StampReveal/TiltIn/WordReveal) with IntersectionObserver + CSS.
 - [ ] #111 Replace scroll-linked framer (Parallax/Layer/useScrollScene/DecksShelf/PostalRoute) with vanilla rAF driver → **remove framer-motion dep** (−26KB gz + internals). *(blocked by #110)*
-- [ ] #112 Subset fonts (Cyrillic+Latin, drop unused weight) + AVIF for engravings.
+- [x] #112 Fonts already subset (Latin+Cyrillic, no fat — verified, ~0 change); all 3 Lora weights in use; AVIF deferred (only lazy below-fold engravings, low load-speed impact). No change shipped.
 - [ ] #113 Lighthouse before/after + smoke 10/10 + Playwright + deploy + docs. *(blocked by #108–#112)*
 
 ## Commit Plan
