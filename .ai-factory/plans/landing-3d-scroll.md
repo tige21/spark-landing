@@ -36,11 +36,11 @@ Replace the (removed) background hero video with **real scroll-driven 3D effects
 - [x] #80 Hero 3D diorama composition — pinned layered planes (celestial + HeroGrid floor → mid scene/canvas → foreground filigree/sparks/dove), camera push on scroll, keep WordReveal/CTA; replace current static hero. *(blocked by #79)*
 
 ### Phase 2 — Page-wide 3D
-- [ ] #81 Section perspective-entrance primitive — postcard tilt (rotateX/Y + translateZ + opacity) on scroll-in, wired into Section.astro. *(blocked by #77)*
-- [ ] #82 Decks 3D fan-out in perspective. *(blocked by #81)*
-- [ ] #83 How: parallax depth + stamps travel along PostalRoute. *(blocked by #81)*
-- [ ] #84 Wax-seal press 3D beat. *(blocked by #81)*
-- [ ] #85 Depth for remaining sections (What/Premium/Order/FinalCta/SectionDecor). *(blocked by #81)*
+- [x] #81 Section perspective-entrance primitive — postcard tilt (rotateX/Y + translateZ + opacity) on scroll-in, wired into Section.astro. *(blocked by #77)*
+- [x] #82 Decks 3D fan-out in perspective. *(blocked by #81)*
+- [x] #83 How: parallax depth + stamps travel along PostalRoute. *(blocked by #81)*
+- [x] #84 Wax-seal press 3D beat. *(blocked by #81)*
+- [x] #85 Depth for remaining sections — delivered by global TiltIn entrance + existing SectionDecor parallax. *(blocked by #81)*
 
 ### Phase 3 — Perf / a11y / ship
 - [ ] #86 Perf + a11y guard pass — reduced/small fully static, rAF throttle, will-change hygiene, lazy+preload frames, CLS/aspect-ratio, dpr cap, no prod console. *(blocked by #80,#82,#83,#84,#85)*

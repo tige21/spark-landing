@@ -9,16 +9,17 @@ interface Props {
 
 const container = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.06 } },
 };
 
 const item = {
-  hidden: { opacity: 0, scale: 1.08, rotate: -3 },
+  hidden: { opacity: 0, z: -90, rotateX: 22, y: 30 },
   visible: {
     opacity: 1,
-    scale: 1,
-    rotate: 0,
-    transition: { type: 'spring', stiffness: 240, damping: 18, mass: 0.7 },
+    z: 0,
+    rotateX: 0,
+    y: 0,
+    transition: { type: 'spring', stiffness: 230, damping: 20, mass: 0.7 },
   },
 };
 
@@ -40,16 +41,19 @@ export default function DecksShelf({ lang }: Props) {
         initial={reduced ? false : 'hidden'}
         whileInView={reduced ? undefined : 'visible'}
         viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+        style={reduced ? undefined : { perspective: 1100, transformStyle: 'preserve-3d' }}
       >
         {cards.map((c) => (
           <m.li
             key={c.id}
             className="deck-cell"
             variants={reduced ? undefined : item}
+            style={reduced ? undefined : { transformStyle: 'preserve-3d' }}
           >
             <m.div
               className="deck-card"
-              whileHover={reduced ? undefined : { y: -6 }}
+              style={reduced ? undefined : { transformPerspective: 600 }}
+              whileHover={reduced ? undefined : { rotateX: -7, y: -8, z: 36 }}
               transition={{ type: 'spring', stiffness: 320, damping: 22 }}
             >
               <img src={c.url} alt={c.name} width="110" height="110" loading="lazy" />

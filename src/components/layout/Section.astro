@@ -1,18 +1,28 @@
 ---
 import Container from './Container.astro';
+import TiltIn from '../ui/TiltIn.tsx';
 
 interface Props {
   id?: string;
   class?: string;
   narrow?: boolean;
   bleed?: boolean;
+  flat?: boolean;
 }
-const { id, class: className = '', narrow = false, bleed = false } = Astro.props;
+const { id, class: className = '', narrow = false, bleed = false, flat = false } = Astro.props;
 ---
 
 <section id={id} class:list={['section', className]}>
   <slot name="decor" />
-  {bleed ? <slot /> : <Container narrow={narrow}><slot /></Container>}
+  {
+    flat ? (
+      bleed ? <slot /> : <Container narrow={narrow}><slot /></Container>
+    ) : (
+      <TiltIn client:visible>
+        {bleed ? <slot /> : <Container narrow={narrow}><slot /></Container>}
+      </TiltIn>
+    )
+  }
 </section>
 
 <style>
