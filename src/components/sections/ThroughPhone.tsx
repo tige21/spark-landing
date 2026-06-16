@@ -66,7 +66,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
   const allFrames = segments.every((s) => s.hasFrames);
   const pinned = mounted && !reduced && allFrames;
-  const scrubSeg = small ? 0.9 : 1.05;
+  const scrubSeg = small ? 0.62 : 0.72; // shorter pin → Decks section appears sooner
 
   const phoneRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
