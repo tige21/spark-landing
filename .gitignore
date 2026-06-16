@@ -30,3 +30,7 @@ playwright-report/
 
 # Generated hero scroll-scrub frames (built into dist locally; not committed)
 public/hero-frames/
+
+# local frame backups (P6 retone)
+public/hero-frames-orig/
+public/hero-orig/
