@@ -24,9 +24,18 @@
   margin: 0;
 }
 
+/* Keep the whole scene inside the site container (matches Container.astro:
+   max-width var(--maxw) + side padding) so the phone and panels live on the
+   page grid instead of floating across the full viewport. */
 .tp-track {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--maxw);
+  padding-inline: var(--space-xl);
   z-index: var(--z-content);
 }
 
@@ -39,11 +48,11 @@
   will-change: opacity, transform;
 }
 .tp-panel--left {
-  left: clamp(var(--space-lg), 6vw, var(--space-3xl));
+  left: var(--space-xl);
   text-align: left;
 }
 .tp-panel--right {
-  right: clamp(var(--space-lg), 6vw, var(--space-3xl));
+  right: var(--space-xl);
   text-align: left;
 }
 .tp-step {
@@ -124,8 +133,12 @@
 
 /* ---- mobile: phone centred low, copy stacked above ---- */
 @media (max-width: 860px) {
+  /* Clear the fixed header so eyebrow/copy never tuck under it. */
+  .tp-eyebrow {
+    top: calc(env(safe-area-inset-top, 0px) + 56px);
+  }
   .tp-panel {
-    top: clamp(var(--space-2xl), 12svh, 120px);
+    top: calc(env(safe-area-inset-top, 0px) + 94px);
     left: 50%;
     right: auto;
     width: min(90%, 460px);
@@ -139,12 +152,24 @@
   .tp-body {
     margin-inline: auto;
   }
+  .tp-panel-img {
+    display: none; /* save vertical space on phones */
+  }
   .tp-phone {
     top: auto;
-    bottom: clamp(var(--space-lg), 5svh, var(--space-2xl));
+    bottom: clamp(var(--space-md), 4svh, var(--space-xl));
   }
   .tp-screen {
-    --sh: clamp(380px, 50svh, 520px);
+    --sh: clamp(360px, 50svh, 500px);
+  }
+}
+
+@media (max-width: 380px) {
+  .tp-panel {
+    top: calc(env(safe-area-inset-top, 0px) + 84px);
+  }
+  .tp-screen {
+    --sh: 46svh;
   }
 }
 

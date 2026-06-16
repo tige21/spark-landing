@@ -61,6 +61,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   const scrubSeg = small ? 0.9 : 1.05;
 
   const phoneRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const canvasRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -99,8 +100,10 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
           // hold near a side through the segment, slide across the boundary window
           const t = smooth((frac - 0.3) / 0.4);
           const sideX = sideOf(i0) * (1 - t) + sideOf(i1) * t;
-          const stageW = ref.current?.clientWidth ?? 1200;
-          const d = Math.min(stageW * 0.25, 340);
+          // Slide distance is measured from the CONTAINER (track), not the
+          // viewport, so the phone stays within the site grid on any width.
+          const trackW = trackRef.current?.clientWidth ?? 1100;
+          const d = Math.min(trackW * 0.25, 340);
           phoneRef.current.style.transform = `translate(calc(-50% + ${sideX * d}px), -50%)`;
         }
       }
@@ -154,7 +157,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
         <p className="eyebrow tp-eyebrow">{eyebrow}</p>
 
-        <div className="tp-track">
+        <div className="tp-track" ref={trackRef}>
           {segments.map((s, i) => (
             <div
               key={s.id}
