@@ -163,12 +163,13 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
     .route-band-v {
       display: block;
       position: absolute;
-      top: 60px;
-      bottom: 60px;
-      /* Sit on the left side edge of the centred 150px-wide cards (50% − 75px),
-         so the rail runs beside the blocks, never through the centred text. */
-      left: calc(50% - 75px);
-      width: 4px;
+      /* Span from the 1st card centre (~75px) to the 4th (~bottom 164px) so the
+         serpentine's evenly-spaced nodes land exactly on the card centres. */
+      top: 75px;
+      bottom: 164px;
+      left: 50%;
+      width: 340px;
+      transform: translateX(-50%);
       z-index: 0;
       pointer-events: none;
     }
