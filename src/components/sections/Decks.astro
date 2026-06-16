@@ -107,12 +107,14 @@ const { headline, caption, lang } = Astro.props;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     text-align: center;
+    cursor: pointer;
     transition: box-shadow var(--dur-normal) var(--ease-out),
       border-color var(--dur-normal) var(--ease-out),
       transform var(--dur-normal) var(--ease-out);
   }
   .deck-card:hover,
-  .deck-card:active {
+  .deck-card:active,
+  .deck-card.is-tapped {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
     transform: translateY(-8px) rotateX(-6deg);
@@ -120,7 +122,8 @@ const { headline, caption, lang } = Astro.props;
   @media (prefers-reduced-motion: reduce) {
     .deck-cell { opacity: 1 !important; transform: none !important; transition: none !important; }
     .deck-card { transition: none !important; }
-    .deck-card:hover { transform: none !important; }
+    .deck-card:hover,
+    .deck-card.is-tapped { transform: none !important; }
   }
   .deck-card img {
     width: 110px;

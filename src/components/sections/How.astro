@@ -4,6 +4,7 @@ import Reveal from '../ui/Reveal.tsx';
 import StampReveal from '../ui/StampReveal.tsx';
 import SealPress from '../ui/SealPress.tsx';
 import PostalRoute from './PostalRoute.tsx';
+import PostalRouteVertical from './PostalRouteVertical.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
@@ -28,6 +29,9 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
   <div class="steps-wrap">
     <div class="route-band">
       <PostalRoute client:visible />
+    </div>
+    <div class="route-band-v">
+      <PostalRouteVertical client:visible />
     </div>
     <ol class="steps">
       {steps.map((s, i) => (
@@ -117,9 +121,12 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
     font-size: 2rem;
     color: var(--wine);
   }
+  .step h3 {
+    margin: 0;
+  }
   .step p {
     max-width: 24ch;
-    margin-inline: auto;
+    margin: var(--space-xs) auto 0;
   }
   @media (max-width: 880px) {
     .steps {
@@ -142,6 +149,57 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
     .art {
       width: 150px;
       height: 150px;
+    }
+  }
+</style>
+
+<!-- Vertical connector classes are rendered by the React island, so they need
+     global (non-scoped) styles. Shown only on phones (≤480, 1-column stack). -->
+<style is:global>
+  .route-band-v {
+    display: none;
+  }
+  @media (max-width: 480px) {
+    .route-band-v {
+      display: block;
+      position: absolute;
+      top: 72px;
+      bottom: 72px;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .route-v {
+      position: absolute;
+      inset: 0;
+      background: color-mix(in srgb, var(--meta) 30%, transparent);
+    }
+    .route-v-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--p, 0) * 100%);
+      background: var(--wine);
+      opacity: 0.5;
+    }
+    .route-v-dot {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--p, 0) * 100%);
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--wine);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 30%, transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .route-v-dot {
+      display: none;
     }
   }
 </style>

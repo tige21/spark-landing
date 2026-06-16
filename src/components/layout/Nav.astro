@@ -129,6 +129,12 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     color: var(--ink);
   }
   @media (max-width: 760px) {
+    /* Telegram's iOS WebView often ignores backdrop-filter — make the header
+       background near-opaque so the content under it never shows through
+       sharply. (Desktop keeps the lighter frosted blur above.) */
+    .nav {
+      background: color-mix(in srgb, var(--table) 93%, transparent);
+    }
     .nav-inner {
       padding: var(--space-xs) var(--space-lg);
     }

@@ -67,14 +67,17 @@ const icons = [
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     height: 100%;
+    cursor: pointer;
     transition: box-shadow var(--dur-normal) var(--ease-out),
       border-color var(--dur-normal) var(--ease-out),
       transform var(--dur-normal) var(--ease-out);
   }
   /* Same tilt-lift press feedback as the deck cards (perspective() keeps it
-     self-contained — no ancestor 3D context needed through the Reveal island). */
+     self-contained — no ancestor 3D context needed through the Reveal island).
+     `.is-tapped` is toggled by JS on touch (iOS :active is unreliable). */
   .pill:hover,
-  .pill:active {
+  .pill:active,
+  .pill.is-tapped {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
     transform: perspective(760px) translateY(-8px) rotateX(-6deg);
@@ -84,7 +87,8 @@ const icons = [
       transition: none;
     }
     .pill:hover,
-    .pill:active {
+    .pill:active,
+    .pill.is-tapped {
       transform: none;
     }
   }
@@ -112,3 +116,18 @@ const icons = [
     }
   }
 </style>
+
+<script>
+  // Touch tap → lift (mirrors desktop :hover). iOS :active is unreliable, so we
+  // toggle `.is-tapped` on touch pointers only.
+  for (const el of document.querySelectorAll<HTMLElement>('.what .pill')) {
+    const on = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') el.classList.add('is-tapped');
+    };
+    const off = () => el.classList.remove('is-tapped');
+    el.addEventListener('pointerdown', on);
+    el.addEventListener('pointerup', off);
+    el.addEventListener('pointercancel', off);
+    el.addEventListener('pointerleave', off);
+  }
+</script>

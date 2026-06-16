@@ -16,7 +16,7 @@ export interface NavLink {
 export const NAV_LINKS: NavLink[] = [
   { id: 'how', ru: 'Как это работает', en: 'How it works' },
   { id: 'decks', ru: 'Колоды', en: 'Decks' },
-  { id: 'order', ru: 'Своя колода', en: 'Your deck' },
+  { id: 'order', ru: 'Создать колоду', en: 'Create a deck' },
 ];
 
 export type StampInk = 'blue' | 'ochre' | 'vermillion' | 'wine';
