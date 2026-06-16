@@ -26,6 +26,8 @@ const spark = await getImage({ src: engraving('spark-mark'), width: 160, format:
 const enriched = await Promise.all(
   segments.map(async (s) => {
     const hasFrames = existsSync(`public/hero-frames/${s.scenario}/manifest.json`);
+    const mobileExists = existsSync(`public/hero-frames/${s.scenario}-mobile/manifest.json`);
+    const scenarioMobile = mobileExists ? `${s.scenario}-mobile` : s.scenario;
     const imageSrc = s.image
       ? (await getImage({ src: engraving(s.image), width: 220, format: 'webp' })).src
       : undefined;
@@ -33,12 +35,15 @@ const enriched = await Promise.all(
       id: s.id,
       side: s.side,
       scenario: s.scenario,
+      scenarioMobile,
       eyebrow: s.eyebrow,
       headline: s.headline,
       body: s.body,
       poster: `/hero-frames/${s.scenario}/0001.webp`,
+      posterMobile: `/hero-frames/${scenarioMobile}/0001.webp`,
       imageSrc,
       hasFrames,
+      hasFramesMobile: mobileExists || hasFrames,
     };
   })
 );
