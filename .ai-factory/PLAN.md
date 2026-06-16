@@ -1,14 +1,37 @@
-# Plan: Remove hero scroll-cue
+# Мобильный герой: скраб с первого пикселя + текст выше, карта не под кнопкой
 
-**Branch:** feature/landing-build · **Mode:** fast · **Created:** 2026-06-15
-Settings: tests no, docs no (trivial UI removal).
+**Проект:** spark-landing · **Ветка:** feature/landing-build · **Дата:** 2026-06-16
+**Тип:** UI-фикс (mobile hero scroll-scrub)
 
-## Goal
-User likes the current hero (Variant 1). Remove only the "Посмотреть, как это ↓"
-scroll-cue from the hero.
+## Settings
+- Тесты-как-код: нет (CSS/layout). Проверка — Playwright 390px.
+- Деплой: оба зеркала через `scripts/deploy.sh`.
+
+## Контекст (из кода)
+- `HeroScroll.tsx`: pinned sticky-герой, `useScrollScene(['start start','end end'])`, `scrub = small ? 1.4 : 2`, высота секции `(1+scrub)*100vh`.
+- `HeroScroll.css`: mobile (`max-width:760`) — `.hero-content { padding-top: 10vh }`, `justify-content: flex-start`, фон `object-fit: cover`.
+- Хедер (Nav) — предположительно в потоке над героем → даёт стартовую «мёртвую зону» скролла.
 
 ## Tasks
-- [ ] Remove the `a.scroll-cue` element from `src/components/hero/HeroScroll.tsx`.
-- [ ] Remove `.scroll-cue` + `@keyframes hero-bob` from `src/components/hero/HeroScroll.css`.
-- [ ] Leave `scrollLabel` prop in place for compatibility (Hero.astro still passes it; unused is harmless) — or drop cleanly if trivial.
-- [ ] Build + smoke 10/10 + deploy `npm run deploy` + verify live.
+
+- [x] **M1 — Скраб начинается сразу (убрать мёртвую зону сверху).**
+  Воспроизвести в Playwright (390px): сколько px скролла проходит до того, как кадр начинает меняться. Подтвердить причину (хедер в потоке смещает старт сцены / offset).
+  Фикс (выбрать минимальный): сделать хедер **overlay** над героем (`position: absolute/fixed`, прозрачный фон) — тогда верх секции = верх экрана и progress идёт с scroll=0; **или** скорректировать offset в `useScrollScene`, чтобы progress=0 был при scroll=0.
+  Файлы: `src/components/layout/Nav.astro`, `src/layouts/Layout.astro` (или `Hero.astro`), при необходимости `src/components/hero/HeroScroll.tsx`.
+  Контент героя не должен заезжать под хедер (учесть в padding-top, см. M2).
+
+- [x] **M2 — Поднять текст+CTA выше и развести с картой.**
+  `src/components/hero/HeroScroll.css` mobile-блок (`@media max-width:760`): уменьшить `.hero-content padding-top` (поднять блок выше, с учётом overlay-хедера из M1), при необходимости поджать на мобиле `h1`/`.subtitle`/`.hero-cta` margins.
+  Цель: кнопка «Играть» — в верхней зоне, а карта с печатью (нижняя-центральная часть кадра) **целиком видна и не пересекает кнопку** ни в одной точке скраба.
+
+- [x] **M4 — Хедер реально блюрит верх (iOS/Telegram WebView).**
+  `src/components/layout/Nav.astro` `.nav`: добавить **`-webkit-backdrop-filter: saturate(1.1) blur(8px)`** (без вебкит-префикса blur не работает в WebKit/ТГ — главный подозреваемый). Убедиться, что фрост-фон покрывает верхнюю полосу под адресной строкой ТГ: `padding-top` с `env(safe-area-inset-top)` (+ `viewport-fit=cover` в Layout, если нет). Вяжется с M1 (хедер как overlay) — делать вместе на одном элементе.
+
+- [x] **M5 — Убрать дёрганье при показе/скрытии адресной строки ТГ.**
+  Причина: `vh`-геометрия закреплённого героя рефлоуит, когда меняется `innerHeight` (chrome show/hide). Фикс: перевести высоты героя на **стабильные единицы** — `100svh` вместо `100vh` (с fallback `vh` первой строкой) для высоты секции `(1+scrub)*100svh`, sticky-stage `100svh`, и `svh` для `padding-top`. Файлы: `HeroScroll.tsx` (инлайн-стиль высоты секции/stage), `HeroScroll.css`. Дополнительно — приглушить пересчёт в `src/lib/scroll-progress.ts`: на resize реагировать только при смене ширины/ориентации, игнорировать чисто высотные изменения от адресной строки (дебаунс). Это best-effort (часть репейнта браузера неизбежна) — финально проверяет пользователь на устройстве в ТГ.
+
+- [x] **M6 — Проверка Playwright (390px) + деплой.**
+  Снять кадры на scroll = 0 / ~40% / ~70% скраба: (а) кадр меняется уже с первого скролла; (б) карта не налазит на «Играть»; (в) карта видна целиком; (г) текст читается. Проверить блюр хедера (контент под ним фростится). Затем `bash scripts/deploy.sh` на оба зеркала. M4/M5 (ТГ-специфика) — пользователь проверяет на телефоне в Telegram.
+
+## Порядок
+M1 + M4 (оба про хедер: fixed-overlay + webkit-blur + safe-area) → M2 (поднять текст, развести с картой) → M5 (svh-геометрия от лагов) → M6 (проверка + деплой).

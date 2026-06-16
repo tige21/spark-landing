@@ -27,6 +27,7 @@ function parse(o: string): [number, number] {
 const items = new Set<Item>();
 let scheduled = false;
 let listening = false;
+let lastW = typeof window !== 'undefined' ? window.innerWidth : 0;
 
 function tick() {
   scheduled = false;
@@ -37,11 +38,21 @@ function schedule() {
   scheduled = true;
   requestAnimationFrame(tick);
 }
+function onResize() {
+  // Mobile browser chrome / Telegram address bar show-hide fires resize with only
+  // a height change — recomputing then causes scroll jank. React only to width
+  // (orientation) changes; svh-based geometry stays stable on height-only changes.
+  const w = window.innerWidth;
+  if (w !== lastW) {
+    lastW = w;
+    schedule();
+  }
+}
 function listen() {
   if (listening || typeof window === 'undefined') return;
   listening = true;
   window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule);
+  window.addEventListener('resize', onResize);
 }
 
 class Item implements ScrollValue {

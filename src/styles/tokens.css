@@ -85,6 +85,10 @@ html, body {
   font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
 }
+/* Anchor jumps clear the fixed nav overlay. */
+html {
+  scroll-padding-top: 64px;
+}
 
 main {
   overflow-x: clip;

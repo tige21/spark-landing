@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useScrollScene } from '../../lib/use-scroll-scene';
 import { useMotionPrefs } from '../../lib/motion-guards';
 import CanvasSequence from './CanvasSequence';
@@ -49,12 +49,38 @@ export default function HeroScroll({
   const pinned = mounted && !reduced && !!activeHasFrames;
   const scrub = small ? 1.4 : SCRUB; // shorter pin on mobile (lighter, less scroll-hijack)
 
+  // Fade the copy out as the scrub plays so the cinematic frame (rising card/seal)
+  // reveals cleanly and never collides with the CTA. Visible at the very top,
+  // gone by ~45% of the scrub. Header CTA stays for action. Static if not pinned.
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    if (!pinned) {
+      el.style.opacity = '1';
+      el.style.transform = '';
+      el.style.pointerEvents = '';
+      return;
+    }
+    const apply = (p: number) => {
+      const o = Math.max(0, Math.min(1, (0.45 - p) / 0.3));
+      el.style.opacity = String(o);
+      el.style.transform = `translateY(${(1 - o) * -24}px)`;
+      el.style.pointerEvents = o < 0.05 ? 'none' : 'auto';
+    };
+    apply(progress.get());
+    return progress.on('change', apply);
+  }, [pinned, progress]);
+
+  // `svh` (small viewport height) is stable when the mobile browser chrome /
+  // Telegram address bar shows or hides — `vh` would change and reflow the pinned
+  // scene mid-scroll, causing the jank. svh keeps the geometry fixed.
   const sectionStyle = pinned
-    ? { height: `${(1 + scrub) * 100}vh` }
-    : { minHeight: '100vh' };
+    ? { height: `${(1 + scrub) * 100}svh` }
+    : { minHeight: '100svh' };
   const stageStyle = pinned
-    ? ({ position: 'sticky', top: 0, height: '100vh' } as const)
-    : ({ position: 'relative', minHeight: '100vh' } as const);
+    ? ({ position: 'sticky', top: 0, height: '100svh' } as const)
+    : ({ position: 'relative', minHeight: '100svh' } as const);
 
   return (
     <section ref={ref} className="hero" style={sectionStyle}>
@@ -99,7 +125,7 @@ export default function HeroScroll({
             </Scene3D>
           )}
 
-          <div className="hero-content">
+          <div className="hero-content" ref={contentRef}>
             <p className="eyebrow">{eyebrow}</p>
             <h1 className="t-display">
               <WordReveal text={title} />

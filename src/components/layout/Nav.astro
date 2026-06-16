@@ -41,13 +41,21 @@ const homeHref = lang === 'ru' ? '/' : '/en';
 </header>
 
 <style>
+  /* Fixed overlay (not sticky-in-flow): the hero starts at the very top so the
+     scroll-scrub engages from the first pixel — no dead zone. */
   .nav {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: var(--z-nav);
+    /* -webkit- prefix is required for the frosted blur to apply in iOS/Telegram
+       WebKit — without it the header silently doesn't blur the content under it. */
+    -webkit-backdrop-filter: saturate(1.1) blur(8px);
     backdrop-filter: saturate(1.1) blur(8px);
     background: color-mix(in srgb, var(--table) 82%, transparent);
     border-bottom: 1px solid var(--hairline);
+    padding-top: env(safe-area-inset-top);
   }
   .nav-inner {
     max-width: var(--maxw);

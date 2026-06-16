@@ -52,7 +52,7 @@
   text-align: center;
   max-width: 820px;
   padding: var(--space-2xl) var(--space-xl);
-  padding-top: 9vh; /* raise copy into the upper area so it never covers the centred press/seal */
+  padding-top: 9svh; /* raise copy into the upper area so it never covers the centred press/seal */
 }
 /* Soft cream "paper" plate behind the copy — keeps text legible over the
    engraving scrub without a hard box (feathered radial). */
@@ -85,10 +85,17 @@
   justify-content: center;
 }
 
-/* Mobile keeps the full-bleed `cover` press (portrait frame fills the screen);
-   copy sits a touch higher than desktop. */
+/* Mobile keeps the full-bleed `cover` press. Copy sits high and compact so the
+   card/seal stays fully visible below it and never collides with the CTA as the
+   scrub plays. padding clears the fixed nav (+ safe-area notch). */
 @media (max-width: 760px) {
   .hero-content {
-    padding-top: 10vh;
+    padding-top: calc(env(safe-area-inset-top) + 60px);
+  }
+  .hero-content h1 {
+    margin: var(--space-sm) 0 var(--space-md);
+  }
+  .hero-cta {
+    margin-top: var(--space-md);
   }
 }
