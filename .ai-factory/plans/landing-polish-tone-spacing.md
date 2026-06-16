@@ -38,7 +38,7 @@
 - [x] **P5 — Decks: обрезанная картинка.**
   `src/components/sections/Decks.astro`: воспроизвести в Playwright; поправить `.crest`/`.crest-holder` (размер/позиция/overflow) или параметры `Parallax rotate`, чтобы декоративная гравюра не обрезалась некрасиво на фоне заголовка «Девять колод…».
 
-- [ ] **P6 — Кадры героя: тон под сайт + удаление вотермарка.**
+- [x] **P6 — Кадры героя: тон под сайт + удаление вотермарка.**
   `public/hero-frames/{hero,hero-mobile}/*.webp` + `public/hero/hero-poster.webp`, `hero-poster-mobile.webp`.
   1. Бэкап оригиналов (например `public/hero-frames-orig/`).
   2. **Прототип на 1-2 кадрах** (desktop + mobile): дуотон в палитру сайта — `magick in.webp -colorspace Gray -level-colors '#2C2620','#E4D7BE' …` (фон→`--table`, линии→`--ink`); вотермарк в углу закрыть заливкой `--table` (`-fill '#E4D7BE' -draw 'rectangle …'`) или кропом. Определить bbox вотермарка из сэмпла.
