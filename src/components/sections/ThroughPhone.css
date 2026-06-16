@@ -139,10 +139,10 @@
     display: none;
   }
   .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 76px);
+    top: calc(env(safe-area-inset-top, 0px) + 62px);
     left: 50%;
     right: auto;
-    width: min(92%, 440px);
+    width: min(94%, 460px);
     text-align: center;
   }
   .tp-panel--left,
@@ -150,42 +150,46 @@
     left: 50%;
     right: auto;
   }
-  /* Smaller copy so the phone is the hero (override global t-h2 / t-lead). */
+  /* Compact copy so the phone can be the hero (override global t-h2 / t-lead). */
   .tp-panel .tp-step {
-    font-size: 0.7rem;
-    margin-bottom: var(--space-xs);
+    font-size: 0.68rem;
+    margin-bottom: 2px;
   }
   .tp-panel .tp-headline {
-    font-size: clamp(1.15rem, 5vw, 1.45rem);
-    line-height: 1.16;
+    font-size: clamp(1.02rem, 4.6vw, 1.3rem);
+    line-height: 1.15;
   }
   .tp-panel .tp-body {
-    font-size: clamp(0.82rem, 3.4vw, 0.92rem);
-    line-height: 1.38;
-    margin: var(--space-sm) auto 0;
-    max-width: 32ch;
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    line-height: 1.36;
+    margin: var(--space-xs) auto 0;
+    max-width: 34ch;
   }
   .tp-panel-img {
     display: none; /* save vertical space on phones */
   }
+  /* Slimmer bezel + max height → the phone fills much more width. */
   .tp-phone {
     top: auto;
-    bottom: clamp(var(--space-lg), 6svh, var(--space-2xl)); /* raised off the bottom */
+    bottom: clamp(var(--space-md), 3.5svh, var(--space-lg));
+    padding: 9px;
+    border-radius: 46px;
   }
   .tp-screen {
-    --sh: clamp(440px, 62svh, 580px);
+    --sh: clamp(480px, 70svh, 600px);
+    border-radius: 38px;
   }
 }
 
 @media (max-width: 380px) {
   .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 68px);
+    top: calc(env(safe-area-inset-top, 0px) + 56px);
   }
   .tp-panel .tp-headline {
-    font-size: 1.12rem;
+    font-size: 1.0rem;
   }
   .tp-screen {
-    --sh: 56svh;
+    --sh: 64svh;
   }
 }
 
