@@ -165,9 +165,10 @@ const heroes = ['onb-postoffice', 'onb-cards', 'onb-talk', 'seal-approved'];
       position: absolute;
       top: 60px;
       bottom: 60px;
-      left: 50%;
-      width: 280px;
-      transform: translateX(-50%);
+      /* Sit on the left side edge of the centred 150px-wide cards (50% − 75px),
+         so the rail runs beside the blocks, never through the centred text. */
+      left: calc(50% - 75px);
+      width: 4px;
       z-index: 0;
       pointer-events: none;
     }

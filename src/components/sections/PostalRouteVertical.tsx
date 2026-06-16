@@ -8,11 +8,11 @@ import { createScrollValue } from '../../lib/scroll-progress';
 // over a faint full path) with a wine dot riding the curve. viewBox is stretched
 // to the band (preserveAspectRatio=none); `non-scaling-stroke` keeps the line crisp,
 // and the dot is a plain HTML element positioned by % so it stays round.
-// Even, symmetric serpentine: equal 250-unit segments, equal amplitude, nodes
-// land on the column centre (x=60) at every step — a calm predictable weave.
-const PATH =
-  'M60,0 C24,83 24,167 60,250 C96,333 96,417 60,500 C24,583 24,667 60,750 C96,833 96,917 60,1000';
-const VB_W = 120;
+// Straight vertical rail running down the side edge of the square step cards
+// (the band is positioned at the card's left edge in How.astro), so it never
+// crosses the centred copy.
+const PATH = 'M2,0 L2,1000';
+const VB_W = 4;
 const VB_H = 1000;
 
 export default function PostalRouteVertical() {
