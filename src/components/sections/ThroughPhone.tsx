@@ -5,18 +5,22 @@ import type { ScrollValue } from '../../lib/scroll-progress';
 import CanvasSequence from '../hero/CanvasSequence';
 import Scene3D from '../ui/Scene3D';
 import Layer from '../ui/Layer';
+import { DEBUG_SCROLL } from '../../lib/smooth-scroll';
 import './ThroughPhone.css';
 
 export interface PhoneSegment {
   id: string;
   side: 'right' | 'left';
   scenario: string;
+  scenarioMobile: string; // mobile-downscaled frame set name (falls back to scenario)
   eyebrow: string;
   headline: string;
   body: string;
   poster: string;
+  posterMobile: string;
   imageSrc?: string;
   hasFrames: boolean;
+  hasFramesMobile: boolean;
 }
 
 interface ThroughPhoneProps {
@@ -65,6 +69,12 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const canvasRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Only the active segment + the next one decode their frames at a time, so the
+  // phone never holds all 3 scenarios' ImageBitmaps at once (memory blow-up on
+  // mobile). `activeSegRef` throttles the state update to actual changes.
+  const [activeSeg, setActiveSeg] = useState(0);
+  const activeSegRef = useRef(0);
+
   // Build derived per-segment progress values (hooks must run unconditionally).
   const seg0 = useSegmentProgress(progress, 0, n);
   const seg1 = useSegmentProgress(progress, 1, n);
@@ -88,6 +98,13 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     const apply = (pv: number) => {
       const p = clamp01(pv);
       const f = p * n; // 0..n
+      // ---- active segment (drives lazy frame decode); update only on change ----
+      const a = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
+      if (a !== activeSegRef.current) {
+        activeSegRef.current = a;
+        setActiveSeg(a);
+        if (DEBUG_SCROLL) console.log('[through-phone] active segment', a);
+      }
       // ---- phone position (JS owns the full transform incl. centring) ----
       if (phoneRef.current) {
         if (small) {
@@ -187,10 +204,11 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
                     <CanvasSequence
                       progress={derived[i]}
                       poster={s.poster}
+                      posterMobile={s.posterMobile}
                       name={s.scenario}
-                      nameMobile={s.scenario}
-                      enabled={s.hasFrames}
-                      enabledMobile={s.hasFrames}
+                      nameMobile={s.scenarioMobile}
+                      enabled={s.hasFrames && (i === activeSeg || i === activeSeg + 1)}
+                      enabledMobile={s.hasFramesMobile && (i === activeSeg || i === activeSeg + 1)}
                       style={{ position: 'absolute', inset: 0 }}
                     />
                   </div>
