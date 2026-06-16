@@ -84,7 +84,7 @@ export default function CanvasSequence({
       if (cancelled || count === 0) { running = false; return; }
       const target = Math.min(count - 1, Math.max(0, progress.get() * (count - 1)));
       curr += (target - curr) * 0.22; // ease toward target
-      if (Math.abs(target - curr) < 0.4) curr = target; // snap so endpoints land
+      if (Math.abs(target - curr) < 0.15) curr = target; // soft snap so the settle doesn't jump
       const idx = Math.round(curr);
       if (idx !== lastDrawn && drawIndex(idx)) lastDrawn = idx;
       if (curr === target && lastDrawn === Math.round(target)) { running = false; return; } // park
