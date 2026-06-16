@@ -8,8 +8,10 @@ import { createScrollValue } from '../../lib/scroll-progress';
 // over a faint full path) with a wine dot riding the curve. viewBox is stretched
 // to the band (preserveAspectRatio=none); `non-scaling-stroke` keeps the line crisp,
 // and the dot is a plain HTML element positioned by % so it stays round.
+// Even, symmetric serpentine: equal 250-unit segments, equal amplitude, nodes
+// land on the column centre (x=60) at every step — a calm predictable weave.
 const PATH =
-  'M60,0 C2,120 2,250 60,370 C118,490 118,620 60,740 C2,860 2,950 60,1000';
+  'M60,0 C24,83 24,167 60,250 C96,333 96,417 60,500 C24,583 24,667 60,750 C96,833 96,917 60,1000';
 const VB_W = 120;
 const VB_H = 1000;
 
