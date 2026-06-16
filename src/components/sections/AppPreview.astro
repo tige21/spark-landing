@@ -1,0 +1,28 @@
+---
+import { existsSync } from 'node:fs';
+import { getImage } from 'astro:assets';
+import { engraving } from '../../assets/images';
+import AppPreview from './AppPreview.tsx';
+
+interface Props {
+  headline: string;
+  caption: string;
+}
+const { headline, caption } = Astro.props;
+
+const spark = await getImage({ src: engraving('spark-mark'), width: 160, format: 'webp' });
+
+// Poster = first frame of the scenario (matches the scroll-0 state). The scrub is
+// enabled only when the frame sequence has been generated.
+const hasFrames = existsSync('public/hero-frames/app/manifest.json');
+const poster = '/hero-frames/app/0001.webp';
+---
+
+<AppPreview
+  headline={headline}
+  caption={caption}
+  poster={poster}
+  sparkSrc={spark.src}
+  hasFrames={hasFrames}
+  client:visible
+/>

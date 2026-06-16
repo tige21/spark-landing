@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Hero from '../components/hero/Hero.astro';
 import What from '../components/sections/What.astro';
 import How from '../components/sections/How.astro';
+import AppPreview from '../components/sections/AppPreview.astro';
 import Decks from '../components/sections/Decks.astro';
 import Order from '../components/sections/Order.astro';
 import Premium from '../components/sections/Premium.astro';
@@ -27,6 +28,7 @@ const t = ru;
   />
   <What headline={t.what.headline} pills={t.what.pills} />
   <How eyebrow={t.how.eyebrow} steps={t.how.steps} />
+  <AppPreview headline={t.game.headline} caption={t.game.caption} />
   <Decks headline={t.decks.headline} caption={t.decks.caption} lang="ru" />
   <Order eyebrow={t.order.eyebrow} headline={t.order.headline} body={t.order.body} />
   <Premium headline={t.premium.headline} body={t.premium.body} />
