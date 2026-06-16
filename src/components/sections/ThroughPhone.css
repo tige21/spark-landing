@@ -78,6 +78,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
+  /* Default centred transform so the phone is positioned correctly BEFORE the
+     JS driver runs (otherwise it flashes in from the corner on first paint).
+     The driver refines it (side slide on desktop). */
+  transform: translate(-50%, -50%);
   padding: 11px;
   background: linear-gradient(155deg, #2a2420, #15110d);
   border-radius: 54px;
@@ -173,12 +177,18 @@
      empty gap / visible section seam under the phone on mobile Safari). */
   .tp-phone {
     top: auto;
-    bottom: clamp(var(--space-xs), 1.5dvh, var(--space-sm));
+    bottom: clamp(var(--space-sm), 2svh, var(--space-md));
+    /* Mobile is bottom-anchored (top:auto) → only horizontal centring. */
+    transform: translateX(-50%);
     padding: 9px;
     border-radius: 46px;
   }
+  /* Phone SIZE is svh-based (stable): it never resizes when the address bar
+     shows/hides. The stage stays 100dvh (see ThroughPhone.tsx) so the
+     bottom-anchored phone still sits at the real screen bottom — only its
+     position settles, it does not scale. */
   .tp-screen {
-    --sh: clamp(480px, 70dvh, 640px);
+    --sh: clamp(440px, 66svh, 600px);
     border-radius: 38px;
   }
 }
@@ -191,7 +201,7 @@
     font-size: 1.0rem;
   }
   .tp-screen {
-    --sh: 64dvh;
+    --sh: 62svh;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useScrollScene } from '../../lib/use-scroll-scene';
 import { useMotionPrefs } from '../../lib/motion-guards';
 import type { ScrollValue } from '../../lib/scroll-progress';
@@ -28,6 +28,10 @@ interface ThroughPhoneProps {
   segments: PhoneSegment[];
   sparkSrc: string;
 }
+
+// Layout effect on the client (positions the phone before first paint → no
+// corner-flash), plain effect on the server (avoids the SSR useLayoutEffect warning).
+const useIsoLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const smooth = (t: number) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
@@ -84,8 +88,9 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
   // Imperative scroll driver: positions the phone (side slide), and fades/slides
   // each panel + crossfades each canvas by how close we are to its segment centre.
-  // Mutating styles directly (no React state) keeps scrolling jank-free.
-  useEffect(() => {
+  // Mutating styles directly (no React state) keeps scrolling jank-free. Runs as a
+  // layout effect so the initial apply() positions the phone before first paint.
+  useIsoLayoutEffect(() => {
     if (!pinned) {
       if (phoneRef.current) phoneRef.current.style.transform = '';
       panelRefs.current.forEach((p) => { if (p) { p.style.opacity = ''; p.style.transform = ''; } });
