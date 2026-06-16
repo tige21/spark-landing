@@ -139,7 +139,7 @@
     display: none;
   }
   .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 62px);
+    top: calc(env(safe-area-inset-top, 0px) + 54px);
     left: 50%;
     right: auto;
     width: min(94%, 460px);
@@ -168,28 +168,30 @@
   .tp-panel-img {
     display: none; /* save vertical space on phones */
   }
-  /* Slimmer bezel + max height → the phone fills much more width. */
+  /* Slimmer bezel + dvh-based height → phone fills more width and sits at the
+     REAL bottom of the screen (dvh tracks the address bar, unlike svh, so no
+     empty gap / visible section seam under the phone on mobile Safari). */
   .tp-phone {
     top: auto;
-    bottom: clamp(var(--space-md), 3.5svh, var(--space-lg));
+    bottom: clamp(var(--space-xs), 1.5dvh, var(--space-sm));
     padding: 9px;
     border-radius: 46px;
   }
   .tp-screen {
-    --sh: clamp(480px, 70svh, 600px);
+    --sh: clamp(480px, 70dvh, 640px);
     border-radius: 38px;
   }
 }
 
 @media (max-width: 380px) {
   .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 56px);
+    top: calc(env(safe-area-inset-top, 0px) + 50px);
   }
   .tp-panel .tp-headline {
     font-size: 1.0rem;
   }
   .tp-screen {
-    --sh: 64svh;
+    --sh: 64dvh;
   }
 }
 

@@ -155,7 +155,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
     : { minHeight: 'auto' };
   const stageStyle = pinned
-    ? ({ position: 'sticky', top: 0, height: '100svh' } as const)
+    ? ({ position: 'sticky', top: 0, height: '100dvh' } as const)
     : ({ position: 'relative' } as const);
 
   return (
