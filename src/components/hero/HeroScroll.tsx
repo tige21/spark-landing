@@ -95,6 +95,7 @@ export default function HeroScroll({
               enabled={!!hasFrames}
               enabledMobile={!!hasFramesMobile}
               fit="cover"
+              eager
             />
           </div>
 

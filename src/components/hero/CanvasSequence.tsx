@@ -21,6 +21,7 @@ interface CanvasSequenceProps {
   enabled?: boolean;
   enabledMobile?: boolean;
   fit?: 'cover' | 'contain';
+  eager?: boolean; // decode frames immediately (above-the-fold hero) instead of on idle
   className?: string;
   style?: CSSProperties;
 }
@@ -44,6 +45,7 @@ export default function CanvasSequence({
   enabled = true,
   enabledMobile = true,
   fit = 'cover',
+  eager = false,
   className,
   style,
 }: CanvasSequenceProps) {
@@ -80,14 +82,35 @@ export default function CanvasSequence({
       return true;
     };
 
+    // Draw the exact frame if it's decoded, otherwise the NEAREST decoded frame
+    // (search outward). Returns the index actually drawn, or -1. This keeps the
+    // scrub alive while frames are still streaming in (first visit), instead of
+    // freezing on frame 0.
+    const drawNearest = (idx: number): number => {
+      if (drawIndex(idx)) return idx;
+      for (let r = 1; r < count; r++) {
+        if (idx - r >= 0 && drawIndex(idx - r)) return idx - r;
+        if (idx + r < count && drawIndex(idx + r)) return idx + r;
+      }
+      return -1;
+    };
+
     const tick = () => {
       if (cancelled || count === 0) { running = false; return; }
       const target = Math.min(count - 1, Math.max(0, progress.get() * (count - 1)));
       curr += (target - curr) * 0.22; // ease toward target
       if (Math.abs(target - curr) < 0.15) curr = target; // soft snap so the settle doesn't jump
       const idx = Math.round(curr);
-      if (idx !== lastDrawn && drawIndex(idx)) lastDrawn = idx;
-      if (curr === target && lastDrawn === Math.round(target)) { running = false; return; } // park
+      const exactReady = !!frames[idx];
+      // Redraw when the target frame changed, OR while the exact frame isn't
+      // decoded yet (so we upgrade from a nearest fallback to the real frame).
+      if (idx !== lastDrawn || !exactReady) {
+        const drawn = drawNearest(idx);
+        if (drawn !== -1) lastDrawn = drawn;
+      }
+      // Park only once settled AND the exact target frame is on screen — never
+      // park while still waiting for frames to decode.
+      if (curr === target && exactReady && lastDrawn === idx) { running = false; return; }
       rafId = requestAnimationFrame(tick);
     };
     const ensureRunning = () => {
@@ -157,9 +180,13 @@ export default function CanvasSequence({
           };
           pump();
         };
-        idleId = 'requestIdleCallback' in window
-          ? (window as Window & typeof globalThis).requestIdleCallback(startBatch, { timeout: 1500 })
-          : (setTimeout(startBatch, 300) as unknown as number);
+        // Hero (eager) decodes immediately so the scrub plays on the very first
+        // scroll; below-the-fold sequences wait for idle to spare the LCP.
+        idleId = eager
+          ? (setTimeout(startBatch, 0) as unknown as number)
+          : 'requestIdleCallback' in window
+            ? (window as Window & typeof globalThis).requestIdleCallback(startBatch, { timeout: 1500 })
+            : (setTimeout(startBatch, 300) as unknown as number);
         if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count, `${tw}x${th}`);
       } catch (err) {
         if (DEBUG_SCROLL) console.log('[canvas-seq] error', err);
