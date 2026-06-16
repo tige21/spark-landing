@@ -55,7 +55,6 @@ export default function CanvasSequence({
 
   const activeName = small ? nameMobile : name;
   const activeEnabled = small ? enabledMobile : enabled;
-  const activePoster = small && posterMobile ? posterMobile : poster;
 
   useEffect(() => {
     setReady(false);
@@ -217,13 +216,18 @@ export default function CanvasSequence({
 
   return (
     <div className={className} style={{ position: 'relative', width: '100%', height: '100%', ...style }}>
-      <img
-        src={activePoster}
-        alt=""
-        fetchPriority="high"
-        decoding="async"
-        style={{ ...media, opacity: ready ? 0 : 1, transition: 'opacity 0.5s ease' }}
-      />
+      {/* <picture> so the browser picks the mobile poster on small screens
+          regardless of SSR/JS — avoids fetching the desktop poster on mobile. */}
+      <picture>
+        {posterMobile && <source media="(max-width: 760px)" srcSet={posterMobile} />}
+        <img
+          src={poster}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          style={{ ...media, opacity: ready ? 0 : 1, transition: 'opacity 0.5s ease' }}
+        />
+      </picture>
       {!reduced && activeEnabled && (
         <canvas
           ref={canvasRef}
