@@ -30,7 +30,8 @@ const ogImage = new URL('/og.png', Astro.site).href;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <link rel="preload" href="/fonts/Lora-Bold.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/hero/hero-poster.webp" as="image" fetchpriority="high" />
+    <link rel="preload" href="/hero/hero-poster.webp" as="image" media="(min-width: 761px)" fetchpriority="high" />
+    <link rel="preload" href="/hero/hero-poster-mobile.webp" as="image" media="(max-width: 760px)" fetchpriority="high" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
