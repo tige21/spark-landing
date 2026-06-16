@@ -1,0 +1,187 @@
+.through-phone {
+  position: relative;
+}
+
+.tp-stage {
+  overflow: hidden;
+  padding-block: var(--space-2xl);
+}
+
+.tp-sparks {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-bg);
+  pointer-events: none;
+}
+
+.tp-eyebrow {
+  position: absolute;
+  top: clamp(var(--space-lg), 6svh, var(--space-2xl));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-content);
+  text-align: center;
+  margin: 0;
+}
+
+.tp-track {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-content);
+}
+
+/* ---- copy panels (slide in from the side opposite the phone) ---- */
+.tp-panel {
+  position: absolute;
+  top: 50%;
+  width: clamp(280px, 36%, 430px);
+  opacity: 0;
+  will-change: opacity, transform;
+}
+.tp-panel--left {
+  left: clamp(var(--space-lg), 6vw, var(--space-3xl));
+  text-align: left;
+}
+.tp-panel--right {
+  right: clamp(var(--space-lg), 6vw, var(--space-3xl));
+  text-align: left;
+}
+.tp-step {
+  margin: 0 0 var(--space-sm);
+}
+.tp-headline {
+  margin: 0;
+}
+.tp-body {
+  margin: var(--space-md) 0 0;
+  color: var(--meta);
+  max-width: 34ch;
+}
+.tp-panel-img {
+  margin-top: var(--space-lg);
+  width: clamp(64px, 7vw, 104px);
+  height: auto;
+  opacity: 0.85;
+}
+
+/* ---- iPhone mock-up ---- */
+.tp-phone {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 11px;
+  background: linear-gradient(155deg, #2a2420, #15110d);
+  border-radius: 54px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    var(--shadow-float),
+    0 40px 80px -30px rgba(20, 14, 8, 0.55);
+  will-change: transform;
+  z-index: 2;
+}
+
+/* Screen = status band (clears the dynamic island) + canvas area. The canvas
+   area keeps the captured frame aspect (393:852) so nothing distorts; the band
+   is extra height on top where the island sits, pushing the app's own top bar
+   (X / progress / tabs) clear of the island. */
+.tp-screen {
+  --band: 30px;
+  --sh: clamp(440px, 64svh, 580px);
+  height: var(--sh);
+  width: calc((var(--sh) - var(--band)) * 393 / 852);
+  display: flex;
+  flex-direction: column;
+  border-radius: 44px;
+  overflow: hidden;
+  background: var(--table);
+}
+.tp-statusband {
+  position: relative;
+  height: var(--band);
+  flex: none;
+  background: var(--table);
+}
+.tp-island {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 78px;
+  height: 22px;
+  border-radius: var(--radius-full, 999px);
+  background: #0d0a07;
+}
+.tp-canvas-area {
+  position: relative;
+  flex: 1 1 auto;
+}
+.tp-canvas {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.35s var(--ease-out, ease);
+  will-change: opacity;
+}
+
+/* ---- mobile: phone centred low, copy stacked above ---- */
+@media (max-width: 860px) {
+  .tp-panel {
+    top: clamp(var(--space-2xl), 12svh, 120px);
+    left: 50%;
+    right: auto;
+    width: min(90%, 460px);
+    text-align: center;
+  }
+  .tp-panel--left,
+  .tp-panel--right {
+    left: 50%;
+    right: auto;
+  }
+  .tp-body {
+    margin-inline: auto;
+  }
+  .tp-phone {
+    top: auto;
+    bottom: clamp(var(--space-lg), 5svh, var(--space-2xl));
+  }
+  .tp-screen {
+    --sh: clamp(380px, 50svh, 520px);
+  }
+}
+
+/* ---- fallback (reduced-motion / no frames / SSR): plain stacked ---- */
+.through-phone[data-pinned='false'] .tp-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  padding-block: var(--space-xl);
+}
+.through-phone[data-pinned='false'] .tp-eyebrow {
+  position: static;
+  transform: none;
+}
+.through-phone[data-pinned='false'] .tp-track {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  width: 100%;
+}
+.through-phone[data-pinned='false'] .tp-panel {
+  position: static;
+  opacity: 1;
+  transform: none;
+  width: min(92%, 460px);
+  text-align: center;
+  order: 2;
+}
+.through-phone[data-pinned='false'] .tp-body {
+  margin-inline: auto;
+}
+.through-phone[data-pinned='false'] .tp-phone {
+  position: static;
+  transform: none;
+  order: 1;
+  margin-inline: auto;
+}

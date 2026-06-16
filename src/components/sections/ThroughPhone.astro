@@ -1,0 +1,47 @@
+---
+import { existsSync } from 'node:fs';
+import { getImage } from 'astro:assets';
+import { engraving } from '../../assets/images';
+import ThroughPhone from './ThroughPhone.tsx';
+
+interface SegmentInput {
+  id: string;
+  side: 'right' | 'left';
+  scenario: string;
+  eyebrow: string;
+  headline: string;
+  body: string;
+  image?: string;
+}
+interface Props {
+  eyebrow: string;
+  segments: SegmentInput[];
+}
+const { eyebrow, segments } = Astro.props;
+
+const spark = await getImage({ src: engraving('spark-mark'), width: 160, format: 'webp' });
+
+// Enrich each segment with frame-availability, poster (first frame) and the
+// optional decorative engraving. Frames live under public/hero-frames/<scenario>/.
+const enriched = await Promise.all(
+  segments.map(async (s) => {
+    const hasFrames = existsSync(`public/hero-frames/${s.scenario}/manifest.json`);
+    const imageSrc = s.image
+      ? (await getImage({ src: engraving(s.image), width: 220, format: 'webp' })).src
+      : undefined;
+    return {
+      id: s.id,
+      side: s.side,
+      scenario: s.scenario,
+      eyebrow: s.eyebrow,
+      headline: s.headline,
+      body: s.body,
+      poster: `/hero-frames/${s.scenario}/0001.webp`,
+      imageSrc,
+      hasFrames,
+    };
+  })
+);
+---
+
+<ThroughPhone eyebrow={eyebrow} segments={enriched} sparkSrc={spark.src} client:visible />
