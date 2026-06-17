@@ -142,8 +142,10 @@
   .tp-eyebrow {
     display: none;
   }
+  /* Phone on TOP, copy BELOW it (bottom-anchored). */
   .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    top: auto;
+    bottom: clamp(var(--space-md), 4svh, var(--space-xl));
     left: 50%;
     right: auto;
     width: min(94%, 460px);
@@ -176,9 +178,9 @@
      REAL bottom of the screen (dvh tracks the address bar, unlike svh, so no
      empty gap / visible section seam under the phone on mobile Safari). */
   .tp-phone {
-    top: auto;
-    bottom: clamp(var(--space-sm), 2svh, var(--space-md));
-    /* Mobile is bottom-anchored (top:auto) → only horizontal centring. */
+    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    bottom: auto;
+    /* Mobile is top-anchored → only horizontal centring. */
     transform: translateX(-50%);
     padding: 9px;
     border-radius: 46px;
@@ -194,14 +196,11 @@
 }
 
 @media (max-width: 380px) {
-  .tp-panel {
-    top: calc(env(safe-area-inset-top, 0px) + 50px);
-  }
   .tp-panel .tp-headline {
     font-size: 1.0rem;
   }
   .tp-screen {
-    --sh: 62svh;
+    --sh: 58svh;
   }
 }
 
