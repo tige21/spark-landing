@@ -55,15 +55,19 @@
   right: var(--space-xl);
   text-align: left;
 }
-.tp-step {
+.tp-panel .tp-step {
   margin: 0 0 var(--space-sm);
+  color: var(--wine);
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
-.tp-headline {
+.tp-panel .tp-headline {
   margin: 0;
+  color: var(--ink);
 }
-.tp-body {
+.tp-panel .tp-body {
   margin: var(--space-md) 0 0;
-  color: var(--meta);
+  color: var(--meta-strong);
   max-width: 34ch;
 }
 .tp-panel-img {
@@ -71,6 +75,59 @@
   width: clamp(64px, 7vw, 104px);
   height: auto;
   opacity: 0.85;
+}
+
+/* ---- step indicator (which of the N blocks you're on) ---- */
+.tp-progress {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(var(--space-md), 3svh, var(--space-lg));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 9px;
+  z-index: var(--z-content);
+}
+.tp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full, 999px);
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: background 0.3s ease, transform 0.3s var(--ease-out, ease);
+}
+.tp-dot.is-on {
+  background: var(--wine);
+  transform: scale(1.3);
+}
+
+/* ---- "scroll on" cue, shown on the first block, fades after advancing ---- */
+.tp-cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(var(--space-xl), 7svh, calc(var(--space-xl) * 2));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--meta);
+  z-index: var(--z-content);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  animation: tp-cue-bob 1.7s ease-in-out infinite;
+}
+.tp-cue.is-hidden {
+  opacity: 0;
+}
+.tp-cue-text {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@keyframes tp-cue-bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-cue { animation: none; }
 }
 
 /* ---- iPhone mock-up ---- */
@@ -179,6 +236,9 @@
   /* Caption pinned directly beneath the phone (top-anchored to the phone, NOT
      bottom-anchored to the viewport) → tight unit, no empty gap, text doesn't
      drift while reading (the JS driver fades opacity only, no translate). */
+  /* Mobile copy is discrete (JS does not set inline opacity here): only the
+     ACTIVE block's caption shows, fading + rising in on each step so the change
+     is obvious and the text is the loud focal point. */
   .tp-panel {
     top: calc(var(--phone-top) + var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap));
     bottom: auto;
@@ -186,24 +246,33 @@
     right: auto;
     width: min(94%, 460px);
     text-align: center;
+    opacity: 0;
+    transform: translate(-50%, 16px);
+    transition: opacity 0.34s ease, transform 0.44s var(--ease-out, ease);
+    pointer-events: none;
+  }
+  .tp-panel.is-active {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
   }
   .tp-panel--left,
   .tp-panel--right {
     left: 50%;
     right: auto;
   }
-  /* Compact copy so the phone can be the hero (override global t-h2 / t-lead). */
+  /* Compact but LEGIBLE — the caption is the focal point (override t-h2/t-lead). */
   .tp-panel .tp-step {
-    font-size: 0.68rem;
-    margin-bottom: 2px;
+    font-size: 0.76rem;
+    margin-bottom: 4px;
   }
   .tp-panel .tp-headline {
-    font-size: clamp(1.02rem, 4.6vw, 1.3rem);
-    line-height: 1.15;
+    font-size: clamp(1.15rem, 5.2vw, 1.5rem);
+    line-height: 1.16;
   }
   .tp-panel .tp-body {
-    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
-    line-height: 1.36;
+    font-size: clamp(0.9rem, 3.7vw, 1.0rem);
+    line-height: 1.4;
     margin: var(--space-xs) auto 0;
     max-width: 34ch;
   }
@@ -217,7 +286,7 @@
     --phone-screen-h: clamp(360px, 56svh, 480px);
   }
   .tp-panel .tp-headline {
-    font-size: 1.0rem;
+    font-size: 1.12rem;
   }
 }
 

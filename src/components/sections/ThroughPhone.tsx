@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useScrollScene } from '../../lib/use-scroll-scene';
 import { useMotionPrefs } from '../../lib/motion-guards';
 import type { ScrollValue } from '../../lib/scroll-progress';
@@ -83,6 +83,51 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   const [activeSeg, setActiveSeg] = useState(0);
   const activeSegRef = useRef(0);
 
+  // Autoplay trigger. `playNonce` bumps whenever the centred block changes (or
+  // the section is (re)entered) so the active block's CanvasSequence (re)plays
+  // its scenario. `playedForRef` tracks which block we last triggered.
+  const [playNonce, setPlayNonce] = useState(0);
+  const playedForRef = useRef(-1);
+  // Once the user has reached any later block, the first-block "scroll on" cue
+  // has done its job — keep it hidden so it never nags on revisit.
+  const [advanced, setAdvanced] = useState(false);
+
+  // Single source of truth for "move to phase i and rest there". Used by the
+  // wheel-step (desktop), touch-step (mobile), and idle-snap. Drives the shared
+  // Lenis instance on desktop (no inertia fight) or native smooth scroll on
+  // mobile (Lenis is off there), and updates settledPhase + playNonce so the
+  // copy/indicator/autoplay react to the new block.
+  const goToPhase = useCallback(
+    (target: number, opts: { duration?: number; lock?: boolean; onDone?: () => void } = {}) => {
+      const el = ref.current;
+      if (!el) { opts.onDone?.(); return; }
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const range = el.offsetHeight - window.innerHeight;
+      if (range <= 0) { opts.onDone?.(); return; }
+      const t = Math.max(0, Math.min(n - 1, target));
+      const ty = Math.round(top + range * ((t + 0.5) / n));
+      const lenis = getLenis();
+      const duration = opts.duration ?? 0.7;
+      if (lenis) lenis.scrollTo(ty, { duration, lock: opts.lock ?? false, onComplete: opts.onDone });
+      else { window.scrollTo({ top: ty, behavior: 'smooth' }); if (opts.onDone) window.setTimeout(opts.onDone, duration * 1000 + 80); }
+      if (DEBUG_SCROLL) console.log('[through-phone] goToPhase', t, ty);
+    },
+    [n, ref]
+  );
+
+  // Scroll directly out of the section (past an end) so the forced stepping never
+  // traps the user — used when a gesture pushes past the first/last block.
+  const exitSection = useCallback((dir: 1 | -1) => {
+    const el = ref.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const range = el.offsetHeight - window.innerHeight;
+    const ty = dir > 0 ? Math.round(top + range + window.innerHeight * 0.35) : Math.round(top - window.innerHeight * 0.35);
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(ty, { duration: 0.5 });
+    else window.scrollTo({ top: Math.max(0, ty), behavior: 'smooth' });
+  }, [ref]);
+
   // Build derived per-segment progress values (hooks must run unconditionally).
   const seg0 = useSegmentProgress(progress, 0, n);
   const seg1 = useSegmentProgress(progress, 1, n);
@@ -114,6 +159,15 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
         setActiveSeg(a);
         if (DEBUG_SCROLL) console.log('[through-phone] active segment', a);
       }
+      // ---- autoplay trigger: (re)play the centred block's scenario when the
+      // section is engaged and the centred block changes (incl. first entry) ----
+      const engaged = p > 0.01 && p < 0.99;
+      if (engaged) {
+        if (a !== playedForRef.current) { playedForRef.current = a; setPlayNonce((k) => k + 1); }
+        if (a > 0) setAdvanced(true);
+      } else {
+        playedForRef.current = -1;
+      }
       // ---- phone position (JS owns the full transform incl. centring) ----
       if (phoneRef.current) {
         if (small) {
@@ -143,17 +197,14 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
         // a broad dwell band and only fades in the short boundary windows.
         const plateau = clamp01((0.5 - dist) / (0.5 - 0.34));
         const panel = panelRefs.current[i];
-        if (panel) {
+        if (panel && !small) {
+          // Desktop: continuous fade + side-slide driven by the dwell plateau.
+          // Mobile copy is discrete — driven by the `is-active` class + CSS
+          // transition (see render + ThroughPhone.css), not inline styles here.
           const o = smooth(plateau);
           panel.style.opacity = String(o);
-          if (small) {
-            // Opacity-only on mobile — no translate, so the caption never drifts
-            // vertically while it fades (the snap settles it; keep it readable).
-            panel.style.transform = 'translateX(-50%)';
-          } else {
-            const dir = segments[i].side === 'right' ? -1 : 1; // panel sits opposite the phone
-            panel.style.transform = `translate(${(1 - o) * dir * 26}px, -50%)`;
-          }
+          const dir = segments[i].side === 'right' ? -1 : 1; // panel sits opposite the phone
+          panel.style.transform = `translate(${(1 - o) * dir * 26}px, -50%)`;
           panel.style.pointerEvents = o > 0.5 ? 'auto' : 'none';
         }
         const cv = canvasRefs.current[i];
@@ -197,15 +248,11 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       const i = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
       const target = Math.round(top + range * ((i + 0.5) / n));
       const delta = target - y;
-      const segPx = range / n;
-      // Skip if already centred, or if somehow more than a segment away (don't
-      // yank across phases).
-      if (Math.abs(delta) <= 6 || Math.abs(delta) >= segPx * 0.95) return;
+      // Skip if already centred — only correct genuine off-centre rests
+      // (scrollbar drag, keyboard); the wheel/touch steppers handle gestures.
+      if (Math.abs(delta) <= 6) return;
       guardUntil = now + 720;
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(target, { duration: 0.6 });
-      else window.scrollTo({ top: target, behavior: 'smooth' });
-      if (DEBUG_SCROLL) console.log('[through-phone] snap → phase', i, target);
+      goToPhase(i, { duration: 0.6 });
     };
 
     const onScroll = () => {
@@ -220,7 +267,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('scrollend', snapToNearest);
     };
-  }, [pinned, n, ref]);
+  }, [pinned, n, ref, goToPhase]);
 
   // ---- Desktop wheel-stepping: ONE wheel gesture = ONE phase, then stop ----
   // Idle-snap alone let a single long wheel coast through all three phases
@@ -259,17 +306,86 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
       const atCenter = Math.abs(f - (cur + 0.5)) <= 0.12;
       const target = Math.max(0, Math.min(n - 1, atCenter ? cur + dir : cur));
-      const ty = Math.round(top + range * ((target + 0.5) / n));
       cooldown = true;
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(ty, { duration: 0.7, lock: true, onComplete: () => { cooldown = false; } });
-      else { window.scrollTo({ top: ty, behavior: 'smooth' }); window.setTimeout(() => { cooldown = false; }, 760); }
-      if (DEBUG_SCROLL) console.log('[through-phone] wheel-step → phase', target);
+      goToPhase(target, { duration: 0.7, lock: true, onDone: () => { cooldown = false; } });
     };
 
     window.addEventListener('wheel', onWheel, { passive: false, capture: true });
     return () => window.removeEventListener('wheel', onWheel, { capture: true });
-  }, [pinned, small, n, ref]);
+  }, [pinned, small, n, ref, goToPhase]);
+
+  // ---- Mobile touch-stepping: ONE swipe = ONE block, then stop ----
+  // Mobile has no wheel and Lenis is off, so a native flick coasts through all
+  // blocks. Inside the pinned section we block native touch-scroll (kills the
+  // momentum) and, on release, advance exactly one block per swipe. At the ends
+  // a swipe outward scrolls cleanly out of the section (never trapped). Touch is
+  // captured dynamically so a flick that STARTS above the section but drags into
+  // it is caught too. Mobile only; reduced-motion is off (pinned is false).
+  useEffect(() => {
+    if (!pinned || !small) return;
+    const el = ref.current;
+    if (!el) return;
+
+    let startY = 0;
+    let engaged = false;
+    let cooldown = false;
+
+    const metrics = () => {
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const range = el.offsetHeight - window.innerHeight;
+      const y = window.scrollY;
+      return { top, range, y, inRange: range > 0 && y >= top - 2 && y <= top + range + 2 };
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0]?.clientY ?? 0;
+      engaged = metrics().inRange;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const m = metrics();
+      if (!m.inRange) { engaged = false; return; } // outside → native scroll
+      engaged = true;
+      if (cooldown) { e.preventDefault(); return; }
+      const f = clamp01((m.y - m.top) / m.range) * n;
+      const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
+      const dy = (e.touches[0]?.clientY ?? startY) - startY;
+      const dir = dy < 0 ? 1 : -1; // swipe up (finger up) → forward
+      // At an end, an outward swipe is allowed to leave: stop capturing so the
+      // native scroll carries the user out of the section.
+      if (Math.abs(dy) > 8 && ((cur === n - 1 && dir > 0) || (cur === 0 && dir < 0))) {
+        engaged = false;
+        return;
+      }
+      e.preventDefault(); // hold the page; the step happens on release
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!engaged || cooldown) { engaged = false; return; }
+      engaged = false;
+      const m = metrics();
+      if (!m.inRange) return;
+      const f = clamp01((m.y - m.top) / m.range) * n;
+      const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
+      const endY = e.changedTouches[0]?.clientY ?? startY;
+      const dy = endY - startY;
+      if (Math.abs(dy) < 24) { goToPhase(cur, { duration: 0.4 }); return; } // too small → recentre
+      const dir = dy < 0 ? 1 : -1;
+      const target = cur + dir;
+      if (target < 0 || target > n - 1) { exitSection(dir > 0 ? 1 : -1); return; }
+      cooldown = true;
+      goToPhase(target, { duration: 0.6, onDone: () => { cooldown = false; } });
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [pinned, small, n, ref, goToPhase, exitSection]);
 
   const sectionStyle = pinned
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
@@ -299,7 +415,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
             <div
               key={s.id}
               ref={(el) => { panelRefs.current[i] = el; }}
-              className={`tp-panel tp-panel--${s.side === 'right' ? 'left' : 'right'}`}
+              className={`tp-panel tp-panel--${s.side === 'right' ? 'left' : 'right'}${i === activeSeg ? ' is-active' : ''}`}
             >
               <p className="eyebrow tp-step">{s.eyebrow}</p>
               <h2 className="t-h2 tp-headline">{s.headline}</h2>
@@ -307,6 +423,22 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
               {s.imageSrc && <img className="tp-panel-img" src={s.imageSrc} alt="" loading="lazy" />}
             </div>
           ))}
+
+          {pinned && (
+            <div className="tp-progress" aria-hidden="true">
+              {segments.map((s, i) => (
+                <span key={s.id} className={`tp-dot${i === activeSeg ? ' is-on' : ''}`} />
+              ))}
+            </div>
+          )}
+          {pinned && (
+            <div className={`tp-cue${activeSeg === 0 && !advanced ? '' : ' is-hidden'}`} aria-hidden="true">
+              <span className="tp-cue-text">листайте</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          )}
 
           <div ref={phoneRef} className="tp-phone">
             <div className="tp-screen">
@@ -329,6 +461,8 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
                       nameMobile={s.scenarioMobile}
                       enabled={s.hasFrames && (i === activeSeg || i === activeSeg + 1)}
                       enabledMobile={s.hasFramesMobile && (i === activeSeg || i === activeSeg + 1)}
+                      autoplay={pinned && i === activeSeg}
+                      playNonce={playNonce}
                       style={{ position: 'absolute', inset: 0 }}
                     />
                   </div>
