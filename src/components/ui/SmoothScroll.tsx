@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type Lenis from 'lenis';
 import { useMotionPrefs } from '../../lib/motion-guards';
-import { createLenis, DEBUG_SCROLL } from '../../lib/smooth-scroll';
+import { createLenis, setLenis, DEBUG_SCROLL } from '../../lib/smooth-scroll';
 
 // Offset for the fixed header overlay so anchor targets aren't hidden under it.
 const NAV_OFFSET = 64;
@@ -20,6 +20,7 @@ export default function SmoothScroll() {
 
     if (!reduced && !small) {
       lenis = createLenis();
+      setLenis(lenis);
       const loop = (time: number) => {
         lenis!.raf(time);
         rafId = requestAnimationFrame(loop);
@@ -53,6 +54,7 @@ export default function SmoothScroll() {
       if (lenis) {
         cancelAnimationFrame(rafId);
         lenis.destroy();
+        setLenis(null);
         if (DEBUG_SCROLL) console.log('[smooth-scroll] Lenis destroyed');
       }
     };

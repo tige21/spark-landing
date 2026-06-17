@@ -5,7 +5,7 @@ import type { ScrollValue } from '../../lib/scroll-progress';
 import CanvasSequence from '../hero/CanvasSequence';
 import Scene3D from '../ui/Scene3D';
 import Layer from '../ui/Layer';
-import { DEBUG_SCROLL } from '../../lib/smooth-scroll';
+import { DEBUG_SCROLL, getLenis } from '../../lib/smooth-scroll';
 import './ThroughPhone.css';
 
 export interface PhoneSegment {
@@ -66,7 +66,11 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
   const allFrames = segments.every((s) => s.hasFrames);
   const pinned = mounted && !reduced && allFrames;
-  const scrubSeg = small ? 0.8 : 0.95; // longer pin per phase → slower scrub, phases not skipped
+  // Segment scroll length. The phase snap now supplies the "stop" cue, so we no
+  // longer need an exaggerated dwell to make phases feel distinct — shorter
+  // segments keep the snap travel (≤ half a segment) comfortable and let Decks
+  // appear sooner, while each phase still fixes on release.
+  const scrubSeg = small ? 0.72 : 0.88;
 
   const phoneRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -143,7 +147,9 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
           const o = smooth(plateau);
           panel.style.opacity = String(o);
           if (small) {
-            panel.style.transform = `translate(-50%, ${(1 - o) * 18}px)`;
+            // Opacity-only on mobile — no translate, so the caption never drifts
+            // vertically while it fades (the snap settles it; keep it readable).
+            panel.style.transform = 'translateX(-50%)';
           } else {
             const dir = segments[i].side === 'right' ? -1 : 1; // panel sits opposite the phone
             panel.style.transform = `translate(${(1 - o) * dir * 26}px, -50%)`;
@@ -161,6 +167,60 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     apply(progress.get());
     return progress.on('change', apply);
   }, [pinned, small, progress, n, segments, ref]);
+
+  // ---- Phase snap: settle to the nearest phase centre on scroll-idle ----
+  // The dwell plateau alone didn't read as discrete "stops" — a fast flick blew
+  // through all three phases. When scrolling stops inside the pinned range we
+  // ease the page to the active phase centre (f ∈ {0.5, 1.5, 2.5}) so each
+  // logical block (Колоды/Игра/Своя колода) fixes itself. Desktop drives the
+  // shared Lenis instance (no inertia fight); mobile (Lenis off) uses native
+  // smooth scrollTo. Disabled under reduced-motion (pinned is false there).
+  useEffect(() => {
+    if (!pinned) return;
+    const el = ref.current;
+    if (!el) return;
+
+    let idleTimer = 0;
+    let guardUntil = 0; // ignore idle re-entry right after we initiate a snap
+
+    const snapToNearest = () => {
+      const now = performance.now();
+      if (now < guardUntil) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const range = el.offsetHeight - window.innerHeight;
+      if (range <= 0) return;
+      const y = window.scrollY;
+      // Only inside the pinned range — leaving the block (to What above /
+      // Decks below) must stay free.
+      if (y < top - 1 || y > top + range + 1) return;
+      const f = clamp01((y - top) / range) * n;
+      const i = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
+      const target = Math.round(top + range * ((i + 0.5) / n));
+      const delta = target - y;
+      const segPx = range / n;
+      // Skip if already centred, or if somehow more than a segment away (don't
+      // yank across phases).
+      if (Math.abs(delta) <= 6 || Math.abs(delta) >= segPx * 0.95) return;
+      guardUntil = now + 720;
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(target, { duration: 0.6 });
+      else window.scrollTo({ top: target, behavior: 'smooth' });
+      if (DEBUG_SCROLL) console.log('[through-phone] snap → phase', i, target);
+    };
+
+    const onScroll = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(snapToNearest, 140);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scrollend', snapToNearest);
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scrollend', snapToNearest);
+    };
+  }, [pinned, n, ref]);
 
   const sectionStyle = pinned
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
