@@ -142,10 +142,46 @@
   .tp-eyebrow {
     display: none;
   }
-  /* Phone on TOP, copy BELOW it (bottom-anchored). */
+
+  /* Phone + caption read as ONE vertically-centred block. The geometry vars
+     live on the shared ancestor (.tp-track) so the phone height and the caption
+     offset stay locked together: the caption is anchored directly UNDER the
+     phone (not to the viewport edge), so there is no dead space and the text is
+     always fully on-screen. --phone-block is the pair's total height (phone +
+     gap + ~caption) used to centre the whole unit; --phone-top has a safe
+     minimum so it never tucks under the header. */
+  .tp-track {
+    --phone-screen-h: clamp(360px, 52svh, 480px);
+    --phone-frame: 9px;
+    --phone-gap: var(--space-lg);
+    --phone-block: calc(var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap) + 132px);
+    --phone-top: max(
+      calc(env(safe-area-inset-top, 0px) + 32px),
+      calc((100svh - var(--phone-block)) / 2)
+    );
+  }
+
+  /* Phone sits at the top of the centred pair. Size is svh-based (stable): it
+     never resizes when the address bar shows/hides. */
+  .tp-phone {
+    top: var(--phone-top);
+    bottom: auto;
+    /* Mobile is top-anchored → only horizontal centring. */
+    transform: translateX(-50%);
+    padding: var(--phone-frame);
+    border-radius: 46px;
+  }
+  .tp-screen {
+    --sh: var(--phone-screen-h);
+    border-radius: 38px;
+  }
+
+  /* Caption pinned directly beneath the phone (top-anchored to the phone, NOT
+     bottom-anchored to the viewport) → tight unit, no empty gap, text doesn't
+     drift while reading (the JS driver fades opacity only, no translate). */
   .tp-panel {
-    top: auto;
-    bottom: clamp(var(--space-md), 4svh, var(--space-xl));
+    top: calc(var(--phone-top) + var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap));
+    bottom: auto;
     left: 50%;
     right: auto;
     width: min(94%, 460px);
@@ -174,33 +210,14 @@
   .tp-panel-img {
     display: none; /* save vertical space on phones */
   }
-  /* Slimmer bezel + dvh-based height → phone fills more width and sits at the
-     REAL bottom of the screen (dvh tracks the address bar, unlike svh, so no
-     empty gap / visible section seam under the phone on mobile Safari). */
-  .tp-phone {
-    top: calc(env(safe-area-inset-top, 0px) + 54px);
-    bottom: auto;
-    /* Mobile is top-anchored → only horizontal centring. */
-    transform: translateX(-50%);
-    padding: 9px;
-    border-radius: 46px;
-  }
-  /* Phone SIZE is svh-based (stable): it never resizes when the address bar
-     shows/hides. The stage stays 100dvh (see ThroughPhone.tsx) so the
-     bottom-anchored phone still sits at the real screen bottom — only its
-     position settles, it does not scale. */
-  .tp-screen {
-    --sh: clamp(440px, 66svh, 600px);
-    border-radius: 38px;
-  }
 }
 
 @media (max-width: 380px) {
+  .tp-track {
+    --phone-screen-h: clamp(320px, 48svh, 420px);
+  }
   .tp-panel .tp-headline {
     font-size: 1.0rem;
-  }
-  .tp-screen {
-    --sh: 58svh;
   }
 }
 
