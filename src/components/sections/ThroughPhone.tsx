@@ -66,7 +66,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
   const allFrames = segments.every((s) => s.hasFrames);
   const pinned = mounted && !reduced && allFrames;
-  const scrubSeg = small ? 0.62 : 0.72; // shorter pin → Decks section appears sooner
+  const scrubSeg = small ? 0.8 : 0.95; // longer pin per phase → slower scrub, phases not skipped
 
   const phoneRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -119,8 +119,9 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
           const i0 = Math.max(0, Math.min(n - 1, Math.floor(sc)));
           const i1 = Math.max(0, Math.min(n - 1, i0 + 1));
           const frac = clamp01(sc - i0);
-          // hold near a side through the segment, slide across the boundary window
-          const t = smooth((frac - 0.3) / 0.4);
+          // Hold the phone at its side through the phase dwell, slide only in a
+          // tight window at the boundary (clear per-phase rest).
+          const t = smooth((frac - 0.34) / 0.32);
           const sideX = sideOf(i0) * (1 - t) + sideOf(i1) * t;
           // Slide distance is measured from the CONTAINER (track), not the
           // viewport, so the phone stays within the site grid on any width.
@@ -131,10 +132,15 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       }
       // ---- per-segment panels + canvases ----
       for (let i = 0; i < n; i++) {
-        const activeness = clamp01(1 - Math.abs(f - (i + 0.5)));
+        const dist = Math.abs(f - (i + 0.5));
+        // Triangle (overlaps at boundaries → canvas never blanks during crossfade).
+        const activeTri = clamp01(1 - dist);
+        // Trapezoid with a wide flat top → the phase's copy is fully shown across
+        // a broad dwell band and only fades in the short boundary windows.
+        const plateau = clamp01((0.5 - dist) / (0.5 - 0.34));
         const panel = panelRefs.current[i];
         if (panel) {
-          const o = clamp01((activeness - 0.25) / 0.55);
+          const o = smooth(plateau);
           panel.style.opacity = String(o);
           if (small) {
             panel.style.transform = `translate(-50%, ${(1 - o) * 18}px)`;
@@ -146,8 +152,8 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
         }
         const cv = canvasRefs.current[i];
         if (cv) {
-          cv.style.opacity = String(clamp01(activeness * 1.15));
-          cv.style.zIndex = String(Math.round(activeness * 10));
+          cv.style.opacity = String(clamp01(activeTri * 1.15));
+          cv.style.zIndex = String(Math.round(activeTri * 10));
         }
       }
     };
