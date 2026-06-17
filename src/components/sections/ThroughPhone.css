@@ -200,6 +200,15 @@
     display: none;
   }
 
+  /* Momentum-proof stepping: the browser must not scroll/fling the page from
+     touches inside the pinned full-screen stage — the JS touch-stepper owns all
+     movement (one swipe = one block; ends scroll out programmatically). Only
+     applies while pinned; the stage only fills the viewport when engaged, so
+     touches elsewhere on the page scroll normally. */
+  .through-phone[data-pinned='true'] .tp-stage {
+    touch-action: none;
+  }
+
   /* Phone + caption read as ONE vertically-centred block. The geometry vars
      live on the shared ancestor (.tp-track) so the phone height and the caption
      offset stay locked together: the caption is anchored directly UNDER the

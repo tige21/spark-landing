@@ -314,20 +314,22 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     return () => window.removeEventListener('wheel', onWheel, { capture: true });
   }, [pinned, small, n, ref, goToPhase]);
 
-  // ---- Mobile touch-stepping: ONE swipe = ONE block, then stop ----
-  // Mobile has no wheel and Lenis is off, so a native flick coasts through all
-  // blocks. Inside the pinned section we block native touch-scroll (kills the
-  // momentum) and, on release, advance exactly one block per swipe. At the ends
-  // a swipe outward scrolls cleanly out of the section (never trapped). Touch is
-  // captured dynamically so a flick that STARTS above the section but drags into
-  // it is caught too. Mobile only; reduced-motion is off (pinned is false).
+  // ---- Mobile touch-stepping: ONE swipe = ONE block, momentum-proof ----
+  // Mobile has no wheel and Lenis is off, so a native flick coasts (momentum)
+  // through all blocks — and momentum fires AFTER touchend, so preventDefault on
+  // touchmove can't catch it. Instead the pinned stage gets `touch-action: none`
+  // (CSS; it only affects touches on the visible full-screen stage, i.e. exactly
+  // while the section is engaged), so the browser NEVER scrolls/flings the page
+  // from touches inside the section — we own movement entirely. Each
+  // swipe advances exactly one block; at the ends an outward swipe scrolls
+  // cleanly out (never trapped). Mobile only; reduced-motion is off (pinned false).
   useEffect(() => {
     if (!pinned || !small) return;
     const el = ref.current;
     if (!el) return;
 
     let startY = 0;
-    let engaged = false;
+    let tracking = false;
     let cooldown = false;
 
     const metrics = () => {
@@ -339,50 +341,29 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
     const onTouchStart = (e: TouchEvent) => {
       startY = e.touches[0]?.clientY ?? 0;
-      engaged = metrics().inRange;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      const m = metrics();
-      if (!m.inRange) { engaged = false; return; } // outside → native scroll
-      engaged = true;
-      if (cooldown) { e.preventDefault(); return; }
-      const f = clamp01((m.y - m.top) / m.range) * n;
-      const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
-      const dy = (e.touches[0]?.clientY ?? startY) - startY;
-      const dir = dy < 0 ? 1 : -1; // swipe up (finger up) → forward
-      // At an end, an outward swipe is allowed to leave: stop capturing so the
-      // native scroll carries the user out of the section.
-      if (Math.abs(dy) > 8 && ((cur === n - 1 && dir > 0) || (cur === 0 && dir < 0))) {
-        engaged = false;
-        return;
-      }
-      e.preventDefault(); // hold the page; the step happens on release
+      tracking = metrics().inRange;
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (!engaged || cooldown) { engaged = false; return; }
-      engaged = false;
+      if (!tracking || cooldown) { tracking = false; return; }
+      tracking = false;
       const m = metrics();
       if (!m.inRange) return;
+      const dy = (e.changedTouches[0]?.clientY ?? startY) - startY;
       const f = clamp01((m.y - m.top) / m.range) * n;
       const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
-      const endY = e.changedTouches[0]?.clientY ?? startY;
-      const dy = endY - startY;
-      if (Math.abs(dy) < 24) { goToPhase(cur, { duration: 0.4 }); return; } // too small → recentre
-      const dir = dy < 0 ? 1 : -1;
+      if (Math.abs(dy) < 24) { goToPhase(cur, { duration: 0.35 }); return; } // too small → recentre
+      const dir = dy < 0 ? 1 : -1; // swipe up → forward
       const target = cur + dir;
       if (target < 0 || target > n - 1) { exitSection(dir > 0 ? 1 : -1); return; }
       cooldown = true;
-      goToPhase(target, { duration: 0.6, onDone: () => { cooldown = false; } });
+      goToPhase(target, { duration: 0.55, onDone: () => { cooldown = false; } });
     };
 
     window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
     return () => {
       window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
     };
   }, [pinned, small, n, ref, goToPhase, exitSection]);
