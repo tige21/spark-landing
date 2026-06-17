@@ -63,6 +63,7 @@ export default function CanvasSequence({
     let cancelled = false;
     let rafId = 0;
     let idleId: number | undefined;
+    let onLoad: (() => void) | undefined;
     let running = false;
     let count = 0;
     let curr = 0; // displayed index (float)
@@ -179,13 +180,23 @@ export default function CanvasSequence({
           };
           pump();
         };
-        // Hero (eager) decodes immediately so the scrub plays on the very first
-        // scroll; below-the-fold sequences wait for idle to spare the LCP.
-        idleId = eager
-          ? (setTimeout(startBatch, 0) as unknown as number)
-          : 'requestIdleCallback' in window
+        // Frame batch is the bulk of the bytes — keep it OUT of the LCP window.
+        // eager → now; otherwise wait until after `load` (so only the poster +
+        // critical JS/fonts compete for LCP), then decode on idle. Frame 0 is
+        // already decoded above (canvas ready, visually == poster).
+        const scheduleIdle = () => {
+          idleId = 'requestIdleCallback' in window
             ? (window as Window & typeof globalThis).requestIdleCallback(startBatch, { timeout: 1500 })
             : (setTimeout(startBatch, 300) as unknown as number);
+        };
+        if (eager) {
+          idleId = setTimeout(startBatch, 0) as unknown as number;
+        } else if (document.readyState === 'complete') {
+          scheduleIdle();
+        } else {
+          onLoad = () => scheduleIdle();
+          window.addEventListener('load', onLoad, { once: true });
+        }
         if (DEBUG_SCROLL) console.log('[canvas-seq] ready', activeName, count, `${tw}x${th}`);
       } catch (err) {
         if (DEBUG_SCROLL) console.log('[canvas-seq] error', err);
@@ -200,6 +211,7 @@ export default function CanvasSequence({
         if ('cancelIdleCallback' in window) cancelIdleCallback(idleId);
         else clearTimeout(idleId);
       }
+      if (onLoad) window.removeEventListener('load', onLoad);
       unsub();
       frames.forEach((f) => { if (f && 'close' in f) (f as ImageBitmap).close(); });
     };
