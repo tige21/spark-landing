@@ -151,12 +151,12 @@
      gap + ~caption) used to centre the whole unit; --phone-top has a safe
      minimum so it never tucks under the header. */
   .tp-track {
-    --phone-screen-h: clamp(360px, 52svh, 480px);
+    --phone-screen-h: clamp(420px, 62svh, 560px);
     --phone-frame: 9px;
-    --phone-gap: var(--space-lg);
-    --phone-block: calc(var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap) + 132px);
+    --phone-gap: var(--space-sm);
+    --phone-block: calc(var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap) + 118px);
     --phone-top: max(
-      calc(env(safe-area-inset-top, 0px) + 32px),
+      calc(env(safe-area-inset-top, 0px) + 24px),
       calc((100svh - var(--phone-block)) / 2)
     );
   }
@@ -214,7 +214,7 @@
 
 @media (max-width: 380px) {
   .tp-track {
-    --phone-screen-h: clamp(320px, 48svh, 420px);
+    --phone-screen-h: clamp(360px, 56svh, 480px);
   }
   .tp-panel .tp-headline {
     font-size: 1.0rem;
