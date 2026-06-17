@@ -22,6 +22,8 @@ interface CanvasSequenceProps {
   enabledMobile?: boolean;
   fit?: 'cover' | 'contain';
   eager?: boolean; // decode frames immediately (above-the-fold hero) instead of on idle
+  autoplay?: boolean; // time-based playback (ignore scroll progress) — for the through-phone demo
+  playNonce?: number; // bump to (re)start the autoplay from frame 0
   className?: string;
   style?: CSSProperties;
 }
@@ -46,12 +48,22 @@ export default function CanvasSequence({
   enabledMobile = true,
   fit = 'cover',
   eager = false,
+  autoplay = false,
+  playNonce = 0,
   className,
   style,
 }: CanvasSequenceProps) {
   const { reduced, small } = useMotionPrefs();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
+
+  // Autoplay state (component scope so a separate effect can toggle it without
+  // re-running the decode effect). 'idle' = scroll-driven (default / hero);
+  // 'playing' = time-based ramp 0→last; 'held' = hold the last frame.
+  const playModeRef = useRef<'idle' | 'playing' | 'held'>('idle');
+  const playStartRef = useRef(0);
+  const playDurRef = useRef(1600);
+  const ensureRunningRef = useRef<(() => void) | null>(null);
 
   const activeName = small ? nameMobile : name;
   const activeEnabled = small ? enabledMobile : enabled;
@@ -97,6 +109,26 @@ export default function CanvasSequence({
 
     const tick = () => {
       if (cancelled || count === 0) { running = false; return; }
+      // ---- autoplay branch: time-based playback, ignores scroll progress ----
+      const mode = playModeRef.current;
+      if (mode !== 'idle') {
+        if (mode === 'playing') {
+          const t = Math.min(1, (performance.now() - playStartRef.current) / playDurRef.current);
+          curr = t * (count - 1);
+          if (t >= 1) playModeRef.current = 'held';
+        } else {
+          curr = count - 1; // hold the final frame
+        }
+        const pidx = Math.round(curr);
+        if (pidx !== lastDrawn || !frames[pidx]) {
+          const drawn = drawNearest(pidx);
+          if (drawn !== -1) lastDrawn = drawn;
+        }
+        // Park only once held AND the final frame is actually on screen.
+        if (playModeRef.current === 'held' && frames[count - 1] && lastDrawn === count - 1) { running = false; return; }
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
       const target = Math.min(count - 1, Math.max(0, progress.get() * (count - 1)));
       curr += (target - curr) * 0.22; // ease toward target
       if (Math.abs(target - curr) < 0.15) curr = target; // soft snap so the settle doesn't jump
@@ -116,6 +148,7 @@ export default function CanvasSequence({
     const ensureRunning = () => {
       if (!running && !cancelled && count > 0) { running = true; rafId = requestAnimationFrame(tick); }
     };
+    ensureRunningRef.current = ensureRunning;
 
     const decode = async (url: string, w?: number, h?: number): Promise<Frame | undefined> => {
       try {
@@ -142,6 +175,9 @@ export default function CanvasSequence({
         const m: Manifest = await res.json();
         if (cancelled) return;
         count = m.count;
+        // Autoplay duration scales with frame count (~16fps), clamped so short
+        // sets aren't a flash and long ones aren't a slog.
+        playDurRef.current = Math.min(3000, Math.max(1200, (count / 16) * 1000));
         const pad = m.pad ?? 4;
         const url = (i: number) => `/hero-frames/${activeName}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
 
@@ -213,9 +249,24 @@ export default function CanvasSequence({
       }
       if (onLoad) window.removeEventListener('load', onLoad);
       unsub();
+      ensureRunningRef.current = null;
       frames.forEach((f) => { if (f && 'close' in f) (f as ImageBitmap).close(); });
     };
   }, [reduced, activeEnabled, activeName, small, progress]);
+
+  // Toggle autoplay without re-running the (expensive) decode effect. When
+  // `autoplay` turns on or `playNonce` changes, restart the time-based playback
+  // from frame 0; otherwise return to scroll-driven ('idle'). Kicks the rAF loop.
+  useEffect(() => {
+    if (reduced || !activeEnabled) return;
+    if (autoplay) {
+      playModeRef.current = 'playing';
+      playStartRef.current = performance.now();
+    } else {
+      playModeRef.current = 'idle';
+    }
+    ensureRunningRef.current?.();
+  }, [autoplay, playNonce, reduced, activeEnabled]);
 
   // object-fit/position are driven by CSS (see HeroScroll.css) — a media query is
   // reliable across SSR/hydration, unlike a JS `small` flag on an inline style.
