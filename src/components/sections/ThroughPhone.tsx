@@ -371,8 +371,14 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   const sectionStyle = pinned
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
     : { minHeight: 'auto' };
+  // `svh` (small viewport height) is CONSTANT across the mobile address-bar
+  // show/hide, unlike `dvh` which updates every frame of that animation and
+  // forces the pinned stage (canvas + phone) to re-layout → the lag/jank the
+  // user reported. Matches the hero (HeroScroll uses svh for the same reason).
+  // The section height is already svh, so the geometry is now fully stable; any
+  // strip below the svh stage when the bar is hidden just shows the page bg.
   const stageStyle = pinned
-    ? ({ position: 'sticky', top: 0, height: '100dvh' } as const)
+    ? ({ position: 'sticky', top: 0, height: '100svh' } as const)
     : ({ position: 'relative' } as const);
 
   return (
