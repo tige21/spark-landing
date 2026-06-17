@@ -222,6 +222,55 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     };
   }, [pinned, n, ref]);
 
+  // ---- Desktop wheel-stepping: ONE wheel gesture = ONE phase, then stop ----
+  // Idle-snap alone let a single long wheel coast through all three phases
+  // (Lenis keeps the scroll alive, so the idle never fires until the very end).
+  // Inside the pinned section we take the wheel over (capture + stop, so Lenis
+  // doesn't also scroll) and advance exactly one phase per gesture, locking the
+  // page until that phase is reached. A short cooldown means a held/continuous
+  // scroll steps phase-by-phase instead of blowing past. Free exit at the ends:
+  // at the last phase scrolling down (or first phase scrolling up) we let go.
+  // Wheel-only → mobile/touch keeps the idle-snap above; reduced-motion is off
+  // (pinned is false). Native scroll-anchored fallbacks (keyboard, scrollbar)
+  // still settle via the idle-snap.
+  useEffect(() => {
+    if (!pinned || small) return;
+    const el = ref.current;
+    if (!el) return;
+
+    let cooldown = false;
+    const onWheel = (e: WheelEvent) => {
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const range = el.offsetHeight - window.innerHeight;
+      if (range <= 0) return;
+      const y = window.scrollY;
+      // Outside the pinned range → leave the wheel to Lenis (free page scroll).
+      if (y < top - 2 || y > top + range + 2) return;
+      const f = clamp01((y - top) / range) * n;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      // Free exit at the section ends so the user is never trapped on the phone.
+      if (dir > 0 && f >= n - 0.5 - 0.02) return;
+      if (dir < 0 && f <= 0.5 + 0.02) return;
+      // Take this gesture over: block native scroll AND Lenis (capture-phase
+      // stopImmediatePropagation prevents Lenis's own wheel handler).
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (cooldown) return;
+      const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
+      const atCenter = Math.abs(f - (cur + 0.5)) <= 0.12;
+      const target = Math.max(0, Math.min(n - 1, atCenter ? cur + dir : cur));
+      const ty = Math.round(top + range * ((target + 0.5) / n));
+      cooldown = true;
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(ty, { duration: 0.7, lock: true, onComplete: () => { cooldown = false; } });
+      else { window.scrollTo({ top: ty, behavior: 'smooth' }); window.setTimeout(() => { cooldown = false; }, 760); }
+      if (DEBUG_SCROLL) console.log('[through-phone] wheel-step → phase', target);
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    return () => window.removeEventListener('wheel', onWheel, { capture: true });
+  }, [pinned, small, n, ref]);
+
   const sectionStyle = pinned
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
     : { minHeight: 'auto' };
