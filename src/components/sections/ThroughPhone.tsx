@@ -115,19 +115,6 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     [n, ref]
   );
 
-  // Scroll directly out of the section (past an end) so the forced stepping never
-  // traps the user — used when a gesture pushes past the first/last block.
-  const exitSection = useCallback((dir: 1 | -1) => {
-    const el = ref.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    const range = el.offsetHeight - window.innerHeight;
-    const ty = dir > 0 ? Math.round(top + range + window.innerHeight * 0.35) : Math.round(top - window.innerHeight * 0.35);
-    const lenis = getLenis();
-    if (lenis) lenis.scrollTo(ty, { duration: 0.5 });
-    else window.scrollTo({ top: Math.max(0, ty), behavior: 'smooth' });
-  }, [ref]);
-
   // Build derived per-segment progress values (hooks must run unconditionally).
   const seg0 = useSegmentProgress(progress, 0, n);
   const seg1 = useSegmentProgress(progress, 1, n);
@@ -314,59 +301,12 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     return () => window.removeEventListener('wheel', onWheel, { capture: true });
   }, [pinned, small, n, ref, goToPhase]);
 
-  // ---- Mobile touch-stepping: ONE swipe = ONE block, momentum-proof ----
-  // Mobile has no wheel and Lenis is off, so a native flick coasts (momentum)
-  // through all blocks — and momentum fires AFTER touchend, so preventDefault on
-  // touchmove can't catch it. Instead the pinned stage gets `touch-action: none`
-  // (CSS; it only affects touches on the visible full-screen stage, i.e. exactly
-  // while the section is engaged), so the browser NEVER scrolls/flings the page
-  // from touches inside the section — we own movement entirely. Each
-  // swipe advances exactly one block; at the ends an outward swipe scrolls
-  // cleanly out (never trapped). Mobile only; reduced-motion is off (pinned false).
-  useEffect(() => {
-    if (!pinned || !small) return;
-    const el = ref.current;
-    if (!el) return;
-
-    let startY = 0;
-    let tracking = false;
-    let cooldown = false;
-
-    const metrics = () => {
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const range = el.offsetHeight - window.innerHeight;
-      const y = window.scrollY;
-      return { top, range, y, inRange: range > 0 && y >= top - 2 && y <= top + range + 2 };
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0]?.clientY ?? 0;
-      tracking = metrics().inRange;
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (!tracking || cooldown) { tracking = false; return; }
-      tracking = false;
-      const m = metrics();
-      if (!m.inRange) return;
-      const dy = (e.changedTouches[0]?.clientY ?? startY) - startY;
-      const f = clamp01((m.y - m.top) / m.range) * n;
-      const cur = Math.max(0, Math.min(n - 1, Math.round(f - 0.5)));
-      if (Math.abs(dy) < 24) { goToPhase(cur, { duration: 0.35 }); return; } // too small → recentre
-      const dir = dy < 0 ? 1 : -1; // swipe up → forward
-      const target = cur + dir;
-      if (target < 0 || target > n - 1) { exitSection(dir > 0 ? 1 : -1); return; }
-      cooldown = true;
-      goToPhase(target, { duration: 0.55, onDone: () => { cooldown = false; } });
-    };
-
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [pinned, small, n, ref, goToPhase, exitSection]);
+  // NOTE (mobile): forced one-swipe-one-block stepping was removed — it relied on
+  // `touch-action: none`, which disabled native scroll across the pinned stage
+  // and could freeze scrolling when the finger was on the phone. Mobile now uses
+  // native scroll + the gentle idle-snap above (eases to the nearest block when
+  // you stop). A proper, non-trapping "stop on each block" via CSS scroll-snap
+  // (scroll-snap-type: y mandatory + scroll-snap-stop: always) is planned next.
 
   const sectionStyle = pinned
     ? { height: `${(1 + n * scrubSeg) * 100}svh` }
