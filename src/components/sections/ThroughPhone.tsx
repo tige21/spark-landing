@@ -326,11 +326,6 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
           {pinned && (
             <div className="tp-progress" aria-hidden="true">
-              <div className="tp-pips">
-                {segments.map((s, i) => (
-                  <span key={s.id} className={`tp-pip${i === activeFeat ? ' is-on' : ''}${i < activeFeat ? ' is-done' : ''}`} />
-                ))}
-              </div>
               <div className="tp-bar"><span ref={barFillRef} className="tp-bar-fill" /></div>
             </div>
           )}
