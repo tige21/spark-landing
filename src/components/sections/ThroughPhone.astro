@@ -8,6 +8,7 @@ interface SegmentInput {
   id: string;
   side: 'right' | 'left';
   scenario: string;
+  actions?: number;
   eyebrow: string;
   headline: string;
   body: string;
@@ -35,6 +36,7 @@ const enriched = await Promise.all(
       id: s.id,
       side: s.side,
       scenario: s.scenario,
+      actions: s.actions ?? 1,
       scenarioMobile,
       eyebrow: s.eyebrow,
       headline: s.headline,
