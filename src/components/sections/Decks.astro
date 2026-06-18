@@ -23,7 +23,7 @@ const { headline, caption, lang } = Astro.props;
     </div>
   </div>
   <div class="decks-head">
-    <Reveal client:visible>
+    <Reveal client:visible className="decks-enter">
       <h2 class="t-h1">{headline}</h2>
       <p class="t-lead caption">{caption}</p>
     </Reveal>
@@ -74,6 +74,16 @@ const { headline, caption, lang } = Astro.props;
 </style>
 
 <style is:global>
+  /* Stronger, clearly-visible entrance for the "Девять колод" heading right as
+     the block crosses in from the phone section — a longer fade + bigger rise
+     than the default .reveal. Scoped to .decks-enter so other reveals are
+     untouched; `:not(.is-in)` keeps it from fighting the global is-in reset. */
+  .reveal.decks-enter {
+    transition-duration: 0.7s;
+  }
+  .reveal.decks-enter:not(.is-in) {
+    transform: translateY(34px);
+  }
   .deck-grid {
     position: relative;
     z-index: var(--z-content);
