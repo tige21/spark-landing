@@ -2,6 +2,38 @@
   position: relative;
 }
 
+/* ---- scroll-snap targets (mobile "stop on each block") ----
+   Invisible 1px markers placed at each block's rest scroll position. They are
+   inert until `html.tp-snap` is toggled on (mobile only, while the section is
+   engaged — see ThroughPhone.tsx), so desktop (Lenis) and the rest of the page
+   are unaffected. Lenis is OFF on mobile, so native CSS snap works cleanly and
+   never disables scrolling (no trap, unlike touch-action:none). */
+.tp-snap-point {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+@media (max-width: 860px) {
+  /* PROXIMITY (not mandatory): combined with scroll-snap-stop:always on each
+     block it still forces a stop at EVERY block on a fast fling, but does NOT
+     pull the page back when you scroll past the last block — so exit/entry is
+     always free (no trap, unlike mandatory which kept re-snapping at the edge). */
+  html.tp-snap {
+    scroll-snap-type: y proximity;
+  }
+  html.tp-snap .tp-snap-point {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.tp-snap {
+    scroll-snap-type: none;
+  }
+}
+
 .tp-stage {
   overflow: hidden;
   padding-block: var(--space-2xl);

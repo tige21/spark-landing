@@ -131,6 +131,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       if (phoneRef.current) phoneRef.current.style.transform = '';
       panelRefs.current.forEach((p) => { if (p) { p.style.opacity = ''; p.style.transform = ''; } });
       canvasRefs.current.forEach((c, i) => { if (c) { c.style.opacity = i === 0 ? '1' : '0'; } });
+      if (typeof document !== 'undefined') document.documentElement.classList.remove('tp-snap');
       return;
     }
 
@@ -155,6 +156,11 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       } else {
         playedForRef.current = -1;
       }
+      // Enable native scroll-snap ONLY on mobile while the section occupies the
+      // viewport — never on desktop (Lenis), never on the rest of the page. The
+      // 0.005/0.995 window leaves the very edges un-snapped so entry/exit stays
+      // free (with the edge markers, no trap).
+      document.documentElement.classList.toggle('tp-snap', small && p > 0.005 && p < 0.995);
       // ---- phone position (JS owns the full transform incl. centring) ----
       if (phoneRef.current) {
         if (small) {
@@ -203,18 +209,21 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     };
 
     apply(progress.get());
-    return progress.on('change', apply);
+    const unsub = progress.on('change', apply);
+    return () => {
+      unsub();
+      if (typeof document !== 'undefined') document.documentElement.classList.remove('tp-snap');
+    };
   }, [pinned, small, progress, n, segments, ref]);
 
   // ---- Phase snap: settle to the nearest phase centre on scroll-idle ----
-  // The dwell plateau alone didn't read as discrete "stops" — a fast flick blew
-  // through all three phases. When scrolling stops inside the pinned range we
-  // ease the page to the active phase centre (f ∈ {0.5, 1.5, 2.5}) so each
-  // logical block (Колоды/Игра/Своя колода) fixes itself. Desktop drives the
-  // shared Lenis instance (no inertia fight); mobile (Lenis off) uses native
-  // smooth scrollTo. Disabled under reduced-motion (pinned is false there).
+  // DESKTOP ONLY. On desktop this eases the page to the active phase centre when
+  // scrolling stops (scrollbar/keyboard; the wheel-stepper handles wheel). On
+  // MOBILE this is disabled — native CSS scroll-snap (see the snap markers +
+  // html.tp-snap) owns settling there; running both would make the JS scrollTo
+  // fight the CSS snap and settle between blocks. Off under reduced-motion too.
   useEffect(() => {
-    if (!pinned) return;
+    if (!pinned || small) return;
     const el = ref.current;
     if (!el) return;
 
@@ -254,7 +263,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('scrollend', snapToNearest);
     };
-  }, [pinned, n, ref, goToPhase]);
+  }, [pinned, small, n, ref, goToPhase]);
 
   // ---- Desktop wheel-stepping: ONE wheel gesture = ONE phase, then stop ----
   // Idle-snap alone let a single long wheel coast through all three phases
@@ -399,6 +408,23 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
           </div>
         </div>
       </div>
+
+      {/* Native scroll-snap targets (mobile only — enabled via the toggled
+          html.tp-snap class; inert on desktop). Direct children of the TALL
+          section (not the sticky stage) so their absolute offsets map to real
+          document scroll positions. One point per block at its rest position
+          (scrollY = sectionTop + range*((i+0.5)/n), range = n*scrubSeg*100svh)
+          with scroll-snap-stop:always → a fling stops at EVERY block. With
+          `proximity` (see CSS) there's no edge marker / trap: scrolling past the
+          last block just leaves the section. */}
+      {pinned && segments.map((s, i) => (
+        <span
+          key={`snap-${s.id}`}
+          className="tp-snap-point"
+          style={{ top: `${scrubSeg * (i + 0.5) * 100}svh` }}
+          aria-hidden="true"
+        />
+      ))}
     </section>
   );
 }
