@@ -37,6 +37,10 @@
 .tp-stage {
   overflow: hidden;
   padding-block: var(--space-2xl);
+  /* Desktop phone box height (screen --sh + 11px frame padding each side),
+     shared with the eyebrow so it can sit just above the centred phone.
+     Eyebrow is hidden on mobile, so the desktop value here is harmless there. */
+  --tp-phone-h: calc(clamp(440px, 64svh, 580px) + 22px);
 }
 
 .tp-sparks {
@@ -48,7 +52,14 @@
 
 .tp-eyebrow {
   position: absolute;
-  top: clamp(var(--space-lg), 6svh, var(--space-2xl));
+  /* Track the vertically-centred phone instead of pinning to the very top, so
+     the eyebrow reads as a cap directly above the scene (no lone label floating
+     over a chasm). (100svh - phone height)/2 is the phone's top edge; we sit a
+     comfortable gap above it. max() guards short viewports from collisions. */
+  top: max(
+    var(--space-lg),
+    calc((100svh - var(--tp-phone-h)) / 2 - var(--space-2xl) - 1.4em)
+  );
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-content);
