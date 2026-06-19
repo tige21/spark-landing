@@ -2,19 +2,33 @@
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
 import SectionDecor from '../ui/SectionDecor.astro';
+import WhatCards from './WhatCards.tsx';
 import { stamp } from '../../assets/images';
 
+interface WhatCardInput {
+  label: string;
+  sample: string;
+  gated?: boolean;
+  gate?: string;
+  confirm?: string;
+}
 interface Props {
   headline: string;
-  pills: string[];
+  pills?: string[];
+  cards?: WhatCardInput[];
 }
-const { headline, pills } = Astro.props;
+const { headline, pills, cards } = Astro.props;
 
 const icons = [
   stamp('stamp-couples-v2'),
   stamp('stamp-classic'),
   stamp('stamp-spicy'),
 ];
+
+// Merge the text cards (ru.json) with their resolved icon src. When `cards` is
+// provided (RU) the section renders interactive flip cards; otherwise it falls
+// back to the static pills (EN).
+const cardData = cards?.map((c, i) => ({ ...c, icon: icons[i] }));
 ---
 
 <Section class="what">
@@ -29,16 +43,20 @@ const icons = [
     <h2 class="t-h1 headline">{headline}</h2>
   </Reveal>
 
-  <div class="pills">
-    {pills.map((p, i) => (
-      <Reveal client:visible delay={0.08 * i}>
-        <div class="pill">
-          <img src={icons[i]} alt="" width="72" height="72" loading="lazy" />
-          <span class="t-h3">{p}</span>
-        </div>
-      </Reveal>
-    ))}
-  </div>
+  {cardData ? (
+    <WhatCards client:visible cards={cardData} />
+  ) : (
+    <div class="pills">
+      {(pills ?? []).map((p, i) => (
+        <Reveal client:visible delay={0.08 * i}>
+          <div class="pill">
+            <img src={icons[i]} alt="" width="72" height="72" loading="lazy" />
+            <span class="t-h3">{p}</span>
+          </div>
+        </Reveal>
+      ))}
+    </div>
+  )}
 </Section>
 
 <style>
