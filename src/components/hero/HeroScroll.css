@@ -26,6 +26,8 @@
   .hero-bg img,
   .hero-bg canvas {
     object-fit: contain;
+    /* Asymmetric hero: press engraving shifts to the RIGHT half, copy lives left. */
+    object-position: right center;
   }
 }
 .hero-scrim {
@@ -85,6 +87,37 @@
   margin-top: var(--space-2xl);
   display: flex;
   justify-content: center;
+}
+
+/* Desktop: asymmetric split — copy column pinned LEFT, press engraving sits in
+   the right half (object-position:right above). Mobile stays centered/full-bleed. */
+@media (min-width: 761px) {
+  /* Vertically centre the left copy column to balance the right-side press. */
+  .hero-stage {
+    justify-content: center;
+  }
+  .hero-content {
+    align-self: flex-start;
+    max-width: min(50%, 600px);
+    margin-left: clamp(var(--space-xl), 6vw, 120px);
+    text-align: left;
+    padding-top: 0;
+  }
+  .hero-content .subtitle {
+    margin-inline: 0;
+  }
+  .hero-cta {
+    justify-content: flex-start;
+  }
+  /* Scrim leans cream toward the LEFT so the copy reads, leaving the press clear. */
+  .hero-scrim {
+    background: radial-gradient(
+      120% 90% at 28% 46%,
+      color-mix(in srgb, var(--table) 34%, transparent) 0%,
+      color-mix(in srgb, var(--table) 60%, transparent) 58%,
+      var(--table) 100%
+    );
+  }
 }
 
 /* Mobile keeps the full-bleed `cover` press. Copy sits high and compact so the
