@@ -98,8 +98,12 @@
   }
   .hero-content {
     align-self: flex-start;
-    max-width: min(50%, 600px);
-    margin-left: clamp(var(--space-xl), 6vw, 120px);
+    /* Copy occupies the left half of the SITE CONTAINER, with its left edge on
+       the same grid line as the nav/sections (container content edge), so it
+       reads as part of the page instead of floating off toward the viewport. */
+    max-width: min(calc(var(--maxw) / 2 - var(--space-xl)), 600px);
+    margin-left: max(var(--space-xl), calc((100vw - var(--maxw)) / 2 + var(--space-xl)));
+    padding-inline: 0;
     text-align: left;
     padding-top: 0;
   }

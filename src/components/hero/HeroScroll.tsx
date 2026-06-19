@@ -63,6 +63,15 @@ export default function HeroScroll({
       return;
     }
     const apply = (p: number) => {
+      // Desktop: the copy stays put while the engraving sequence plays behind it
+      // (a persistent headline over a playing "video"), so never fade it.
+      if (!small) {
+        el.style.opacity = '1';
+        el.style.transform = '';
+        el.style.pointerEvents = 'auto';
+        return;
+      }
+      // Mobile: fade the copy out so the cinematic frame reveals cleanly.
       const o = Math.max(0, Math.min(1, (0.45 - p) / 0.3));
       el.style.opacity = String(o);
       el.style.transform = `translateY(${(1 - o) * -24}px)`;
@@ -70,7 +79,7 @@ export default function HeroScroll({
     };
     apply(progress.get());
     return progress.on('change', apply);
-  }, [pinned, progress]);
+  }, [pinned, progress, small]);
 
   // `svh` (small viewport height) is stable when the mobile browser chrome /
   // Telegram address bar shows or hides — `vh` would change and reflow the pinned
