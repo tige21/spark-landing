@@ -260,14 +260,13 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     const el = ref.current;
     if (!el) return;
 
+    // ONE step per gesture is enforced by `cooldown`, which is held for the whole
+    // step animation and released on its onDone. Held/repeated scroll then steps
+    // action-by-action (one per animation); a quick flick = one action. We do NOT
+    // gate on a "wheel events have paused" timer: that perpetually re-armed while
+    // events kept coming, so a continuous scroll never advanced — the section only
+    // moved after a full stop, reading as broken.
     let cooldown = false;
-    // `armed` re-arms ONLY after wheel events pause. A trackpad fling fires a
-    // continuous stream of wheel events; without this, each event past the
-    // cooldown would step again → one fling skipped several actions. Now the
-    // re-arm timer keeps resetting while events keep coming, so one continuous
-    // gesture = exactly one step; you must stop and scroll again for the next.
-    let armed = true;
-    let rearmTimer = 0;
     const onWheel = (e: WheelEvent) => {
       const top = el.getBoundingClientRect().top + window.scrollY;
       const range = el.offsetHeight - window.innerHeight;
@@ -281,21 +280,16 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       if (dir < 0 && fa <= 0.5 + 0.02) return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      // keep disarmed while the gesture is still producing events; re-arm 150ms
-      // after the last wheel event (i.e. once the fling has actually stopped).
-      if (rearmTimer) clearTimeout(rearmTimer);
-      rearmTimer = window.setTimeout(() => { armed = true; }, 150);
-      if (cooldown || !armed) return;
-      armed = false;
+      if (cooldown) return;
       const cur = Math.max(0, Math.min(A - 1, Math.round(fa - 0.5)));
       const atCenter = Math.abs(fa - (cur + 0.5)) <= 0.12;
       const target = Math.max(0, Math.min(A - 1, atCenter ? cur + dir : cur));
       cooldown = true;
-      goToAction(target, { duration: 0.55, lock: true, onDone: () => { cooldown = false; } });
+      goToAction(target, { duration: 0.5, lock: true, onDone: () => { cooldown = false; } });
     };
 
     window.addEventListener('wheel', onWheel, { passive: false, capture: true });
-    return () => { if (rearmTimer) clearTimeout(rearmTimer); window.removeEventListener('wheel', onWheel, { capture: true }); };
+    return () => { window.removeEventListener('wheel', onWheel, { capture: true }); };
   }, [pinned, small, A, ref, goToAction]);
 
   const sectionStyle = pinned
