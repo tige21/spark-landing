@@ -76,8 +76,10 @@
 .hero-content .subtitle {
   max-width: 30ch;
   margin-inline: auto;
-  color: var(--meta-strong);
-  text-shadow: 0 1px 8px color-mix(in srgb, var(--table) 75%, transparent);
+  /* Full ink (was --meta-strong, too faint over the press engraving) + a
+     stronger parchment halo so it reads instantly against the artwork. */
+  color: var(--ink);
+  text-shadow: 0 1px 10px color-mix(in srgb, var(--table) 88%, transparent);
 }
 .hero-cta {
   margin-top: var(--space-2xl);
