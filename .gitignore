@@ -28,10 +28,11 @@ test-results/
 playwright-report/
 .playwright-mcp/
 
-# Generated hero scroll-scrub frames (built into dist locally; not committed)
-public/hero-frames/
+# Hero scroll-scrub frames are tracked via Git LFS (see .gitattributes) so the
+# CI cloud build ships them — NOT gitignored. A frames-less build + rsync --delete
+# would wipe them off the live mirrors.
 
-# local frame backups (P6 retone)
+# local frame backups / originals (P6 retone) — not build inputs, stay ignored
 public/hero-frames-orig/
 public/hero-orig/
 
