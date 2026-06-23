@@ -36,6 +36,18 @@ done
 echo "==> Step 1/2: Building static site"
 npm run build
 
+# Guard: hero-frames/ is gitignored, so it only exists in dist when built on a
+# machine that has the source frames. A frames-less build + `rsync --delete`
+# would WIPE the scroll-scrub frames off the server (breaks the hero video, the
+# phone screen image, and unpins the ThroughPhone section → "всё поехало").
+# Abort before rsync if the frames are missing, so a bad build can't nuke them.
+for probe in hero/0001.webp decks/0001.webp play/0001.webp create/0001.webp; do
+  if [ ! -f "dist/hero-frames/$probe" ]; then
+    echo "ERROR: dist/hero-frames/$probe missing — refusing to deploy (rsync --delete would wipe scroll frames off the live servers). Build on a machine that has public/hero-frames/." >&2
+    exit 1
+  fi
+done
+
 TS=$(date +%Y%m%d-%H%M%S)
 FAIL=0
 
