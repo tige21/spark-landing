@@ -28,6 +28,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # hero-frames/ are Git LFS objects — without this the checkout gets
+          # pointer files, astro ships a frames-less dist, and rsync --delete
+          # would wipe the scroll frames off the live mirrors.
+          lfs: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,7 +49,17 @@ jobs:
       - name: Verify build output
         run: |
           test -d dist && test -n "$(ls -A dist)" || { echo "dist/ empty"; exit 1; }
-          echo "Build: $(du -sh dist | cut -f1), $(find dist -type f | wc -l) files"
+          # Guard: hero-frames must be in the build, else rsync --delete would wipe
+          # the scroll frames off the live servers (frames-less LFS-pointer checkout).
+          for s in hero decks play create; do
+            test -f "dist/hero-frames/$s/0001.webp" \
+              || { echo "::error::dist/hero-frames/$s/0001.webp missing — refusing to deploy (would wipe live frames). Check Git LFS / lfs:true checkout."; exit 1; }
+          done
+          # An LFS pointer is ~130 bytes of text; a real webp is KBs. Catch a
+          # checkout that fetched pointers instead of the binaries.
+          sz=$(wc -c < dist/hero-frames/decks/0001.webp)
+          test "$sz" -gt 1000 || { echo "::error::dist/hero-frames/decks/0001.webp is $sz bytes — looks like an unresolved LFS pointer, not a webp. Aborting."; exit 1; }
+          echo "Build: $(du -sh dist | cut -f1), $(find dist -type f | wc -l) files, hero-frames OK ($(find dist/hero-frames -type f | wc -l) frames)"
 
       - name: Setup SSH key
         run: |
