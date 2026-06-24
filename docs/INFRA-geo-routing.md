@@ -55,6 +55,21 @@ LANDING_SSH_PASS=... NL_SSH_PASS=... bash scripts/deploy.sh
 ```
 Собирает `dist/`, бэкапит и заливает на **оба** зеркала, перезагружает nginx. Падение одного — явный лог, exit 1. Секреты только в env, не в гит.
 
+## Игра на `sparkcards.space/play` (PROD-приложение)
+
+Помимо лендинга на апексе, **прод-игра Spark** (Expo web из репо `spark`) живёт на подпути `/play` того же домена — наследует гео-роутинг и TLS лендинга (отдельный домен/серт не нужен).
+
+- **Отдельный webroot** на обоих зеркалах: `/var/www/sparkcards-play` (НЕ под `/var/www/sparkcards.space` — иначе landing-деплой с `rsync --delete` затёр бы игру).
+- nginx в vhost `sparkcards.space` на обоих зеркалах: `location /play/ { alias /var/www/sparkcards-play/; try_files $uri $uri/ /play/index.html; }` + `location = /play { return 301 /play/; }`.
+- **Сборка под подпуть:** прод-билд делается с `DEPLOY_TARGET=prod` → `app.config.ts` ставит `experiments.baseUrl='/play'` (staging остаётся на корне).
+- **Деплой (из репо spark, вручную/по релизу, НЕ на пуш):**
+  ```bash
+  LANDING_SSH_PASS=... NL_SSH_PASS=... yarn deploy:prod
+  ```
+  Собирает с base-path `/play`, guard на `/play/_expo`, rsync на **оба** зеркала + reload.
+- **API:** прод-игра пока ходит в общий `cards-api-staging` (185). ⚠️ Из РФ 185 режется → у РФ-юзеров без VPN запросы к API упадут (статика `/play` отдаётся с vdsina и доступна; бэкенд — нет). Полный РФ-доступ = reverse-proxy `/api` через RU-зеркало (отдельный шаг).
+- Старая заглушка `spark-cards.duckdns.org` → 301 на `sparkcards.space/play/`; сломанный CI `deploy-production.yml` и секреты `PROD_*` удалены (2026-06-24).
+
 ## TLS-серт
 
 - vdsina: серт есть, продлевается своим путём.
