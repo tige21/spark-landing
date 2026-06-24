@@ -1,6 +1,6 @@
 export const APP_NAME = 'Spark Cards';
 
-export const TELEGRAM_BOT_URL = 'https://t.me/SparkCards_TestingBot';
+export const TELEGRAM_BOT_URL = 'https://t.me/SparkCardsBot';
 
 export const STORE_LINKS = {
   appStore: '',
