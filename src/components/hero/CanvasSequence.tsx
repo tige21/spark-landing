@@ -22,6 +22,7 @@ interface CanvasSequenceProps {
   enabledMobile?: boolean;
   fit?: 'cover' | 'contain';
   eager?: boolean; // decode frames immediately (above-the-fold hero) instead of on idle
+  priority?: boolean; // false = a sequence that is only being pre-warmed, never scrubbed yet
   autoplay?: boolean; // time-based playback (ignore scroll progress) — for the through-phone demo
   playNonce?: number; // bump to (re)start the autoplay from frame 0
   className?: string;
@@ -48,6 +49,7 @@ export default function CanvasSequence({
   enabledMobile = true,
   fit = 'cover',
   eager = false,
+  priority = true,
   autoplay = false,
   playNonce = 0,
   className,
@@ -85,7 +87,17 @@ export default function CanvasSequence({
     let lastDrawn = -1;
     let ctx: CanvasRenderingContext2D | null = null;
     const frames: (Frame | undefined)[] = [];
-    const capWidth = small ? 540 : 900; // bitmap resize cap → bounds memory
+    // Decode at the size the canvas is actually painted at, not at the source
+    // resolution. The through-phone frames are 720x1561 shown in a ~254px-wide
+    // phone screen: full-size bitmaps cost ~4.5MB each, and two sequences are
+    // decoded at once (88 frames ≈ 400MB of textures) — enough to stutter the
+    // scroll on its own. Capped at 2x DPR so retina stays sharp.
+    const box = canvasRef.current?.getBoundingClientRect();
+    const hardCap = small ? 540 : 900;
+    const paintedWidth = box && box.width > 0
+      ? Math.ceil(box.width * Math.min(2, window.devicePixelRatio || 1))
+      : 0;
+    const capWidth = Math.max(320, Math.min(hardCap, paintedWidth || hardCap));
 
     const drawIndex = (i: number): boolean => {
       const canvas = canvasRef.current;
@@ -159,7 +171,9 @@ export default function CanvasSequence({
         if (!res.ok) return undefined;
         const blob = await res.blob();
         if ('createImageBitmap' in window) {
-          if (w && h) return await createImageBitmap(blob, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
+          // 'medium' over 'high': the resize runs per frame across ~90 frames and
+          // 'high' is materially slower for a downscale nobody can tell apart here.
+          if (w && h) return await createImageBitmap(blob, { resizeWidth: w, resizeHeight: h, resizeQuality: 'medium' });
           return await createImageBitmap(blob);
         }
         const img = new Image();
@@ -184,14 +198,19 @@ export default function CanvasSequence({
         const pad = m.pad ?? 4;
         const url = (i: number) => `/hero-frames/${activeName}/${String(i + 1).padStart(pad, '0')}.${m.ext}`;
 
-        const first = await decode(url(0));
-        if (cancelled || !first) return;
-        const nw = (first as ImageBitmap).width;
-        const nh = (first as ImageBitmap).height;
+        const probe = await decode(url(0));
+        if (cancelled || !probe) return;
+        const nw = (probe as ImageBitmap).width;
+        const nh = (probe as ImageBitmap).height;
         const tw = Math.min(nw, capWidth);
         const th = Math.round((tw / nw) * nh);
         const canvas = canvasRef.current;
         if (canvas) { canvas.width = tw; canvas.height = th; }
+        // The probe was decoded at source size to learn the aspect; keep the
+        // downscaled copy instead so frame 0 doesn't stay the one oversized bitmap.
+        const first = tw < nw ? (await decode(url(0), tw, th)) ?? probe : probe;
+        if (first !== probe && 'close' in probe) (probe as ImageBitmap).close();
+        if (cancelled) return;
         frames[0] = first;
         setReady(true);
         curr = progress.get() * (count - 1);
@@ -264,8 +283,14 @@ export default function CanvasSequence({
     // NOW — waiting for `load` + idle meant the whole scrub played frozen on
     // frame 0 on a slow connection. A scrub in progress outranks the LCP budget.
     const onScrub = () => {
-      scrubbed = true;
-      startBatchRef.current?.();
+      // Only the sequence on screen jumps the queue. A pre-warmed neighbour shares
+      // the same scroll value, so without this it kicked off its own decode burst
+      // the moment the user touched the section — 88 frames decoding at once is
+      // what made entering the first capability stutter.
+      if (priority) {
+        scrubbed = true;
+        startBatchRef.current?.();
+      }
       ensureRunning();
     };
     const unsub = progress.on('change', onScrub);
@@ -281,7 +306,7 @@ export default function CanvasSequence({
       ensureRunningRef.current = null;
       frames.forEach((f) => { if (f && 'close' in f) (f as ImageBitmap).close(); });
     };
-  }, [reduced, activeEnabled, activeName, small, progress]);
+  }, [reduced, activeEnabled, activeName, small, progress, priority]);
 
   // Toggle autoplay without re-running the (expensive) decode effect. When
   // `autoplay` turns on or `playNonce` changes, restart the time-based playback

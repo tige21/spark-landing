@@ -103,6 +103,24 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
   // its job — keep it hidden so it never nags on revisit.
   const [advanced, setAdvanced] = useState(false);
 
+  // The section's document position, cached. Reading it (rect + offsetHeight)
+  // forces a layout, and the wheel handler runs on EVERY wheel event — a trackpad
+  // fires ~100/s, so that was ~100 forced layouts a second on a 9700px section
+  // while the user was scrubbing. The page does not reflow mid-scroll, so a short
+  // TTL is enough to stay correct.
+  const geomRef = useRef({ at: 0, top: 0, range: 0 });
+  const geometry = useCallback(() => {
+    const now = performance.now();
+    const g = geomRef.current;
+    if (now - g.at < 250) return g;
+    const el = ref.current;
+    if (!el) return g;
+    g.at = now;
+    g.top = el.getBoundingClientRect().top + window.scrollY;
+    g.range = el.offsetHeight - window.innerHeight;
+    return g;
+  }, [ref]);
+
   // Move to a specific ACTION (0..A-1) and rest there. Used by the wheel-step
   // (desktop) and idle-snap. Drives the shared Lenis instance on desktop (no
   // inertia fight) or native smooth scroll on mobile (Lenis off there).
@@ -110,8 +128,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     (target: number, opts: { duration?: number; lock?: boolean; onDone?: () => void } = {}) => {
       const el = ref.current;
       if (!el) { opts.onDone?.(); return; }
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const range = el.offsetHeight - window.innerHeight;
+      const { top, range } = geometry();
       if (range <= 0) { opts.onDone?.(); return; }
       const t = Math.max(0, Math.min(A - 1, target));
       const ty = Math.round(top + range * ((t + 0.5) / A));
@@ -121,7 +138,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
       else { window.scrollTo({ top: ty, behavior: 'smooth' }); if (opts.onDone) window.setTimeout(opts.onDone, duration * 1000 + 80); }
       if (DEBUG_SCROLL) console.log('[through-phone] goToAction', t, ty);
     },
-    [A, ref]
+    [A, ref, geometry]
   );
 
   // Per-feature progress values (hooks must run unconditionally → fixed 4 slots).
@@ -181,14 +198,16 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     const el = ref.current;
     if (!el) return;
 
+    const invalidate = () => { geomRef.current.at = 0; };
+    window.addEventListener('resize', invalidate);
+
     let idleTimer = 0;
     let guardUntil = 0;
 
     const snapToNearest = () => {
       const now = performance.now();
       if (now < guardUntil) return;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const range = el.offsetHeight - window.innerHeight;
+      const { top, range } = geometry();
       if (range <= 0) return;
       const y = window.scrollY;
       if (y < top - 1 || y > top + range + 1) return;
@@ -209,10 +228,11 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     window.addEventListener('scrollend', snapToNearest);
     return () => {
       if (idleTimer) clearTimeout(idleTimer);
+      window.removeEventListener('resize', invalidate);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('scrollend', snapToNearest);
     };
-  }, [pinned, small, A, ref, goToAction]);
+  }, [pinned, small, A, ref, goToAction, geometry]);
 
   // ---- Desktop wheel-stepping: ONE wheel gesture = ONE action, then stop ----
   // Capture the wheel (capture + stopImmediatePropagation so Lenis doesn't also
@@ -231,8 +251,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     // moved after a full stop, reading as broken.
     let cooldown = false;
     const onWheel = (e: WheelEvent) => {
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const range = el.offsetHeight - window.innerHeight;
+      const { top, range } = geometry();
       if (range <= 0) return;
       const y = window.scrollY;
       // While the sticky stage is still sliding up, its content is centred on a
@@ -267,7 +286,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
 
     window.addEventListener('wheel', onWheel, { passive: false, capture: true });
     return () => { window.removeEventListener('wheel', onWheel, { capture: true }); };
-  }, [pinned, small, A, ref, goToAction]);
+  }, [pinned, small, A, ref, goToAction, geometry]);
 
   const sectionStyle = pinned
     ? { height: `${(1 + A * perAction) * 100}svh` }
@@ -347,6 +366,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
                       nameMobile={s.scenarioMobile}
                       enabled={s.hasFrames && (i === activeFeat || i === activeFeat + 1)}
                       enabledMobile={s.hasFramesMobile && (i === activeFeat || i === activeFeat + 1)}
+                      priority={i === activeFeat}
                       style={{ position: 'absolute', inset: 0 }}
                     />
                   </div>
