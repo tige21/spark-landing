@@ -42,3 +42,6 @@ src/assets/engravings-orig/
 # code intelligence indexes (local only)
 .serena/
 .codegraph/
+
+# local agent settings (per-machine)
+.claude/settings.local.json
