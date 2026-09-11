@@ -1,7 +1,6 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
-import Parallax from '../ui/Parallax.tsx';
 import DecksShelf from './DecksShelf.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
@@ -17,9 +16,7 @@ const { headline, caption, lang } = Astro.props;
 <Section id="decks" class="decks">
   <div class="crest-clip" aria-hidden="true">
     <div class="crest-holder">
-      <Parallax client:visible distance={0} rotate={8}>
-        <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
-      </Parallax>
+      <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
     </div>
   </div>
   <div class="decks-head">
@@ -38,7 +35,11 @@ const { headline, caption, lang } = Astro.props;
     overflow: hidden;
   }
   /* Confine the engraving to the cards region (below the heading) and clip it
-     there, so it backs the deck grid instead of the title and never spills. */
+     there, so it backs the deck grid instead of the title and never spills.
+     The crest is deliberately STATIC: as a scroll-animated layer it sat behind
+     the nine cards, and everything painting over a composited layer has to be
+     composited too — the section, the grid and the cards all became standing
+     layers that repainted while scrolling. */
   .crest-clip {
     position: absolute;
     top: clamp(220px, 24vw, 360px);
@@ -93,13 +94,15 @@ const { headline, caption, lang } = Astro.props;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-xl);
-    perspective: 1100px;
   }
+  /* perspective() inside `transform` instead of the `perspective` property: the
+     property keeps a 3D rendering context alive on the grid and all nine cells
+     for the life of the page, which the compositor turns into standing layers.
+     The function gives the same depth only while the transform is applied. */
   .deck-cell {
     list-style: none;
-    perspective: 700px;
     opacity: 0;
-    transform: translateY(22px) rotateX(20deg);
+    transform: perspective(1100px) translateY(22px) rotateX(20deg);
     transform-origin: 50% 100%;
     transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
     transition-delay: calc(var(--i, 0) * 0.05s);
@@ -132,7 +135,7 @@ const { headline, caption, lang } = Astro.props;
   .deck-card.is-tapped {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
-    transform: translateY(-8px) rotateX(-6deg);
+    transform: perspective(700px) translateY(-8px) rotateX(-6deg);
   }
   @media (prefers-reduced-motion: reduce) {
     .deck-cell { opacity: 1 !important; transform: none !important; transition: none !important; }
