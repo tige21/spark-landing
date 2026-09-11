@@ -112,9 +112,7 @@
   text-align: left;
   opacity: 0;
   pointer-events: none;
-  /* No will-change: these crossfade once per capability, and Chrome promotes for
-     the duration of a running transition anyway. Left standing, three panels plus
-     three canvases plus the phone held full-viewport layers for the whole page. */
+  will-change: opacity, transform;
   /* Desktop copy is discrete per capability — only the active one shows, and the
      transition smooths the crossfade + slide-in. */
   transition: opacity 0.35s ease, transform 0.45s var(--ease-out, ease);
@@ -231,6 +229,7 @@
     0 2px 4px rgba(0, 0, 0, 0.35),
     var(--shadow-float),
     0 40px 80px -30px rgba(20, 14, 8, 0.55);
+  will-change: transform;
   z-index: 2;
 }
 [data-side='left'] .tp-phone {
@@ -276,6 +275,7 @@
   position: absolute;
   inset: 0;
   transition: opacity 0.35s var(--ease-out, ease);
+  will-change: opacity;
 }
 
 /* ---- mobile: big phone centred low, compact copy stacked tight above ---- */

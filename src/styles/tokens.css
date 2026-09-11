@@ -204,15 +204,10 @@ html.lenis body {
 }
 
 /* Scroll-reveal (vanilla IntersectionObserver toggles .is-in) — replaces framer whileInView. */
-/* `:not(.is-in)` matters: these reveals are one-shot, so an unscoped will-change
-   left every revealed block on its own compositor layer for the life of the page
-   (the decks section alone was rasterised three times over — section, tilt
-   wrapper and grid). Chrome promotes on its own for the duration of a running
-   transition, so the hint is only needed before it starts. */
-.reveal:not(.is-in),
-.reveal-stamp:not(.is-in),
-.reveal-tilt:not(.is-in),
-.reveal-seal:not(.is-in) {
+.reveal,
+.reveal-stamp,
+.reveal-tilt,
+.reveal-seal {
   will-change: opacity, transform;
 }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-slower) var(--ease-out), transform var(--dur-slower) var(--ease-out); }
