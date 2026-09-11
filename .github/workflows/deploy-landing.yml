@@ -1,8 +1,12 @@
 name: Deploy Landing
 
-# Builds the Astro site in the cloud and rsyncs dist/ to BOTH geo-mirrors (RU vdsina + NL).
-# Triggered by every push to main that touches the site — so the Telegram bot's commits
-# auto-publish the landing to both mirrors without building on any box.
+# Builds the Astro site in the cloud and rsyncs dist/ to BOTH geo arms. Ни одно из плеч не резерв:
+# sparkcards.space резолвится по местоположению клиента, из РФ юзера обслуживает vdsina
+# 83.217.215.66, всех остальных (и всех под VPN) — 62yun FRA 194.5.65.182. Пропущенное плечо =
+# половина аудитории на прошлой сборке, поэтому job падает при ошибке любого из них и после
+# заливки проверяет, что оба отдают одну и ту же сборку.
+# Старый бокс 185.214.108.29 умер и выведен 2026-07-09 — деплой туда не попадал никуда.
+# Триггерится каждым пушем в main, который трогает сайт.
 
 on:
   push:
@@ -90,14 +94,36 @@ jobs:
             echo "$name: OK"
           }
           rc=0
-          deploy_one "vdsina-RU" "83.217.215.66" || rc=1
-          deploy_one "62yun-NL"  "185.214.108.29" || rc=1
+          deploy_one "vdsina-RU (плечо для РФ)"        "83.217.215.66" || rc=1
+          deploy_one "62yun-FRA (зарубежное плечо)"    "194.5.65.182"  || rc=1
           if [ "$rc" -eq 0 ]; then
-            echo "✅ both mirrors deployed"
+            echo "✅ оба плеча обновлены"
           else
-            echo "::error::one or more mirrors failed — see warnings above"
+            echo "::error::плечо не обновилось — половина аудитории осталась на прошлой сборке"
             exit 1
           fi
+
+      - name: Verify both arms serve the new build
+        run: |
+          set -u
+          # rsync и reload могут пройти, а наружу отдаваться старое: не тот вебрут, чужой vhost,
+          # кэш. Сравниваем то, что реально отдаётся по каждому адресу, с тем, что собрали.
+          local_sha=$(sha256sum dist/index.html | cut -d' ' -f1)
+          rc=0
+          check_arm() {
+            local name="$1" ip="$2" got
+            got=$(curl -sS -m 30 --resolve "sparkcards.space:443:$ip" https://sparkcards.space/ 2>/dev/null | sha256sum | cut -d' ' -f1)
+            if [ "$got" = "$local_sha" ]; then
+              echo "$name ($ip): отдаёт свежую сборку"
+            else
+              echo "::error::$name ($ip) отдаёт другую сборку — эта часть аудитории осталась на прошлой версии"
+              rc=1
+            fi
+          }
+          check_arm "62yun-FRA (зарубежное плечо)" "194.5.65.182"
+          check_arm "vdsina-RU (плечо для РФ)"     "83.217.215.66"
+          [ "$rc" -eq 0 ] || exit 1
+          echo "оба плеча отдают одну и ту же свежую сборку"
 
       - name: Cleanup
         if: always()

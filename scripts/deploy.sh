@@ -2,12 +2,14 @@
 #
 # Static deploy for the Spark Cards landing (sparkcards.space).
 # Geo-split: deploys the SAME static build to BOTH mirrors.
-#   - vdsina (RU)  83.217.215.66  — serves RU-source traffic
-#   - 62yun  (NL)  185.214.108.29 — serves default / foreign / VPN traffic
+#   - vdsina (RU)  83.217.215.66  — плечо гео для юзеров из РФ
+#   - 62yun  (FRA) 194.5.65.182   — плечо гео для всех остальных, включая всех под VPN
+# Старый бокс 185.214.108.29 умер и выведен 2026-07-09 — деплой в него не попадал никуда.
 # Builds once, then per server: backs up remote dir, rsyncs dist/, reloads nginx.
 # Requires both SSH passwords in the environment (never commit them):
 #   LANDING_SSH_PASS -> root@83.217.215.66 (vdsina, RU)
-#   NL_SSH_PASS      -> root@185.214.108.29 (62yun, NL)
+#   FRA_SSH_PASS     -> root@194.5.65.182  (62yun, FRA); принимаются и старые имена
+#                       NL_SSH_PASS / STAGING_SSH_PASS — чтобы не ломать уже настроенные окружения
 #
 
 set -euo pipefail
@@ -52,8 +54,8 @@ SSH_OPTS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
 
 # label | user@host | port | password-env-var
 TARGETS=(
-  "vdsina-RU|root@83.217.215.66|22|LANDING_SSH_PASS"
-  "62yun-NL|root@185.214.108.29|22|NL_SSH_PASS"
+  "vdsina-RU (плечо для РФ)|root@83.217.215.66|22|LANDING_SSH_PASS"
+  "62yun-FRA (зарубежное плечо)|root@194.5.65.182|22|FRA_SSH_PASS"
 )
 
 echo "==> Landing deploy starting (geo-split: 2 mirrors)"
@@ -61,6 +63,11 @@ echo "==> Landing deploy starting (geo-split: 2 mirrors)"
 # Fail fast if any secret is missing — both mirrors must stay in sync.
 for t in "${TARGETS[@]}"; do
   IFS='|' read -r label host port passvar <<< "$t"
+  # окружения, настроенные до переезда, держат пароль в NL_SSH_PASS или STAGING_SSH_PASS
+  if [ "$passvar" = "FRA_SSH_PASS" ] && [ -z "${FRA_SSH_PASS:-}" ]; then
+    FRA_SSH_PASS="${NL_SSH_PASS:-${STAGING_SSH_PASS:-}}"
+    export FRA_SSH_PASS
+  fi
   if [ -z "${!passvar:-}" ]; then
     echo "ERROR: $passvar is not set (needed for $label / $host). Export it before deploying (never commit it)." >&2
     exit 1
@@ -117,4 +124,24 @@ if [ "$FAIL" -ne 0 ]; then
   echo "==> Deploy finished WITH ERRORS — mirrors may be OUT OF SYNC. Check the log above." >&2
   exit 1
 fi
+# rsync и reload могут пройти, а наружу отдаваться старое. Домен под гео-DNS, поэтому каждое
+# плечо проверяем по своему адресу через --resolve: с этой машины DNS отдаст только одно из двух.
+echo "==> Проверка: оба плеча отдают одну и ту же сборку"
+LOCAL_SHA=$(shasum -a 256 dist/index.html | cut -d' ' -f1)
+VERIFY_FAIL=0
+for t in "62yun-FRA (зарубежное плечо)|194.5.65.182" "vdsina-RU (плечо для РФ)|83.217.215.66"; do
+  IFS='|' read -r vlabel vip <<< "$t"
+  served=$(curl -sS -m 30 --resolve "sparkcards.space:443:$vip" https://sparkcards.space/ 2>/dev/null | shasum -a 256 | cut -d' ' -f1)
+  if [ "$served" = "$LOCAL_SHA" ]; then
+    echo "  ✓ [$vlabel] отдаёт свежую сборку"
+  else
+    echo "  ! [$vlabel] отдаёт другую сборку — эта часть аудитории осталась на прошлой версии" >&2
+    VERIFY_FAIL=1
+  fi
+done
+if [ "$VERIFY_FAIL" -ne 0 ]; then
+  echo "==> Заливка прошла, но плечи разошлись. Разбираться по ../spark/docs/INFRA_GEODNS.md" >&2
+  exit 1
+fi
+
 echo "==> Done — both mirrors updated. https://sparkcards.space"
