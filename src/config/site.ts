@@ -121,3 +121,53 @@ export const DECKS: DeckInfo[] = [
     },
   },
 ];
+
+export const MERCHANT = {
+  name: {
+    ru: 'Перебейнос Егор Игоревич, самозанятый',
+    en: 'Egor Igorevich Perebeynos, self-employed',
+  },
+  innLabel: { ru: 'ИНН', en: 'Tax ID (INN)' },
+  inn: '781302631519',
+  phone: '+7 911 246-51-39',
+  phoneUrl: 'tel:+79112465139',
+  email: 'eeper03@mail.ru',
+};
+
+export const LEGAL_LINKS = [
+  {
+    href: '/play/legal?tab=terms',
+    ru: 'Пользовательское соглашение и оферта',
+    en: 'Terms of Service and offer',
+  },
+  {
+    href: '/play/legal',
+    ru: 'Политика конфиденциальности',
+    en: 'Privacy Policy',
+  },
+];
+
+export const PRICING = {
+  heading: { ru: 'Стоимость', en: 'Pricing' },
+  items: [
+    {
+      amount: '149 ₽',
+      ru: 'Колода — бессрочный доступ',
+      en: 'A deck — lifetime access',
+    },
+    {
+      amount: '599 ₽',
+      ru: 'Все колоды',
+      en: 'All decks',
+    },
+    {
+      amount: '299 ₽',
+      ru: 'Spark AI без лимитов, 30 дней',
+      en: 'Spark AI unlimited, 30 days',
+    },
+  ],
+  note: {
+    ru: 'Оплата банковской картой, доступ к колоде открывается сразу после оплаты. Возврат — в течение 14 дней после покупки, запрос на eeper03@mail.ru.',
+    en: 'Payment by bank card; the deck unlocks right after payment. Refunds within 14 days of purchase, request at eeper03@mail.ru.',
+  },
+};
