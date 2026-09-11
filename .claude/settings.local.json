@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.local/bin/codegraph\" sync /Users/user/Documents/projects/spark >/dev/null 2>&1; echo \"APP: репозиторий приложения — /Users/user/Documents/projects/spark (codegraph projectPath). Инфра-правда по доменам/зеркалам: ../spark/CLAUDE.md + ../spark/docs/INFRA_GEODNS.md\"; exit 0",
+            "timeout": 60,
+            "statusMessage": "Синхронизирую индекс приложения..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "additionalDirectories": [
+      "/Users/user/Documents/projects/spark"
+    ]
+  }
+}
