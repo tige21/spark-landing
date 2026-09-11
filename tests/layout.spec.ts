@@ -36,7 +36,7 @@ test.describe('hero composition', () => {
 });
 
 test.describe('through-phone showcase', () => {
-  test('the phone holds one position across every capability', async ({ page }, testInfo) => {
+  test('copy and phone stand as one centred pair on every capability', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'side-by-side layout is desktop-only');
     await page.goto('/');
     await hydrateWholePage(page);
@@ -51,7 +51,7 @@ test.describe('through-phone showcase', () => {
     });
     expect(geo.pinned).toBe('true');
 
-    const seen: { x: number; feature: number }[] = [];
+    const seen: { side?: string; feature: number; marginL: number; marginR: number; phoneL: number }[] = [];
     for (const action of [0.5, 5.5, 10.5]) {
       await page.evaluate(
         ([top, range, a]) => window.scrollTo(0, Math.round(top + range * (a / 13))),
@@ -61,16 +61,31 @@ test.describe('through-phone showcase', () => {
       seen.push(
         await page.evaluate(() => {
           const panels = [...document.querySelectorAll('.tp-panel')];
+          const phone = document.querySelector('.tp-phone')!.getBoundingClientRect();
+          const copy = document.querySelector('.tp-panel.is-active')!.getBoundingClientRect();
+          const side = (document.querySelector('.through-phone') as HTMLElement).dataset.side;
+          const track = Math.min(window.innerWidth, 1180);
+          const gridL = (window.innerWidth - track) / 2 + 24;
+          const gridR = window.innerWidth - gridL;
+          const onRight = side === 'right';
           return {
-            x: Math.round(document.querySelector('.tp-phone')!.getBoundingClientRect().x),
+            side,
             feature: panels.findIndex((p) => p.classList.contains('is-active')),
+            marginL: Math.round((onRight ? copy.left : phone.left) - gridL),
+            marginR: Math.round(gridR - (onRight ? phone.right : copy.right)),
+            phoneL: Math.round(phone.left),
           };
         })
       );
     }
 
     expect(seen.map((s) => s.feature)).toEqual([0, 1, 2]);
-    expect(new Set(seen.map((s) => s.x)).size).toBe(1);
+    // The pair is centred: equal air on both sides of copy+phone, every step.
+    for (const s of seen) expect(Math.abs(s.marginL - s.marginR)).toBeLessThanOrEqual(2);
+    // …and the phone still travels between capabilities.
+    expect(seen[0].side).toBe('right');
+    expect(seen[1].side).toBe('left');
+    expect(seen[1].phoneL).toBeLessThan(seen[0].phoneL);
   });
 });
 

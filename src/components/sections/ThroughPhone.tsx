@@ -235,7 +235,21 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
       const range = el.offsetHeight - window.innerHeight;
       if (range <= 0) return;
       const y = window.scrollY;
-      if (y < top - 2 || y > top + range + 2) return;
+      // While the sticky stage is still sliding up, its content is centred on a
+      // box that hangs off the bottom of the screen — the phone sits low and half
+      // cut. One wheel-down click pulls the section into place instead of leaving
+      // the user parked in that half-entered frame. Wheeling UP is never grabbed,
+      // so leaving the section upward stays free.
+      if (y < top - 2) {
+        if (y < top - window.innerHeight * 0.6 || e.deltaY <= 0) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (cooldown) return;
+        cooldown = true;
+        goToAction(0, { duration: 0.5, lock: true, onDone: () => { cooldown = false; } });
+        return;
+      }
+      if (y > top + range + 2) return;
       const fa = clamp01((y - top) / range) * A;
       const dir = e.deltaY > 0 ? 1 : -1;
       // Free exit at the section ends so the user is never trapped on the phone.
@@ -264,7 +278,14 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     : ({ position: 'relative' } as const);
 
   return (
-    <section ref={ref} id={id} className="through-phone" style={sectionStyle} data-pinned={pinned}>
+    <section
+      ref={ref}
+      id={id}
+      className="through-phone"
+      style={sectionStyle}
+      data-pinned={pinned}
+      data-side={activeFeat % 2 === 0 ? 'right' : 'left'}
+    >
       <div className="tp-stage" style={stageStyle}>
         {!reduced && (
           <Scene3D perspective={1100} className="tp-sparks" aria-hidden="true">
@@ -283,7 +304,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
           {segments.map((s, i) => (
             <div
               key={s.id}
-              className={`tp-panel${i === activeFeat ? ' is-active' : ''}`}
+              className={`tp-panel tp-panel--${i % 2 === 0 ? 'left' : 'right'}${i === activeFeat ? ' is-active' : ''}`}
             >
               <p className="eyebrow tp-step">{s.eyebrow}</p>
               <h2 className="t-h2 tp-headline">{s.headline}</h2>

@@ -37,15 +37,28 @@
 .tp-stage {
   overflow: hidden;
   padding-block: var(--space-2xl);
-  /* Desktop phone box height (screen --sh + 11px frame padding each side),
-     shared with the eyebrow so it can sit just above the centred phone.
-     Eyebrow is hidden on mobile, so the desktop value here is harmless there. */
-  --tp-phone-h: calc(clamp(440px, 64svh, 580px) + 22px);
-  /* Horizontal offset of the phone from the stage centre — it holds the SAME
-     spot for every capability. Sliding it side to side as the active feature
-     changed read as a glitch, not as a layout. The eyebrow uses the same value
-     so it caps the device instead of floating over the gap. */
-  --tp-dx: min(calc(min(100vw, var(--maxw)) * 0.25), 340px);
+  /* Copy + phone are laid out as ONE pair centred on the stage, not as two blocks
+     pinned to opposite container edges — edge-pinned they read as flung apart and
+     never line up with each other. Geometry below derives the pair's width from
+     the real phone box, so the outer margins come out equal on both sides.
+     `--tp-grid` mirrors .tp-track's own width (width:100% capped at --maxw). */
+  --tp-grid: min(100vw, var(--maxw));
+  --tp-screen-h: clamp(440px, 64svh, 580px);
+  /* Phone frame = screen width (kept at the captured 393:852 aspect below the
+     30px status band) + 11px of bezel each side. */
+  --tp-phone-w: calc((var(--tp-screen-h) - 30px) * 393 / 852 + 22px);
+  /* Matches .tp-panel's own clamp(280px, 36%, 430px) — 36% of the track. */
+  --tp-copy-w: clamp(280px, calc(var(--tp-grid) * 0.36), 430px);
+  --tp-gap: clamp(48px, 6vw, 120px);
+  --tp-pair-w: calc(var(--tp-copy-w) + var(--tp-gap) + var(--tp-phone-w));
+  /* Desktop phone box height (screen + 11px bezel each side), shared with the
+     eyebrow so it can sit just above the phone. */
+  --tp-phone-h: calc(var(--tp-screen-h) + 22px);
+  /* Horizontal offset of the phone from the stage centre: half the pair minus
+     half the phone. Flips sign with the active capability (see [data-side]) and
+     the move is TRANSITIONED — the old build set this inline from JS with no
+     transition, so the phone teleported across instead of travelling. */
+  --tp-dx: calc((var(--tp-pair-w) - var(--tp-phone-w)) / 2);
 }
 
 .tp-sparks {
@@ -67,9 +80,13 @@
   );
   left: calc(50% + var(--tp-dx));
   transform: translateX(-50%);
+  transition: left 0.6s var(--ease-out, ease);
   z-index: var(--z-content);
   text-align: center;
   margin: 0;
+}
+[data-side='left'] .tp-eyebrow {
+  left: calc(50% - var(--tp-dx));
 }
 
 /* Keep the whole scene inside the site container (matches Container.astro:
@@ -91,16 +108,24 @@
 .tp-panel {
   position: absolute;
   top: 50%;
-  left: var(--space-xl);
   width: clamp(280px, 36%, 430px);
   text-align: left;
   opacity: 0;
-  transform: translate(-26px, -50%);
   pointer-events: none;
   will-change: opacity, transform;
   /* Desktop copy is discrete per capability — only the active one shows, and the
      transition smooths the crossfade + slide-in. */
   transition: opacity 0.35s ease, transform 0.45s var(--ease-out, ease);
+}
+/* Each capability's copy keeps ONE fixed slot and only crossfades — only the
+   phone travels. Two moving blocks at once read as the layout falling apart. */
+.tp-panel--left {
+  left: calc((var(--tp-grid) - var(--tp-pair-w)) / 2);
+  transform: translate(-26px, -50%);
+}
+.tp-panel--right {
+  right: calc((var(--tp-grid) - var(--tp-pair-w)) / 2);
+  transform: translate(26px, -50%);
 }
 .tp-panel.is-active {
   opacity: 1;
@@ -134,7 +159,7 @@
    the bar fills 0→100% across the active capability's actions (set in JS). */
 .tp-progress {
   position: absolute;
-  left: calc(50% + var(--tp-dx));
+  left: 50%;
   bottom: clamp(var(--space-md), 3svh, var(--space-lg));
   transform: translateX(-50%);
   display: flex;
@@ -162,7 +187,7 @@
 /* ---- "scroll on" cue, shown on the first block, fades after advancing ---- */
 .tp-cue {
   position: absolute;
-  left: calc(50% + var(--tp-dx));
+  left: 50%;
   bottom: clamp(var(--space-xl), 7svh, calc(var(--space-xl) * 2));
   display: flex;
   flex-direction: column;
@@ -196,6 +221,7 @@
   top: 50%;
   left: 50%;
   transform: translate(calc(-50% + var(--tp-dx)), -50%);
+  transition: transform 0.6s var(--ease-out, ease);
   padding: 11px;
   background: linear-gradient(155deg, #2a2420, #15110d);
   border-radius: 54px;
@@ -206,6 +232,9 @@
   will-change: transform;
   z-index: 2;
 }
+[data-side='left'] .tp-phone {
+  transform: translate(calc(-50% - var(--tp-dx)), -50%);
+}
 
 /* Screen = status band (clears the dynamic island) + canvas area. The canvas
    area keeps the captured frame aspect (393:852) so nothing distorts; the band
@@ -213,7 +242,7 @@
    (X / progress / tabs) clear of the island. */
 .tp-screen {
   --band: 30px;
-  --sh: clamp(440px, 64svh, 580px);
+  --sh: var(--tp-screen-h);
   height: var(--sh);
   width: calc((var(--sh) - var(--band)) * 393 / 852);
   display: flex;
@@ -254,6 +283,10 @@
   /* Phone is centred on mobile — nothing tracks a side offset. */
   .tp-stage {
     --tp-dx: 0px;
+  }
+  .tp-phone,
+  [data-side='left'] .tp-phone {
+    transition: none;
   }
 
   /* Section eyebrow is redundant with the per-segment step on mobile and
@@ -301,7 +334,9 @@
   /* Mobile copy is discrete (JS does not set inline opacity here): only the
      ACTIVE block's caption shows, fading + rising in on each step so the change
      is obvious and the text is the loud focal point. */
-  .tp-panel {
+  .tp-panel,
+  .tp-panel--left,
+  .tp-panel--right {
     top: calc(var(--phone-top) + var(--phone-screen-h) + var(--phone-frame) * 2 + var(--phone-gap));
     bottom: auto;
     left: 50%;
