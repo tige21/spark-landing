@@ -10,7 +10,6 @@ import './ThroughPhone.css';
 
 export interface PhoneSegment {
   id: string;
-  side: 'right' | 'left';
   scenario: string;
   actions: number; // discrete actions/snap-stops this feature shows (one swipe each)
   scenarioMobile: string; // mobile-downscaled frame set name (falls back to scenario)
@@ -25,6 +24,7 @@ export interface PhoneSegment {
 }
 
 interface ThroughPhoneProps {
+  id?: string;
   eyebrow: string;
   segments: PhoneSegment[];
   sparkSrc: string;
@@ -59,7 +59,7 @@ function useFeatureProgress(main: ScrollValue, start: number, count: number, tot
 // finger-swipe (mobile) or wheel gesture (desktop) advances exactly ONE action —
 // the user is walked through every screen instead of flying past. Reduced-motion
 // / missing frames / SSR → a plain stacked fallback (no pin).
-export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPhoneProps) {
+export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: ThroughPhoneProps) {
   const n = segments.length;
   const { ref, progress } = useScrollScene(['start start', 'end end']);
   const { reduced, small } = useMotionPrefs();
@@ -94,13 +94,9 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   // swipe; the section is (1 + A*perAction) tall. Tuned smaller on desktop.
   const perAction = small ? 0.82 : 0.7;
 
-  const phoneRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const canvasRefs = useRef<(HTMLDivElement | null)[]>([]);
   const barFillRef = useRef<HTMLSpanElement>(null);
 
-  // Active FEATURE (drives copy, indicator, lazy frame decode, side-slide).
+  // Active FEATURE (drives copy, indicator, lazy frame decode).
   const [activeFeat, setActiveFeat] = useState(0);
   const activeFeatRef = useRef(0);
   // Once the user reaches a later capability, the first "scroll on" cue has done
@@ -135,20 +131,16 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
   const fp3 = useFeatureProgress(progress, featureStart[3] ?? 0, featureCounts[3] ?? 1, A);
   const derived = [fp0, fp1, fp2, fp3].slice(0, n);
 
-  // Imperative driver: sets the active feature, the phone's side (desktop),
-  // copy-panel visibility, and which feature's canvas is shown. The canvas FRAMES
-  // are scrubbed by the per-feature derived progress (CanvasSequence subscribes to
-  // `progress` directly), so here we only toggle visibility, not frames.
+  // Imperative driver: tracks the active feature and the intra-feature progress
+  // bar. Everything positional (phone side, panel/canvas visibility) is declarative
+  // — CSS + the `activeFeat` render — so it can't disagree with the CSS breakpoint.
+  // The canvas FRAMES are scrubbed by the per-feature derived progress
+  // (CanvasSequence subscribes to `progress` directly).
   useIsoLayoutEffect(() => {
     if (!pinned) {
-      if (phoneRef.current) phoneRef.current.style.transform = '';
-      panelRefs.current.forEach((p) => { if (p) { p.style.opacity = ''; p.style.transform = ''; } });
-      canvasRefs.current.forEach((c, i) => { if (c) { c.style.opacity = i === 0 ? '1' : '0'; } });
       if (typeof document !== 'undefined') document.documentElement.classList.remove('tp-snap');
       return;
     }
-
-    const sideOf = (f: number) => (segments[f].side === 'right' ? 1 : -1);
 
     const apply = (pv: number) => {
       const p = clamp01(pv);
@@ -170,35 +162,6 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
         const featP = clamp01((fa - featureStart[af]) / featureCounts[af]);
         barFillRef.current.style.width = `${Math.round(featP * 100)}%`;
       }
-
-      // phone side-slide (desktop): slides only when the active FEATURE changes.
-      if (phoneRef.current) {
-        if (small) {
-          phoneRef.current.style.transform = 'translateX(-50%)';
-        } else {
-          const trackW = trackRef.current?.clientWidth ?? 1100;
-          const d = Math.min(trackW * 0.25, 340);
-          phoneRef.current.style.transform = `translate(calc(-50% + ${sideOf(af) * d}px), -50%)`;
-        }
-      }
-
-      // per-feature panels + canvases (discrete by active feature; CSS transitions
-      // smooth the crossfade/slide).
-      for (let f = 0; f < n; f++) {
-        const isActive = f === af;
-        const panel = panelRefs.current[f];
-        if (panel && !small) {
-          panel.style.opacity = isActive ? '1' : '0';
-          const dir = segments[f].side === 'right' ? -1 : 1; // panel sits opposite the phone
-          panel.style.transform = `translate(${(isActive ? 0 : dir * 26)}px, -50%)`;
-          panel.style.pointerEvents = isActive ? 'auto' : 'none';
-        }
-        const cv = canvasRefs.current[f];
-        if (cv) {
-          cv.style.opacity = isActive ? '1' : '0';
-          cv.style.zIndex = isActive ? '2' : '0';
-        }
-      }
     };
 
     apply(progress.get());
@@ -207,7 +170,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
       unsub();
       if (typeof document !== 'undefined') document.documentElement.classList.remove('tp-snap');
     };
-  }, [pinned, small, progress, n, A, segments, featureOf, ref]);
+  }, [pinned, small, progress, A, featureOf, featureStart, featureCounts]);
 
   // ---- Phase snap: settle to the nearest ACTION on scroll-idle (DESKTOP ONLY) ----
   // Desktop scrollbar/keyboard fallback; the wheel-stepper handles the wheel.
@@ -301,7 +264,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
     : ({ position: 'relative' } as const);
 
   return (
-    <section ref={ref} className="through-phone" style={sectionStyle} data-pinned={pinned}>
+    <section ref={ref} id={id} className="through-phone" style={sectionStyle} data-pinned={pinned}>
       <div className="tp-stage" style={stageStyle}>
         {!reduced && (
           <Scene3D perspective={1100} className="tp-sparks" aria-hidden="true">
@@ -316,12 +279,11 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
 
         <p className="eyebrow tp-eyebrow">{eyebrow}</p>
 
-        <div className="tp-track" ref={trackRef}>
+        <div className="tp-track">
           {segments.map((s, i) => (
             <div
               key={s.id}
-              ref={(el) => { panelRefs.current[i] = el; }}
-              className={`tp-panel tp-panel--${s.side === 'right' ? 'left' : 'right'}${i === activeFeat ? ' is-active' : ''}`}
+              className={`tp-panel${i === activeFeat ? ' is-active' : ''}`}
             >
               <p className="eyebrow tp-step">{s.eyebrow}</p>
               <h2 className="t-h2 tp-headline">{s.headline}</h2>
@@ -344,7 +306,7 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
             </div>
           )}
 
-          <div ref={phoneRef} className="tp-phone">
+          <div className="tp-phone">
             <div className="tp-screen">
               <div className="tp-statusband" aria-hidden="true">
                 <span className="tp-island" />
@@ -353,9 +315,8 @@ export default function ThroughPhone({ eyebrow, segments, sparkSrc }: ThroughPho
                 {segments.map((s, i) => (
                   <div
                     key={s.id}
-                    ref={(el) => { canvasRefs.current[i] = el; }}
                     className="tp-canvas"
-                    style={{ opacity: i === 0 ? 1 : 0 }}
+                    style={{ opacity: i === activeFeat ? 1 : 0, zIndex: i === activeFeat ? 2 : 0 }}
                   >
                     <CanvasSequence
                       progress={derived[i]}

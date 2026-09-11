@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { TELEGRAM_BOT_URL } from '../src/config/site';
 
-const BOT_URL = 'https://t.me/SparkCards_TestingBot';
+// Read the single source of truth: a hardcoded copy here silently went stale
+// when the CTA was repointed from the test bot to the prod one (067e63b).
+const BOT_URL = TELEGRAM_BOT_URL;
 
 test.describe('landing — ru', () => {
   test('hero, sections and primary bot CTA render', async ({ page }) => {

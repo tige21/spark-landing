@@ -51,9 +51,11 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     z-index: var(--z-nav);
     /* -webkit- prefix is required for the frosted blur to apply in iOS/Telegram
        WebKit — without it the header silently doesn't blur the content under it. */
-    -webkit-backdrop-filter: saturate(1.1) blur(8px);
-    backdrop-filter: saturate(1.1) blur(8px);
-    background: color-mix(in srgb, var(--table) 82%, transparent);
+    -webkit-backdrop-filter: saturate(1.1) blur(14px);
+    backdrop-filter: saturate(1.1) blur(14px);
+    /* 82% let big display headings read straight through the bar and collide
+       with the nav links as sections scrolled past. */
+    background: color-mix(in srgb, var(--table) 93%, transparent);
     border-bottom: 1px solid var(--hairline);
     padding-top: env(safe-area-inset-top);
   }

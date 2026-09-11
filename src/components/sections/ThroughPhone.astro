@@ -6,7 +6,6 @@ import ThroughPhone from './ThroughPhone.tsx';
 
 interface SegmentInput {
   id: string;
-  side: 'right' | 'left';
   scenario: string;
   actions?: number;
   eyebrow: string;
@@ -15,10 +14,11 @@ interface SegmentInput {
   image?: string;
 }
 interface Props {
+  id?: string;
   eyebrow: string;
   segments: SegmentInput[];
 }
-const { eyebrow, segments } = Astro.props;
+const { id, eyebrow, segments } = Astro.props;
 
 const spark = await getImage({ src: engraving('spark-mark'), width: 160, format: 'webp' });
 
@@ -34,7 +34,6 @@ const enriched = await Promise.all(
       : undefined;
     return {
       id: s.id,
-      side: s.side,
       scenario: s.scenario,
       actions: s.actions ?? 1,
       scenarioMobile,
@@ -51,4 +50,4 @@ const enriched = await Promise.all(
 );
 ---
 
-<ThroughPhone eyebrow={eyebrow} segments={enriched} sparkSrc={spark.src} client:visible />
+<ThroughPhone id={id} eyebrow={eyebrow} segments={enriched} sparkSrc={spark.src} client:visible />

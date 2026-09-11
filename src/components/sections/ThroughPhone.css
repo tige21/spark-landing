@@ -41,6 +41,11 @@
      shared with the eyebrow so it can sit just above the centred phone.
      Eyebrow is hidden on mobile, so the desktop value here is harmless there. */
   --tp-phone-h: calc(clamp(440px, 64svh, 580px) + 22px);
+  /* Horizontal offset of the phone from the stage centre — it holds the SAME
+     spot for every capability. Sliding it side to side as the active feature
+     changed read as a glitch, not as a layout. The eyebrow uses the same value
+     so it caps the device instead of floating over the gap. */
+  --tp-dx: min(calc(min(100vw, var(--maxw)) * 0.25), 340px);
 }
 
 .tp-sparks {
@@ -60,7 +65,7 @@
     var(--space-lg),
     calc((100svh - var(--tp-phone-h)) / 2 - var(--space-2xl) - 1.4em)
   );
-  left: 50%;
+  left: calc(50% + var(--tp-dx));
   transform: translateX(-50%);
   z-index: var(--z-content);
   text-align: center;
@@ -82,24 +87,25 @@
   z-index: var(--z-content);
 }
 
-/* ---- copy panels (slide in from the side opposite the phone) ---- */
+/* ---- copy panels (the column opposite the phone) ---- */
 .tp-panel {
   position: absolute;
   top: 50%;
+  left: var(--space-xl);
   width: clamp(280px, 36%, 430px);
+  text-align: left;
   opacity: 0;
+  transform: translate(-26px, -50%);
+  pointer-events: none;
   will-change: opacity, transform;
-  /* Desktop copy is now discrete per capability (JS sets opacity/transform by
-     active feature) — transition smooths the crossfade + side-slide-in. */
+  /* Desktop copy is discrete per capability — only the active one shows, and the
+     transition smooths the crossfade + slide-in. */
   transition: opacity 0.35s ease, transform 0.45s var(--ease-out, ease);
 }
-.tp-panel--left {
-  left: var(--space-xl);
-  text-align: left;
-}
-.tp-panel--right {
-  right: var(--space-xl);
-  text-align: left;
+.tp-panel.is-active {
+  opacity: 1;
+  transform: translate(0, -50%);
+  pointer-events: auto;
 }
 .tp-panel .tp-step {
   margin: 0 0 var(--space-sm);
@@ -128,7 +134,7 @@
    the bar fills 0→100% across the active capability's actions (set in JS). */
 .tp-progress {
   position: absolute;
-  left: 50%;
+  left: calc(50% + var(--tp-dx));
   bottom: clamp(var(--space-md), 3svh, var(--space-lg));
   transform: translateX(-50%);
   display: flex;
@@ -156,7 +162,7 @@
 /* ---- "scroll on" cue, shown on the first block, fades after advancing ---- */
 .tp-cue {
   position: absolute;
-  left: 50%;
+  left: calc(50% + var(--tp-dx));
   bottom: clamp(var(--space-xl), 7svh, calc(var(--space-xl) * 2));
   display: flex;
   flex-direction: column;
@@ -189,10 +195,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  /* Default centred transform so the phone is positioned correctly BEFORE the
-     JS driver runs (otherwise it flashes in from the corner on first paint).
-     The driver refines it (side slide on desktop). */
-  transform: translate(-50%, -50%);
+  transform: translate(calc(-50% + var(--tp-dx)), -50%);
   padding: 11px;
   background: linear-gradient(155deg, #2a2420, #15110d);
   border-radius: 54px;
@@ -248,6 +251,11 @@
 
 /* ---- mobile: big phone centred low, compact copy stacked tight above ---- */
 @media (max-width: 860px) {
+  /* Phone is centred on mobile — nothing tracks a side offset. */
+  .tp-stage {
+    --tp-dx: 0px;
+  }
+
   /* Section eyebrow is redundant with the per-segment step on mobile and
      collides with it — drop it; the step ("ШАГ N · …") carries the context. */
   .tp-eyebrow {
@@ -306,17 +314,13 @@
     /* NO transition on the base: when a capability loses `is-active` it hides
        INSTANTLY, so two feature captions never crossfade on top of each other at
        this shared centred position (the overlap). Only the incoming one animates. */
+    transition: none;
   }
   .tp-panel.is-active {
     opacity: 1;
     transform: translate(-50%, 0);
     pointer-events: auto;
     transition: opacity 0.3s ease, transform 0.4s var(--ease-out, ease);
-  }
-  .tp-panel--left,
-  .tp-panel--right {
-    left: 50%;
-    right: auto;
   }
   /* Compact but LEGIBLE — the caption is the focal point (override t-h2/t-lead). */
   .tp-panel .tp-step {

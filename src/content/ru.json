@@ -35,17 +35,15 @@
     "segments": [
       {
         "id": "decks",
-        "side": "right",
         "scenario": "decks",
         "actions": 3,
         "eyebrow": "Колоды",
         "headline": "Девять колод — на любой вечер.",
         "body": "От лёгкого знакомства до «только для своих 18+». У каждой — свой характер и гравюрная марка.",
-        "image": "postmark"
+        "image": "paywall-crest"
       },
       {
         "id": "play",
-        "side": "left",
         "scenario": "play",
         "actions": 4,
         "eyebrow": "Игра",
@@ -55,7 +53,6 @@
       },
       {
         "id": "create",
-        "side": "right",
         "scenario": "create",
         "actions": 6,
         "eyebrow": "Своя колода",

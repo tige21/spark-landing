@@ -77,6 +77,9 @@ export default function CanvasSequence({
     let idleId: number | undefined;
     let onLoad: (() => void) | undefined;
     let running = false;
+    let batchStarted = false;
+    let scrubbed = false;
+    const startBatchRef = { current: null as (() => void) | null };
     let count = 0;
     let curr = 0; // displayed index (float)
     let lastDrawn = -1;
@@ -197,25 +200,43 @@ export default function CanvasSequence({
 
         // Defer the rest off the critical path (idle) + cap concurrency so the
         // frame downloads don't contend with first paint / LCP.
+        // Order is COARSE-TO-FINE (every 16th, then 8th, 4th, 2nd, the rest):
+        // `drawNearest` falls back to the closest decoded frame, so a handful of
+        // spread-out frames already make the whole scrub move. Decoding 1,2,3…
+        // instead left everything past the first few frozen while they streamed.
+        const decodeOrder = () => {
+          const order: number[] = [];
+          const seen = new Uint8Array(count);
+          seen[0] = 1;
+          for (let step = 16; step >= 1; step >>= 1) {
+            for (let i = 0; i < count; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); }
+          }
+          return order;
+        };
         const startBatch = () => {
-          let next = 1;
+          if (batchStarted || cancelled) return;
+          batchStarted = true;
+          const order = decodeOrder();
+          let next = 0;
           let inflight = 0;
           const CONCURRENCY = 4;
           const pump = () => {
-            while (!cancelled && inflight < CONCURRENCY && next < count) {
-              const i = next++;
+            while (!cancelled && inflight < CONCURRENCY && next < order.length) {
+              const i = order[next++];
               inflight++;
               decode(url(i), tw, th).then((f) => {
                 inflight--;
                 if (cancelled) { if (f && 'close' in f) (f as ImageBitmap).close(); return; }
                 frames[i] = f;
-                if (Math.round(curr) === i) ensureRunning();
+                ensureRunning();
                 pump();
               });
             }
           };
           pump();
         };
+        startBatchRef.current = startBatch;
+        if (scrubbed) startBatch(); // already scrolling while the manifest loaded
         // Frame batch is the bulk of the bytes — keep it OUT of the LCP window.
         // eager → now; otherwise wait until after `load` (so only the poster +
         // critical JS/fonts compete for LCP), then decode on idle. Frame 0 is
@@ -239,7 +260,15 @@ export default function CanvasSequence({
       }
     })();
 
-    const unsub = progress.on('change', ensureRunning);
+    // Someone who starts scrolling right after opening the page needs the frames
+    // NOW — waiting for `load` + idle meant the whole scrub played frozen on
+    // frame 0 on a slow connection. A scrub in progress outranks the LCP budget.
+    const onScrub = () => {
+      scrubbed = true;
+      startBatchRef.current?.();
+      ensureRunning();
+    };
+    const unsub = progress.on('change', onScrub);
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
