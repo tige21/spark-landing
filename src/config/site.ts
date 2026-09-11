@@ -124,8 +124,8 @@ export const DECKS: DeckInfo[] = [
 
 export const MERCHANT = {
   name: {
-    ru: 'Перебейнос Егор Игоревич, самозанятый',
-    en: 'Egor Igorevich Perebeynos, self-employed',
+    ru: 'Белая Элина Игоревна, самозанятая',
+    en: 'Elina Igorevna Belaya, self-employed',
   },
   innLabel: { ru: 'ИНН', en: 'Tax ID (INN)' },
   inn: '781302631519',
