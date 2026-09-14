@@ -50,4 +50,13 @@ const enriched = await Promise.all(
 );
 ---
 
-<ThroughPhone id={id} eyebrow={eyebrow} segments={enriched} sparkSrc={spark.src} client:visible />
+<!-- rootMargin: the island hydrates ~600px BEFORE the section scrolls into
+     view, so the stacked pre-hydration fallback is swapped for the pinned scene
+     while it is still off screen. Plain client:visible did the swap in view. -->
+<ThroughPhone
+  id={id}
+  eyebrow={eyebrow}
+  segments={enriched}
+  sparkSrc={spark.src}
+  client:visible={{ rootMargin: "600px" }}
+/>

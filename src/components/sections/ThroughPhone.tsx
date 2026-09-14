@@ -69,6 +69,31 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
   const allFrames = segments.every((s) => s.hasFrames);
   const pinned = mounted && !reduced && allFrames;
 
+  // Gate for the phone's 0.6s side-to-side travel (--tp-move in the CSS). The
+  // island is client:visible, so the server-rendered stacked fallback is on
+  // screen until React hydrates; the swap to the pinned scene moves the phone a
+  // long way, and with the transition already live that swap PLAYED as a flight
+  // across the viewport. Arming it one painted frame after the pinned layout
+  // lands makes the swap instant and leaves the capability move animated.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!pinned) {
+      setReady(false);
+      return;
+    }
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => {
+        setReady(true);
+        if (DEBUG_SCROLL) console.log('[FIX][through-phone] pinned layout painted, phone travel armed');
+      });
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [pinned]);
+
   // ---- flat action model ----
   // featureCounts[f] = actions in feature f; featureStart[f] = its first action
   // index in the flat list; A = total actions across all features.
@@ -303,6 +328,7 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
       className="through-phone"
       style={sectionStyle}
       data-pinned={pinned}
+      data-ready={ready}
       data-side={activeFeat % 2 === 0 ? 'right' : 'left'}
     >
       <div className="tp-stage" style={stageStyle}>

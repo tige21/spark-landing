@@ -89,6 +89,43 @@ test.describe('through-phone showcase', () => {
   });
 });
 
+test.describe('through-phone hydration', () => {
+  test('phone never renders off-centre before the island hydrates', async ({ page }) => {
+    await page.goto('/');
+
+    // The island is client:visible, so this is the layout the browser paints
+    // while the JS is still on its way — and what a reduced-motion or no-JS
+    // visitor keeps for good. It used to sit half a --maxw to the left because
+    // the fallback dropped the track to position:static without clearing the
+    // translateX(-50%) that only centres it while absolutely positioned.
+    const pre = await page.evaluate(() => {
+      const sec = document.querySelector('.through-phone') as HTMLElement;
+      const phone = document.querySelector('.tp-phone')!.getBoundingClientRect();
+      return {
+        pinned: sec.dataset.pinned,
+        phoneCentre: phone.left + phone.width / 2,
+        viewportCentre: window.innerWidth / 2,
+        transition: getComputedStyle(document.querySelector('.tp-phone')!).transitionDuration,
+      };
+    });
+
+    expect(pre.pinned).toBe('false');
+    expect(Math.abs(pre.phoneCentre - pre.viewportCentre)).toBeLessThanOrEqual(12);
+    // A live transition here would play the hydration swap as a flight across
+    // the viewport instead of an instant, invisible hand-over.
+    expect(pre.transition).toBe('0s');
+
+    await hydrateWholePage(page);
+
+    const post = await page.evaluate(() => {
+      const sec = document.querySelector('.through-phone') as HTMLElement;
+      return { pinned: sec.dataset.pinned, ready: sec.dataset.ready };
+    });
+    expect(post.pinned).toBe('true');
+    expect(post.ready).toBe('true');
+  });
+});
+
 test.describe('hero scrub', () => {
   test('frames start streaming on the first scroll, spread across the sequence', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'desktop sequence only');

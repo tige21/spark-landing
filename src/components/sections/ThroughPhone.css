@@ -59,6 +59,17 @@
      the move is TRANSITIONED — the old build set this inline from JS with no
      transition, so the phone teleported across instead of travelling. */
   --tp-dx: calc((var(--tp-pair-w) - var(--tp-phone-w)) / 2);
+  /* 0s until the pinned layout has been painted once (see [data-ready] below):
+     the hydration swap moves the phone from the stacked fallback slot to the
+     pinned one, and a live transition would play that swap as a 0.6s flight
+     across the screen. Only the capability-to-capability move should travel. */
+  --tp-move: 0s;
+}
+
+/* `:where()` keeps this at class specificity so the mobile block below, which
+   zeroes --tp-move again, still wins without having to restate the gate. */
+:where(.through-phone[data-ready='true']) .tp-stage {
+  --tp-move: 0.6s;
 }
 
 .tp-sparks {
@@ -80,7 +91,7 @@
   );
   left: calc(50% + var(--tp-dx));
   transform: translateX(-50%);
-  transition: left 0.6s var(--ease-out, ease);
+  transition: left var(--tp-move) var(--ease-out, ease);
   z-index: var(--z-content);
   text-align: center;
   margin: 0;
@@ -221,7 +232,7 @@
   top: 50%;
   left: 50%;
   transform: translate(calc(-50% + var(--tp-dx)), -50%);
-  transition: transform 0.6s var(--ease-out, ease);
+  transition: transform var(--tp-move) var(--ease-out, ease);
   padding: 11px;
   background: linear-gradient(155deg, #2a2420, #15110d);
   border-radius: 54px;
@@ -280,13 +291,11 @@
 
 /* ---- mobile: big phone centred low, compact copy stacked tight above ---- */
 @media (max-width: 860px) {
-  /* Phone is centred on mobile — nothing tracks a side offset. */
+  /* Phone is centred on mobile — nothing tracks a side offset, so nothing to
+     travel between. */
   .tp-stage {
     --tp-dx: 0px;
-  }
-  .tp-phone,
-  [data-side='left'] .tp-phone {
-    transition: none;
+    --tp-move: 0s;
   }
 
   /* Section eyebrow is redundant with the per-segment step on mobile and
@@ -400,6 +409,11 @@
 }
 .through-phone[data-pinned='false'] .tp-track {
   position: static;
+  /* translateX(-50%) centres the track only while it is absolutely positioned at
+     left:50%. Static it just shifts the whole stack half a --maxw to the left —
+     which is where the phone flashed (x=160 of a 1512px viewport) on every load
+     before the island hydrated. */
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
