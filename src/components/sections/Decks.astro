@@ -1,8 +1,7 @@
 ---
 import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
-import Parallax from '../ui/Parallax.tsx';
-import DecksShelf from './DecksShelf.tsx';
+import DecksShelf from './DecksShelf.astro';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
@@ -14,12 +13,10 @@ interface Props {
 const { headline, caption, lang } = Astro.props;
 ---
 
-<Section id="decks" class="decks">
+<Section id="decks" class="decks" flat>
   <div class="crest-clip" aria-hidden="true">
     <div class="crest-holder">
-      <Parallax client:visible distance={0} rotate={8}>
-        <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
-      </Parallax>
+      <Image src={engraving('bg-decks')} alt="" class="crest" loading="lazy" widths={[600, 1000]} sizes="900px" />
     </div>
   </div>
   <div class="decks-head">
@@ -28,7 +25,7 @@ const { headline, caption, lang } = Astro.props;
       <p class="t-lead caption">{caption}</p>
     </Reveal>
   </div>
-  <DecksShelf lang={lang} client:visible />
+  <DecksShelf lang={lang} />
 </Section>
 
 <style>
@@ -38,7 +35,12 @@ const { headline, caption, lang } = Astro.props;
     overflow: hidden;
   }
   /* Confine the engraving to the cards region (below the heading) and clip it
-     there, so it backs the deck grid instead of the title and never spills. */
+     there, so it backs the deck grid instead of the title and never spills.
+     The crest is STATIC on purpose. Scroll-rotated it was a 1194x2312 device-px
+     composited layer sitting UNDER the nine cards, and everything painting over
+     a composited layer has to be composited too — the grid and the heading were
+     dragged onto their own layers and repainted for the whole scroll. At 12%
+     opacity the +-4deg it used to travel was invisible; the compositing was not. */
   .crest-clip {
     position: absolute;
     top: clamp(220px, 24vw, 360px);
@@ -93,20 +95,14 @@ const { headline, caption, lang } = Astro.props;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-xl);
-    perspective: 1100px;
   }
+  /* No `perspective` and no entrance: the staggered rotateX fly-in kept a 3D
+     rendering context alive on the grid AND on all nine cells for the life of
+     the page — ten standing contexts in one section, which is what made this
+     block stutter under the scroll. The cards are a reference list; they read
+     fine arriving with the section. */
   .deck-cell {
     list-style: none;
-    perspective: 700px;
-    opacity: 0;
-    transform: translateY(22px) rotateX(20deg);
-    transform-origin: 50% 100%;
-    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
-    transition-delay: calc(var(--i, 0) * 0.05s);
-  }
-  .deck-grid.is-in .deck-cell {
-    opacity: 1;
-    transform: none;
   }
   .deck-card {
     width: 100%;
@@ -123,22 +119,17 @@ const { headline, caption, lang } = Astro.props;
     box-shadow: var(--shadow-card);
     text-align: center;
     cursor: pointer;
+    /* Hover answers with ink only — no transform, so the card never needs a
+       layer. The tilt-lift this replaces also had a JS partner (pointer handlers
+       faking :hover for touch), and dropping both is what let the grid stop
+       being a hydrated island. */
     transition: box-shadow var(--dur-normal) var(--ease-out),
-      border-color var(--dur-normal) var(--ease-out),
-      transform var(--dur-normal) var(--ease-out);
+      border-color var(--dur-normal) var(--ease-out);
   }
   .deck-card:hover,
-  .deck-card:active,
-  .deck-card.is-tapped {
+  .deck-card:active {
     box-shadow: var(--shadow-float);
     border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
-    transform: translateY(-8px) rotateX(-6deg);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .deck-cell { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .deck-card { transition: none !important; }
-    .deck-card:hover,
-    .deck-card.is-tapped { transform: none !important; }
   }
   .deck-card img {
     width: 110px;

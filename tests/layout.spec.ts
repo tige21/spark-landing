@@ -142,6 +142,40 @@ test.describe('through-phone hydration', () => {
   });
 });
 
+test.describe('decks section stays cheap', () => {
+  test('no standing compositor hints and no hydrated card grid', async ({ page }) => {
+    await page.goto('/');
+    await hydrateWholePage(page);
+
+    // This block stuttered under the scroll because it was carrying a permanent
+    // compositor bill: a 3D rendering context on the grid AND each of the nine
+    // cells, standing will-change from the one-shot reveals, and a scroll-rotated
+    // crest layer under the cards that forced everything above it to composite.
+    const cost = await page.evaluate(async () => {
+      const decks = document.querySelector('#decks')!;
+      decks.scrollIntoView({ block: 'start' });
+      await new Promise((r) => setTimeout(r, 1200));
+      const nodes = [...decks.querySelectorAll('*')];
+      return {
+        perspective: nodes.filter((el) => getComputedStyle(el).perspective !== 'none').length,
+        willChange: nodes.filter((el) => {
+          const wc = getComputedStyle(el).willChange;
+          return wc && wc !== 'auto';
+        }).length,
+        islands: decks.querySelectorAll('astro-island').length,
+        cards: decks.querySelectorAll('.deck-card').length,
+      };
+    });
+
+    expect(cost.cards).toBe(9);
+    expect(cost.perspective).toBe(0);
+    // Once the heading reveal has played nothing in the block asks for a layer.
+    expect(cost.willChange).toBe(0);
+    // Only the heading reveal hydrates; the grid and the crest are static HTML.
+    expect(cost.islands).toBe(1);
+  });
+});
+
 test.describe('hero scrub', () => {
   test('frames start streaming on the first scroll, spread across the sequence', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'desktop sequence only');

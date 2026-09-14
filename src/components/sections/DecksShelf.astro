@@ -1,0 +1,30 @@
+---
+import { DECKS } from '../../config/site';
+import { stamp } from '../../assets/images';
+
+interface Props {
+  lang: 'ru' | 'en';
+}
+const { lang } = Astro.props;
+
+const cards = DECKS.map((d) => ({
+  id: d.id,
+  url: stamp(d.stamp.replace(/\.svg$/, '')),
+  name: d.name[lang],
+  sample: d.sample[lang],
+}));
+---
+
+<ul class="deck-grid">
+  {
+    cards.map((c) => (
+      <li class="deck-cell">
+        <div class="deck-card">
+          <img src={c.url} alt={c.name} width="110" height="110" loading="lazy" />
+          <span class="deck-name">{c.name}</span>
+          <span class="deck-sample">{c.sample}</span>
+        </div>
+      </li>
+    ))
+  }
+</ul>

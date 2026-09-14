@@ -204,10 +204,14 @@ html.lenis body {
 }
 
 /* Scroll-reveal (vanilla IntersectionObserver toggles .is-in) — replaces framer whileInView. */
-.reveal,
-.reveal-stamp,
-.reveal-tilt,
-.reveal-seal {
+/* `:not(.is-in)` matters: these reveals are one-shot, but an unscoped hint left
+   every revealed block on its own compositor layer for the life of the page.
+   Chrome promotes on its own while a transition is actually running, so the
+   hint is only worth anything before it starts. */
+.reveal:not(.is-in),
+.reveal-stamp:not(.is-in),
+.reveal-tilt:not(.is-in),
+.reveal-seal:not(.is-in) {
   will-change: opacity, transform;
 }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-slower) var(--ease-out), transform var(--dur-slower) var(--ease-out); }
