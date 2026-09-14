@@ -19,12 +19,12 @@
     "eyebrow": "How it works",
     "steps": [
       { "title": "Pick a deck", "body": "From easy icebreakers to deep dives." },
-      { "title": "Draw a card", "body": "One card, and the table goes quiet — in the best way." },
+      { "title": "Draw a card", "body": "One question, read out loud." },
       { "title": "Answer honestly", "body": "No right answers. Just you and the truth." },
       { "title": "Meet each other again", "body": "The things you'd never just ask." }
     ]
   },
-  "game": { "headline": "One card, and the table goes quiet — in the best way.", "caption": "Here's how it looks in the app." },
+  "game": { "headline": "One card, and the conversation starts.", "caption": "Here's how it looks in the app." },
   "decks": { "headline": "Nine decks: from first-date safe to strictly grown-ups.", "caption": "Each with its own character and engraved stamp." },
   "order": {
     "eyebrow": "The Spark Press",
