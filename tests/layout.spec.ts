@@ -18,20 +18,36 @@ async function hydrateWholePage(page: import('@playwright/test').Page) {
 }
 
 test.describe('hero composition', () => {
-  test('press engraving stays inside the page grid', async ({ page }, testInfo) => {
+  test('copy and press bound one pair centred on the page', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'asymmetric split is desktop-only');
     await page.goto('/');
     await page.waitForTimeout(800);
 
-    const { bgRight, vw } = await page.evaluate(() => {
-      const bg = document.querySelector('.hero-bg')!.getBoundingClientRect();
-      return { bgRight: bg.right, vw: window.innerWidth };
-    });
+    // The engraving carries blank paper on its right: ink ends at x=800 of the
+    // 960px frame on every one of the 55 frames. Aligning the IMAGE box to the
+    // grid line left the PRESS a sixth of its width short of it, so the artwork
+    // sat mid-page instead of holding the right half.
+    const FRAME = { w: 960, h: 852, inkRight: 800 };
 
-    // Right edge on the container content edge — NOT the raw viewport edge, which
-    // is what made the whole hero read as shifted right.
-    const expected = vw - Math.max(GUTTER, (vw - MAXW) / 2 + GUTTER);
-    expect(Math.abs(bgRight - expected)).toBeLessThanOrEqual(1);
+    const geo = await page.evaluate((frame) => {
+      const bg = document.querySelector('.hero-bg')!.getBoundingClientRect();
+      const copy = document.querySelector('.hero-content')!.getBoundingClientRect();
+      // object-fit: contain + object-position: right center
+      const renderedH = Math.min(bg.height, (bg.width * frame.h) / frame.w);
+      const renderedW = (renderedH * frame.w) / frame.h;
+      return {
+        content: document.documentElement.clientWidth,
+        copyLeft: copy.left,
+        inkRight: bg.right - (renderedW * (frame.w - frame.inkRight)) / frame.w,
+      };
+    }, FRAME);
+
+    const inset = Math.max(GUTTER, (geo.content - MAXW) / 2 + GUTTER);
+
+    // The press's own edge sits on the grid line the nav and sections start on…
+    expect(Math.abs(geo.inkRight - (geo.content - inset))).toBeLessThanOrEqual(1);
+    // …so copy and press bound a pair with equal air on both sides.
+    expect(Math.abs(geo.copyLeft - (geo.content - geo.inkRight))).toBeLessThanOrEqual(2);
   });
 });
 

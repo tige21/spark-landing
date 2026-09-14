@@ -1,5 +1,22 @@
 .hero {
   position: relative;
+  /* The grid line the nav and every section start on — the copy's left edge and
+     the press's right edge both land on it, mirrored. */
+  --hero-inset: max(var(--space-xl), calc((100vw - var(--maxw)) / 2 + var(--space-xl)));
+  /* The engraving carries blank paper on its right: ink ends at x=800 of the
+     960px frame (identical on all 55 frames), so 160/960 — a sixth of its own
+     width — is margin. Right-aligning the IMAGE to --hero-inset therefore left
+     the PRESS 169px short of it on a 1512x900 screen, which is why the artwork
+     read as sitting in the middle of the page instead of holding the right half.
+     Push the box out by exactly that margin and the press's own edge lands on
+     the grid line, so copy + press bound a pair that is centred on the page.
+     160/852 of the rendered HEIGHT while `contain` fits to height (every real
+     desktop size); the vw term takes over on a tall, narrow window where it
+     fits to width instead, and the two are equal at the crossover. */
+  --hero-art-nudge: min(
+    calc(100svh * 160 / 852),
+    calc((100vw - var(--hero-inset)) / 5)
+  );
 }
 .hero-stage {
   overflow: hidden;
@@ -24,11 +41,11 @@
    shows the whole engraving centred; the cream pillarbox blends with the scrim. */
 @media (min-width: 761px) {
   .hero-bg {
-    /* Right edge lands on the SAME grid line as the nav/sections (container
-       content edge), mirroring the copy's left inset. Anchored to the raw
-       viewport edge the press hangs outside the page grid and the whole hero
-       reads as shifted right. */
-    right: max(var(--space-xl), calc((100vw - var(--maxw)) / 2 + var(--space-xl)));
+    /* The PRESS's right edge lands on the grid line, not the image's — hence the
+       nudge, which cancels the artwork's own paper margin (see --hero-art-nudge).
+       Anything the nudge pushes past the viewport is that blank margin; the ink
+       always stops exactly on the grid line. */
+    right: calc(var(--hero-inset) - var(--hero-art-nudge));
     /* `contain` letterboxes a rectangular engraving on its own paper tone: its
        left edge otherwise cuts a hard vertical seam down the middle of the hero,
        right under the headline. Feather it into the page instead. */
@@ -114,7 +131,7 @@
        the same grid line as the nav/sections (container content edge), so it
        reads as part of the page instead of floating off toward the viewport. */
     max-width: min(calc(var(--maxw) / 2 - var(--space-xl)), 600px);
-    margin-left: max(var(--space-xl), calc((100vw - var(--maxw)) / 2 + var(--space-xl)));
+    margin-left: var(--hero-inset);
     padding-inline: 0;
     text-align: left;
     padding-top: 0;
