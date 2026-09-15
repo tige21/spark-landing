@@ -176,6 +176,38 @@ test.describe('decks section stays cheap', () => {
   });
 });
 
+test.describe('nothing upstream keeps a layer over the decks block', () => {
+  test('the phone section releases its compositor layers once scrolled past', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop', 'pinned phone section is desktop-only');
+    await page.goto('/');
+    await hydrateWholePage(page);
+
+    // The decks block itself measured clean, yet it still stuttered: the section
+    // ABOVE it held seven full-size composited layers (three copy panels, three
+    // canvases and the phone) for the whole session, because will-change was
+    // declared standing rather than for the duration of a transition.
+    const promoted = await page.evaluate(async () => {
+      document.querySelector('.deck-grid')!.scrollIntoView({ block: 'center' });
+      await new Promise((r) => setTimeout(r, 1200));
+      const held = (sel: string) =>
+        [...document.querySelectorAll(sel)].filter((el) => {
+          const w = getComputedStyle(el).willChange;
+          return w && w !== 'auto';
+        }).length;
+      return {
+        // the standing, CSS-declared ones — these were the full-size layers
+        standing: held('.tp-panel, .tp-canvas, .tp-phone'),
+        page: held('*'),
+      };
+    });
+
+    expect(promoted.standing).toBe(0);
+    // Reveals that have not played yet legitimately keep the hint, and the
+    // decorative Layers follow the same near/far rule as scroll measurement.
+    expect(promoted.page).toBeLessThanOrEqual(12);
+  });
+});
+
 test.describe('hero scrub', () => {
   test('frames start streaming on the first scroll, spread across the sequence', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'desktop sequence only');

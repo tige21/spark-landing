@@ -55,13 +55,32 @@ export default function Layer({
       opacity: { from: (opacity ?? [1, 1])[0], to: (opacity ?? [1, 1])[1] },
     };
 
-    return animateOnScroll(progress, {
+    const stop = animateOnScroll(progress, {
       channels,
       render: (v) => {
         el.style.transform = `translate3d(${v.x}px, ${v.y}px, ${v.z}px) scale(${v.scale}) rotateX(${v.rotateX}deg)`;
         if (opacity) el.style.opacity = String(v.opacity);
       },
     });
+
+    // Same near/far rule scroll-progress uses to park measurement: a standing
+    // `will-change` kept a compositor layer per decorative element for the whole
+    // session, several of them thousands of pixels off screen.
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => {
+              el.style.willChange = entry.isIntersecting ? 'transform' : 'auto';
+            },
+            { rootMargin: '100% 0px 100% 0px' }
+          );
+    io?.observe(el);
+
+    return () => {
+      io?.disconnect();
+      stop();
+    };
   }, [progress, isStatic, depth, y, x, spring, zRange, scale, rotateX, opacity]);
 
   if (isStatic) {
@@ -76,7 +95,7 @@ export default function Layer({
     <div
       ref={ref}
       className={className}
-      style={{ ...style, transform: `translateZ(${depth}px)`, willChange: 'transform' }}
+      style={{ ...style, transform: `translateZ(${depth}px)`, willChange: 'auto' }}
     >
       {children}
     </div>

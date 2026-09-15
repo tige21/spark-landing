@@ -54,7 +54,23 @@ export default function Parallax({
       },
     });
 
+    // scroll-progress parks an item's MEASUREMENT when it is more than a viewport
+    // away, but `will-change` is inline and was never withdrawn — every decorative
+    // layer on the page kept a compositor layer alive for the whole session, seven
+    // of them sitting up to 8500px off screen. Follow the same near/far rule.
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => {
+              el.style.willChange = entry.isIntersecting ? 'transform' : 'auto';
+            },
+            { rootMargin: '100% 0px 100% 0px' }
+          );
+    io?.observe(el);
+
     return () => {
+      io?.disconnect();
       stop();
       sv.destroy();
     };
@@ -69,7 +85,7 @@ export default function Parallax({
   }
 
   return (
-    <div ref={ref} className={className} style={{ ...style, willChange: 'transform' }}>
+    <div ref={ref} className={className} style={{ ...style, willChange: 'auto' }}>
       {children}
     </div>
   );

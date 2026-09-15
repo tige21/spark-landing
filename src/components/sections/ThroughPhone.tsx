@@ -309,8 +309,29 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
       goToAction(target, { duration: 0.5, lock: true, onDone: () => { cooldown = false; } });
     };
 
-    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
-    return () => { window.removeEventListener('wheel', onWheel, { capture: true }); };
+    // A non-passive wheel listener on `window` is a page-wide cost, not a section
+    // one: it runs in capture phase on EVERY wheel event, so while it was
+    // registered for the life of the page it sat in the scroll path of sections
+    // 10000px away from this one. It only ever steps when the section is near, so
+    // attach it there and hand the rest of the page back. Margin covers the
+    // approach, where the handler pulls a half-entered section into place.
+    let attached = false;
+    const attach = () => {
+      if (attached) return;
+      window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+      attached = true;
+    };
+    const detach = () => {
+      if (!attached) return;
+      window.removeEventListener('wheel', onWheel, { capture: true });
+      attached = false;
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? attach() : detach()),
+      { rootMargin: '100% 0px 100% 0px' }
+    );
+    io.observe(el);
+    return () => { io.disconnect(); detach(); };
   }, [pinned, small, A, ref, goToAction, geometry]);
 
   const sectionStyle = pinned
