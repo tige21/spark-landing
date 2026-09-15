@@ -142,6 +142,53 @@ test.describe('through-phone hydration', () => {
   });
 });
 
+test.describe('through-phone on mobile', () => {
+  test('the phone stays on screen on every capability', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'top-anchored phone is the mobile layout');
+    await page.goto('/');
+    await hydrateWholePage(page);
+
+    // Mobile anchors the phone by its TOP (`top: var(--phone-top)`), desktop by
+    // its middle (`top: 50%` + a vertical -50% in the transform). The mobile
+    // override only restated `.tp-phone`, so `[data-side='left'] .tp-phone` —
+    // higher specificity, set by the odd-indexed capability (Игра) — kept
+    // winning and reapplied that -50%, lifting the phone by half its own height
+    // clean off the top of the screen.
+    const walk = await page.evaluate(async () => {
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      const sec = document.querySelector('.through-phone') as HTMLElement;
+      sec.scrollIntoView({ block: 'start' });
+      await sleep(1200);
+      const top = sec.getBoundingClientRect().top + window.scrollY;
+      const range = sec.offsetHeight - window.innerHeight;
+      const A = document.querySelectorAll('.tp-snap-point').length;
+
+      const seen: { side: string; phoneTop: number; gap: number }[] = [];
+      for (let i = 0; i < A; i++) {
+        window.scrollTo(0, Math.round(top + range * ((i + 0.5) / A)));
+        await sleep(450);
+        const phone = document.querySelector('.tp-phone')!.getBoundingClientRect();
+        const panel = document.querySelector('.tp-panel.is-active');
+        const cap = panel ? panel.getBoundingClientRect() : null;
+        seen.push({
+          side: sec.dataset.side ?? '',
+          phoneTop: Math.round(phone.top),
+          gap: cap ? Math.round(cap.top - phone.bottom) : -1,
+        });
+      }
+      return { seen, sides: [...new Set(seen.map((s) => s.side))] };
+    });
+
+    // both sides actually occur, or the test would pass without exercising the bug
+    expect(walk.sides.sort()).toEqual(['left', 'right']);
+    for (const step of walk.seen) {
+      expect(step.phoneTop, `phone off the top on data-side=${step.side}`).toBeGreaterThanOrEqual(0);
+    }
+    // the caption is anchored to the phone, so the pair never drifts apart
+    expect([...new Set(walk.seen.map((s) => s.gap))]).toHaveLength(1);
+  });
+});
+
 test.describe('decks section stays cheap', () => {
   test('no standing compositor hints and no hydrated card grid', async ({ page }) => {
     await page.goto('/');

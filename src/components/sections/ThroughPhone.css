@@ -323,7 +323,16 @@
 
   /* Phone sits at the top of the centred pair. Size is svh-based (stable): it
      never resizes when the address bar shows/hides. */
-  .tp-phone {
+  /* `[data-side='left']` has to be restated here, not because the side offset
+     matters on mobile (--tp-dx is 0px) but because that desktop rule also
+     carries the vertical `-50%` that pairs with `top: 50%`. Mobile anchors the
+     phone by its TOP instead, so the leftover -50% yanked it up by half its own
+     height — on a 950px viewport the phone jumped from top:123 to top:-166,
+     exactly 289px = 578/2, and only on the odd-indexed capability (Игра), which
+     is the one that sets data-side='left'. Specificity is the whole story: the
+     single-class rule below loses to the attribute+class one above. */
+  .tp-phone,
+  [data-side='left'] .tp-phone {
     top: var(--phone-top);
     bottom: auto;
     /* Mobile is top-anchored → only horizontal centring. */
