@@ -2,6 +2,10 @@ export const APP_NAME = 'Spark Cards';
 
 export const TELEGRAM_BOT_URL = 'https://t.me/SparkCardsBot';
 
+// The web build of the game, served from this same domain by the ../spark repo.
+// Same-origin, so CTAs pointing here stay in the tab instead of opening a new one.
+export const PLAY_URL = '/play';
+
 export const STORE_LINKS = {
   appStore: '',
   googlePlay: '',

@@ -115,7 +115,12 @@
 .hero-cta {
   margin-top: var(--space-2xl);
   display: flex;
+  /* Two ways into the game sit side by side and wrap to a column on narrow
+     screens rather than shrinking past a tappable width. */
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: var(--space-md);
 }
 
 /* Desktop: asymmetric split — copy column pinned LEFT, press engraving sits in

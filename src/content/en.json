@@ -3,29 +3,57 @@
     "title": "Spark Cards — cards that turn small talk into real talk",
     "description": "Not a card game. The conversation you've been missing. Draw a card, answer honestly, and tonight hits different. Nine decks: from first-date safe to strictly grown-ups."
   },
-  "nav": { "how": "How it works", "decks": "Decks", "order": "Your deck", "cta": "Download" },
+  "nav": {
+    "how": "How it works",
+    "decks": "Decks",
+    "order": "Your deck",
+    "cta": "Download"
+  },
   "hero": {
     "brand": "Spark Cards",
     "title": "Cards that turn small talk into real talk.",
     "subtitle": "One honest question beats an hour of weather chat.",
-    "ctaPrimary": "Play",
-    "ctaSecondary": "See how it feels"
+    "ctaPrimary": "Play in browser",
+    "ctaSecondary": "See how it feels",
+    "ctaTelegram": "Open in Telegram"
   },
   "what": {
     "headline": "Not a card game. The conversation you've been missing.",
-    "pills": ["Just the two of you", "With friends", "Grown-ups only"]
+    "pills": [
+      "Just the two of you",
+      "With friends",
+      "Grown-ups only"
+    ]
   },
   "how": {
     "eyebrow": "How it works",
     "steps": [
-      { "title": "Pick a deck", "body": "From easy icebreakers to deep dives." },
-      { "title": "Draw a card", "body": "One question, read out loud." },
-      { "title": "Answer honestly", "body": "No right answers. Just you and the truth." },
-      { "title": "Meet each other again", "body": "The things you'd never just ask." }
+      {
+        "title": "Pick a deck",
+        "body": "From easy icebreakers to deep dives."
+      },
+      {
+        "title": "Draw a card",
+        "body": "One question, read out loud."
+      },
+      {
+        "title": "Answer honestly",
+        "body": "No right answers. Just you and the truth."
+      },
+      {
+        "title": "Meet each other again",
+        "body": "The things you'd never just ask."
+      }
     ]
   },
-  "game": { "headline": "One card, and the conversation starts.", "caption": "Here's how it looks in the app." },
-  "decks": { "headline": "Nine decks: from first-date safe to strictly grown-ups.", "caption": "Each with its own character and engraved stamp." },
+  "game": {
+    "headline": "One card, and the conversation starts.",
+    "caption": "Here's how it looks in the app."
+  },
+  "decks": {
+    "headline": "Nine decks: from first-date safe to strictly grown-ups.",
+    "caption": "Each with its own character and engraved stamp."
+  },
   "order": {
     "eyebrow": "The Spark Press",
     "headline": "Your crew, your inside jokes — we'll print a deck just for you.",
@@ -35,6 +63,12 @@
     "headline": "Warm paper, fine engravings, zero cringe.",
     "body": "Built like a letterpress postcard, not another app. Works offline, no ads, no clutter."
   },
-  "cta": { "headline": "Open it now — tonight's conversation hits different.", "button": "Play" },
-  "footer": { "tagline": "The Spark Press · printing conversations since 1889" }
+  "cta": {
+    "headline": "Open it now — tonight's conversation hits different.",
+    "button": "Play in browser",
+    "buttonTelegram": "Open in Telegram"
+  },
+  "footer": {
+    "tagline": "The Spark Press · printing conversations since 1889"
+  }
 }

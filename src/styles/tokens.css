@@ -235,10 +235,10 @@ html.lenis body {
 }
 
 /* Primary CTA hover/tap (replaces framer whileHover/whileTap). */
-.tg-cta { transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
-.tg-cta:hover { transform: translateY(-1px) scale(1.02); }
-.tg-cta:active { transform: scale(0.98); }
+.cta-btn { transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.cta-btn:hover { transform: translateY(-1px) scale(1.02); }
+.cta-btn:active { transform: scale(0.98); }
 @media (prefers-reduced-motion: reduce) {
-  .tg-cta { transition: none; }
-  .tg-cta:hover, .tg-cta:active { transform: none; }
+  .cta-btn { transition: none; }
+  .cta-btn:hover, .cta-btn:active { transform: none; }
 }

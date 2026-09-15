@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 import { NAV_LINKS, APP_NAME } from '../../config/site';
-import TelegramCTA from '../ui/TelegramCTA.tsx';
+import PlayCTA from '../ui/PlayCTA.tsx';
 
 interface Props {
   lang: 'ru' | 'en';
@@ -35,7 +35,7 @@ const homeHref = lang === 'ru' ? '/' : '/en';
       <a class="lang" href={altHref} hreflang={altLang} aria-label={altLang.toUpperCase()}>
         {altLang.toUpperCase()}
       </a>
-      <TelegramCTA label={ctaLabel} variant="primary" client:idle />
+      <PlayCTA label={ctaLabel} target="browser" variant="primary" client:idle />
     </div>
   </div>
 </header>

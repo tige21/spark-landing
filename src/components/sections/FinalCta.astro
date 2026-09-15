@@ -3,15 +3,16 @@ import Section from '../layout/Section.astro';
 import Reveal from '../ui/Reveal.tsx';
 import StampReveal from '../ui/StampReveal.tsx';
 import SectionDecor from '../ui/SectionDecor.astro';
-import TelegramCTA from '../ui/TelegramCTA.tsx';
+import PlayCTA from '../ui/PlayCTA.tsx';
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
 
 interface Props {
   headline: string;
   ctaLabel: string;
+  ctaTelegramLabel: string;
 }
-const { headline, ctaLabel } = Astro.props;
+const { headline, ctaLabel, ctaTelegramLabel } = Astro.props;
 ---
 
 <Section class="final" narrow>
@@ -30,7 +31,8 @@ const { headline, ctaLabel } = Astro.props;
   </StampReveal>
   <Reveal client:visible delay={0.24}>
     <div class="cta">
-      <TelegramCTA label={ctaLabel} variant="seal" client:visible />
+      <PlayCTA label={ctaLabel} target="browser" variant="seal" client:visible />
+      <PlayCTA label={ctaTelegramLabel} target="telegram" variant="seal" client:visible />
     </div>
   </Reveal>
 </Section>
@@ -61,6 +63,9 @@ const { headline, ctaLabel } = Astro.props;
   .cta {
     margin-top: var(--space-2xl);
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
+    gap: var(--space-md);
   }
 </style>

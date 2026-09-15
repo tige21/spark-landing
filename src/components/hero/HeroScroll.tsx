@@ -5,7 +5,7 @@ import CanvasSequence from './CanvasSequence';
 import Scene3D from '../ui/Scene3D';
 import Layer from '../ui/Layer';
 import WordReveal from '../ui/WordReveal';
-import TelegramCTA from '../ui/TelegramCTA';
+import PlayCTA from '../ui/PlayCTA';
 import './HeroScroll.css';
 
 const SCRUB = 2; // hero is (1 + SCRUB) × 100vh tall → ~2 viewports of scrub
@@ -15,7 +15,7 @@ interface HeroScrollProps {
   title: string;
   subtitle: string;
   ctaLabel: string;
-  scrollLabel: string;
+  ctaTelegramLabel: string;
   posterDesktop: string;
   posterMobile: string;
   sparkSrc: string;
@@ -33,7 +33,7 @@ export default function HeroScroll({
   title,
   subtitle,
   ctaLabel,
-  scrollLabel,
+  ctaTelegramLabel,
   posterDesktop,
   posterMobile,
   sparkSrc,
@@ -141,7 +141,8 @@ export default function HeroScroll({
             </h1>
             <p className="t-lead subtitle">{subtitle}</p>
             <div className="hero-cta">
-              <TelegramCTA label={ctaLabel} variant="hero" />
+              <PlayCTA label={ctaLabel} target="browser" variant="hero" />
+              <PlayCTA label={ctaTelegramLabel} target="telegram" variant="hero" />
             </div>
           </div>
         </div>
