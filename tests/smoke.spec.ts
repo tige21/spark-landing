@@ -71,15 +71,30 @@ test.describe('both ways into the game', () => {
       await expect(hero).toHaveCount(2);
 
       // Neither destination is styled down: the choice is between where you
-      // play, not between a main action and a lesser one.
+      // play, not between a main action and a lesser one. Geometry counts too —
+      // sized to their own labels the buttons came out 17-19px apart, which is
+      // invisible side by side but reads as a mistake stacked on a phone.
       for (const sel of ['.hero-cta a[data-cta]', '.final a[data-cta]']) {
-        const diff = await page.evaluate((s) => {
+        const diff = await page.evaluate(async (s) => {
+          const els = [...document.querySelectorAll(s)];
+          els[0]?.scrollIntoView({ block: 'center' });
+          // The final block rides in inside .reveal-tilt (perspective + rotateX).
+          // Mid-flight the two stacked buttons project to slightly different
+          // sizes, so measure only once the entrance has settled.
+          await new Promise((r) => setTimeout(r, 1500));
+
           const pick = (el: Element) => {
             const cs = getComputedStyle(el);
-            return [cs.backgroundColor, cs.color, cs.border, cs.borderRadius, cs.boxShadow, cs.fontSize, cs.fontWeight, cs.padding].join('|');
+            const r = el.getBoundingClientRect();
+            return [
+              cs.backgroundColor, cs.color, cs.border, cs.borderRadius, cs.boxShadow,
+              cs.fontSize, cs.fontWeight, cs.padding,
+              Math.round(r.width), Math.round(r.height),
+            ].join('|');
           };
-          const els = [...document.querySelectorAll(s)];
-          return els.length === 2 && pick(els[0]) === pick(els[1]) ? null : { count: els.length, a: els[0] && pick(els[0]), b: els[1] && pick(els[1]) };
+          return els.length === 2 && pick(els[0]) === pick(els[1])
+            ? null
+            : { count: els.length, a: els[0] && pick(els[0]), b: els[1] && pick(els[1]) };
         }, sel);
         expect(diff, `${sel} buttons must look identical`).toBeNull();
       }

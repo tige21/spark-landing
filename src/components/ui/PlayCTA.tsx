@@ -46,6 +46,7 @@ export default function PlayCTA({ label, target = 'telegram', variant = 'primary
   const style: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '10px',
     fontFamily: 'var(--font-serif)',
     fontWeight: 600,

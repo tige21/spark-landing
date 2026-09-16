@@ -62,10 +62,20 @@ const { headline, ctaLabel, ctaTelegramLabel } = Astro.props;
   }
   .cta {
     margin-top: var(--space-2xl);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
+    /* Equal columns — see .hero-cta: sized to their own labels the two buttons
+       came out 19px apart, which stacked on a phone reads as a mistake.
+       No max-width here: `1fr` is minmax(auto, 1fr), and with nowrap labels the
+       auto minimum is the label's own width, so a container narrower than both
+       labels plus the gap silently drops back to unequal content-sized columns.
+       Capping this at 560px did exactly that (the pair needs 631px). */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     gap: var(--space-md);
+  }
+  @media (max-width: 760px) {
+    .cta {
+      grid-auto-flow: row;
+    }
   }
 </style>
