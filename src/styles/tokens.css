@@ -87,7 +87,7 @@ html, body {
 }
 /* Anchor jumps clear the fixed nav overlay. */
 html {
-  scroll-padding-top: 64px;
+  scroll-padding-top: 96px;
 }
 
 main {

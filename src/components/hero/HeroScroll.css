@@ -192,7 +192,8 @@
    scrub plays. padding clears the fixed nav (+ safe-area notch). */
 @media (max-width: 760px) {
   .hero-content {
-    padding-top: calc(env(safe-area-inset-top) + 60px);
+    /* Clears the two-row mobile header (brand row + section links). */
+    padding-top: calc(env(safe-area-inset-top) + 88px);
   }
   .hero-content h1 {
     margin: var(--space-sm) 0 var(--space-md);

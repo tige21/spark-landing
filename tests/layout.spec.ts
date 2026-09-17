@@ -63,15 +63,22 @@ test.describe('through-phone showcase', () => {
         pinned: s.dataset.pinned,
         top: s.getBoundingClientRect().top + window.scrollY,
         range: s.offsetHeight - window.innerHeight,
+        // Actions and panels are read from the DOM, not hardcoded: the action
+        // count per capability is content (ru.json), and a plan that shortens
+        // the pin would otherwise leave this test sampling the wrong segments.
+        actions: document.querySelectorAll('.tp-snap-point').length,
+        panels: document.querySelectorAll('.tp-panel').length,
       };
     });
     expect(geo.pinned).toBe('true');
 
     const seen: { side?: string; feature: number; marginL: number; marginR: number; phoneL: number }[] = [];
-    for (const action of [0.5, 5.5, 10.5]) {
+    const perFeature = geo.actions / geo.panels;
+    for (let f = 0; f < geo.panels; f++) {
+      const action = f * perFeature + 0.5;
       await page.evaluate(
-        ([top, range, a]) => window.scrollTo(0, Math.round(top + range * (a / 13))),
-        [geo.top, geo.range, action] as const
+        ([top, range, a, total]) => window.scrollTo(0, Math.round(top + range * (a / total))),
+        [geo.top, geo.range, action, geo.actions] as const
       );
       await page.waitForTimeout(1200);
       seen.push(

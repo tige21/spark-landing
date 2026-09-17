@@ -115,9 +115,12 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
     return 0;
   }, [featureStart, n]);
 
-  // Scroll length PER ACTION (in 100svh units). Each action gets ~one comfortable
-  // swipe; the section is (1 + A*perAction) tall. Tuned smaller on desktop.
-  const perAction = small ? 0.82 : 0.7;
+  // Scroll length PER ACTION (in 100svh units). Each action gets ~one swipe; the
+  // section is (1 + A*perAction) tall. At 13 actions and 0.7/0.82 this section
+  // alone was 9090px on a 900px desktop — 58% of the whole page, ten screens in
+  // which only three headlines change, and the visitor had no reason to keep
+  // scrolling. Six actions at 0.45/0.55 keep every frame and cut it to ~3300px.
+  const perAction = small ? 0.55 : 0.45;
 
   const barFillRef = useRef<HTMLSpanElement>(null);
 

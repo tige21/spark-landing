@@ -76,12 +76,34 @@ test.describe('both ways into the game', () => {
       // invisible side by side but reads as a mistake stacked on a phone.
       for (const sel of ['.hero-cta a[data-cta]', '.final a[data-cta]']) {
         const diff = await page.evaluate(async (s) => {
+          // Three gates, all needed. Fonts: measured with the fallback face the
+          // two labels differ by 4px. In view: the phone island expands the page
+          // by ~2800px when it hydrates, which shoves this block back out of the
+          // viewport, so one scrollIntoView is not enough and the reveal never
+          // fires. Steady: the entrance itself animates the geometry.
+          await document.fonts.ready;
+          const holder = () => document.querySelector(s)?.closest('.reveal, .reveal-tilt, .reveal-stamp');
+          for (let i = 0; i < 40; i++) {
+            document.querySelector(s)?.scrollIntoView({ block: 'center' });
+            await new Promise((r) => setTimeout(r, 150));
+            if (holder()?.classList.contains('is-in')) break;
+          }
+          const geometry = () =>
+            [...document.querySelectorAll(s)]
+              .map((el) => {
+                const r = el.getBoundingClientRect();
+                return `${Math.round(r.width)}x${Math.round(r.height)}`;
+              })
+              .join(',');
+          let previous = geometry();
+          let steady = 0;
+          for (let i = 0; i < 60 && steady < 3; i++) {
+            await new Promise((r) => setTimeout(r, 100));
+            const now = geometry();
+            steady = now === previous ? steady + 1 : 0;
+            previous = now;
+          }
           const els = [...document.querySelectorAll(s)];
-          els[0]?.scrollIntoView({ block: 'center' });
-          // The final block rides in inside .reveal-tilt (perspective + rotateX).
-          // Mid-flight the two stacked buttons project to slightly different
-          // sizes, so measure only once the entrance has settled.
-          await new Promise((r) => setTimeout(r, 1500));
 
           const pick = (el: Element) => {
             const cs = getComputedStyle(el);

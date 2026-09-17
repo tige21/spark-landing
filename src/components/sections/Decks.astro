@@ -76,10 +76,11 @@ const { headline, caption, lang } = Astro.props;
 </style>
 
 <style is:global>
-  /* Stronger, clearly-visible entrance for the "Девять колод" heading right as
-     the block crosses in from the phone section — a longer fade + bigger rise
-     than the default .reveal. Scoped to .decks-enter so other reveals are
-     untouched; `:not(.is-in)` keeps it from fighting the global is-in reset. */
+  /* Stronger, clearly-visible entrance for the "Девять колод" heading — a longer
+     fade + bigger rise than the default .reveal, because this heading is the
+     page's first hard proof and has to register. Scoped to .decks-enter so other
+     reveals are untouched; `:not(.is-in)` keeps it from fighting the global
+     is-in reset. */
   .reveal.decks-enter {
     transition-duration: 0.7s;
   }
