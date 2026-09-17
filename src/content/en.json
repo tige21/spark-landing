@@ -12,7 +12,12 @@
   "hero": {
     "brand": "Spark Cards",
     "title": "Cards that turn small talk into real talk.",
-    "subtitle": "One honest question beats an hour of weather chat.",
+    "subtitle": "A questions app — for two, for a group, or strictly 18+.",
+    "facts": [
+      "9 decks",
+      "501 cards",
+      "offline, no ads"
+    ],
     "ctaPrimary": "Play in browser",
     "ctaSecondary": "See how it feels",
     "ctaTelegram": "Open in Telegram"

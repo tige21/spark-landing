@@ -8,10 +8,11 @@ interface Props {
   eyebrow: string;
   title: string;
   subtitle: string;
+  facts: string[];
   ctaLabel: string;
   ctaTelegramLabel: string;
 }
-const { eyebrow, title, subtitle, ctaLabel, ctaTelegramLabel } = Astro.props;
+const { eyebrow, title, subtitle, facts, ctaLabel, ctaTelegramLabel } = Astro.props;
 
 const spark = await getImage({ src: engraving('spark-mark'), width: 180, format: 'webp' });
 
@@ -28,6 +29,7 @@ const posterMobile = existsSync('public/hero/hero-poster-mobile.webp') ? '/hero/
   eyebrow={eyebrow}
   title={title}
   subtitle={subtitle}
+  facts={facts}
   ctaLabel={ctaLabel}
   ctaTelegramLabel={ctaTelegramLabel}
   posterDesktop={posterDesktop}
