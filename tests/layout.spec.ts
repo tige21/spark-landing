@@ -286,3 +286,38 @@ test.describe('hero scrub', () => {
     expect(Math.max(...early) - Math.min(...early)).toBeGreaterThan(8);
   });
 });
+
+test.describe('the page answers before it asks for scroll', () => {
+  test('the facts line and a live question are readable without a click', async ({ page }) => {
+    await page.goto('/');
+
+    // Before this the first screen named no category and no scale: the strongest
+    // proof (a real question) was one click deep and the deck grid 83% down.
+    const facts = await page.locator('.hero-facts').boundingBox();
+    expect(facts).not.toBeNull();
+    expect(facts!.y + facts!.height).toBeLessThan(page.viewportSize()!.height);
+
+    await page.locator('.what-cards').scrollIntoViewIfNeeded();
+    // Two open cards show their question; the third keeps it behind the age gate.
+    await expect(page.locator('.what-card-q')).toHaveCount(2);
+    await expect(page.locator('.what-card-gate')).toHaveCount(1);
+  });
+
+  test('decks stand above the phone showcase and the page stays short', async ({ page }, testInfo) => {
+    await page.goto('/');
+    await hydrateWholePage(page);
+
+    const geo = await page.evaluate(() => ({
+      decks: document.querySelector('#decks')!.getBoundingClientRect().top + window.scrollY,
+      phone: document.querySelector('.through-phone')!.getBoundingClientRect().top + window.scrollY,
+      docH: document.body.scrollHeight,
+    }));
+
+    expect(geo.decks).toBeLessThan(geo.phone);
+    // The phone showcase used to run 9090px on desktop — 58% of a 15537px page,
+    // ten screens for three headlines. Cap the whole page instead of the section
+    // so a future pin can only grow by taking room from something else.
+    const cap = testInfo.project.name === 'desktop' ? 10_500 : 13_000;
+    expect(geo.docH).toBeLessThan(cap);
+  });
+});
