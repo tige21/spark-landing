@@ -243,22 +243,27 @@ test.describe('nothing upstream keeps a layer over the decks block', () => {
     const promoted = await page.evaluate(async () => {
       document.querySelector('.deck-grid')!.scrollIntoView({ block: 'center' });
       await new Promise((r) => setTimeout(r, 1200));
-      const held = (sel: string) =>
-        [...document.querySelectorAll(sel)].filter((el) => {
-          const w = getComputedStyle(el).willChange;
-          return w && w !== 'auto';
-        }).length;
+      const holding = [...document.querySelectorAll('*')].filter((el) => {
+        const w = getComputedStyle(el).willChange;
+        return w && w !== 'auto';
+      });
+      const onScreen = (el: Element) => {
+        const r = el.getBoundingClientRect();
+        return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
+      };
       return {
         // the standing, CSS-declared ones — these were the full-size layers
-        standing: held('.tp-panel, .tp-canvas, .tp-phone'),
-        page: held('*'),
+        standing: holding.filter((el) => el.matches('.tp-panel, .tp-canvas, .tp-phone')).length,
+        inView: holding.filter(onScreen).length,
       };
     });
 
     expect(promoted.standing).toBe(0);
-    // Reveals that have not played yet legitimately keep the hint, and the
-    // decorative Layers follow the same near/far rule as scroll measurement.
-    expect(promoted.page).toBeLessThanOrEqual(12);
+    // Reveals below the fold legitimately keep the hint until they play, and how
+    // many of them exist depends on hydration timing — counting them all made
+    // this assertion flake under parallel load. What matters is that nothing on
+    // screen is still holding a layer while this block scrolls.
+    expect(promoted.inView).toBe(0);
   });
 });
 
@@ -316,8 +321,89 @@ test.describe('the page answers before it asks for scroll', () => {
     expect(geo.decks).toBeLessThan(geo.phone);
     // The phone showcase used to run 9090px on desktop — 58% of a 15537px page,
     // ten screens for three headlines. Cap the whole page instead of the section
-    // so a future pin can only grow by taking room from something else.
-    const cap = testInfo.project.name === 'desktop' ? 10_500 : 13_000;
+    // so a future pin can only grow by taking room from something else. Mobile
+    // carries a looser cap on purpose: each action there needs a full swipe of
+    // scroll, or one fling clears the section and the demo never plays.
+    const cap = testInfo.project.name === 'desktop' ? 10_500 : 14_000;
     expect(geo.docH).toBeLessThan(cap);
+  });
+});
+
+test.describe('the phone showcase cannot be flung past', () => {
+  test('snap is armed before the section and every action costs a swipe', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'native scroll-snap is the mobile path');
+    await page.goto('/');
+    await hydrateWholePage(page);
+
+    const geo = await page.evaluate(async () => {
+      const sec = document.querySelector('.through-phone') as HTMLElement;
+      const top = sec.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, Math.round(top - window.innerHeight * 0.8));
+      await new Promise((r) => setTimeout(r, 700));
+      const points = [...document.querySelectorAll('.tp-snap-point')].map(
+        (p) => p.getBoundingClientRect().top + window.scrollY
+      );
+      return {
+        armedBeforeEntering: document.documentElement.classList.contains('tp-snap'),
+        gaps: points.slice(1).map((v, i) => Math.round(v - points[i])),
+        viewport: window.innerHeight,
+      };
+    });
+
+    // The class used to be switched on from the scroll handler, i.e. only once
+    // the section was already under the viewport — too late for a fling that
+    // started above it, which then carried straight past the whole demo.
+    expect(geo.armedBeforeEntering).toBe(true);
+    expect(geo.gaps.length).toBeGreaterThan(0);
+    for (const gap of geo.gaps) expect(gap).toBeGreaterThan(geo.viewport * 0.7);
+  });
+});
+
+test.describe('how-it-works connector', () => {
+  test('the dot rides the end of the drawn line', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'the serpentine connector is the narrow layout');
+    await page.goto('/');
+
+    const gap = await page.evaluate(async () => {
+      document.querySelector('#how')!.scrollIntoView({ block: 'center' });
+      await new Promise((r) => setTimeout(r, 1500));
+      const path = document.querySelector('.route-v-draw') as SVGPathElement | null;
+      const dot = document.querySelector('.route-v-dot') as HTMLElement | null;
+      if (!path || !dot) return null;
+
+      // Rendered (device-space) cumulative length, because non-scaling-stroke
+      // measures the dash there while getPointAtLength measures in viewBox units.
+      const m = path.getCTM()!;
+      const len = path.getTotalLength();
+      const N = 600;
+      const cum = [0];
+      let acc = 0;
+      let prev: { x: number; y: number } | null = null;
+      for (let i = 0; i <= N; i++) {
+        const pt = path.getPointAtLength((len * i) / N);
+        const x = m.a * pt.x + m.c * pt.y + m.e;
+        const y = m.b * pt.x + m.d * pt.y + m.f;
+        if (prev) acc += Math.hypot(x - prev.x, y - prev.y);
+        prev = { x, y };
+        if (i > 0) cum.push(acc);
+      }
+      const drawn = parseFloat(getComputedStyle(path).strokeDasharray) -
+        parseFloat(getComputedStyle(path).strokeDashoffset);
+      if (!(drawn > 0)) return null;
+
+      let i = 0;
+      while (i < N && cum[i + 1] <= drawn) i++;
+      const endPoint = path.getPointAtLength((len * i) / N);
+      const endY = m.b * endPoint.x + m.d * endPoint.y + m.f;
+
+      const svgTop = path.ownerSVGElement!.getBoundingClientRect().top;
+      const dotRect = dot.getBoundingClientRect();
+      return Math.round(dotRect.top + dotRect.height / 2 - svgTop - endY);
+    });
+
+    expect(gap, 'connector did not reach a measurable state').not.toBeNull();
+    // The line used to trail the dot by up to 43px: the dash was fed a viewBox
+    // length while the browser spent it in device pixels.
+    expect(Math.abs(gap!)).toBeLessThanOrEqual(6);
   });
 });

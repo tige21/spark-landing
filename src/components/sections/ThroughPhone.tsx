@@ -120,7 +120,9 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
   // alone was 9090px on a 900px desktop — 58% of the whole page, ten screens in
   // which only three headlines change, and the visitor had no reason to keep
   // scrolling. Six actions at 0.45/0.55 keep every frame and cut it to ~3300px.
-  const perAction = small ? 0.55 : 0.45;
+  // Mobile needs a real swipe per action: at 0.55 one fling cleared the whole
+  // section and the visitor never saw the game at all.
+  const perAction = small ? 0.8 : 0.45;
 
   const barFillRef = useRef<HTMLSpanElement>(null);
 
@@ -197,10 +199,9 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
         setActiveFeat(af);
         if (DEBUG_SCROLL) console.log('[through-phone] active feature', af);
       }
-      // engaged window (mobile scroll-snap on; cue advance flag)
+      // engaged window (cue advance flag)
       const engaged = p > 0.005 && p < 0.995;
       if (engaged && af > 0) setAdvanced(true);
-      document.documentElement.classList.toggle('tp-snap', small && engaged);
 
       // intra-feature progress bar (how far through the active capability's actions)
       if (barFillRef.current) {
@@ -216,6 +217,29 @@ export default function ThroughPhone({ id, eyebrow, segments, sparkSrc }: Throug
       if (typeof document !== 'undefined') document.documentElement.classList.remove('tp-snap');
     };
   }, [pinned, small, progress, A, featureOf, featureStart, featureCounts]);
+
+  // ---- Arm the mobile scroll-snap BEFORE the section arrives ----
+  // It used to be toggled from the progress handler, i.e. only once the section
+  // was already under the viewport. A fling that starts above it is already in
+  // flight by then, and the browser does not pick up snapping mid-gesture — so a
+  // single flick carried straight past every action and the game demo never
+  // played. One viewport of lead time is enough for the class to be there when
+  // the fling reaches the first marker.
+  useEffect(() => {
+    if (!pinned || !small) return;
+    const el = ref.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => document.documentElement.classList.toggle('tp-snap', entry.isIntersecting),
+      { rootMargin: '100% 0px 100% 0px' }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      document.documentElement.classList.remove('tp-snap');
+    };
+  }, [pinned, small]);
 
   // ---- Phase snap: settle to the nearest ACTION on scroll-idle (DESKTOP ONLY) ----
   // Desktop scrollbar/keyboard fallback; the wheel-stepper handles the wheel.
