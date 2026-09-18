@@ -208,3 +208,21 @@
     grid-auto-flow: row;
   }
 }
+
+/* Short phones (iPhone SE and friends, 568px tall): the two-row header and the
+   facts line together pushed both buttons under the fold, which they cleared
+   before. Buy the height back from the copy's own air, not from the content. */
+@media (max-width: 760px) and (max-height: 700px) {
+  .hero-content {
+    padding-top: calc(env(safe-area-inset-top) + 60px);
+  }
+  .hero-content h1 {
+    margin: var(--space-xs) 0 var(--space-sm);
+  }
+  .hero-cta {
+    margin-top: var(--space-sm);
+  }
+  .hero-facts {
+    margin-top: var(--space-sm);
+  }
+}
