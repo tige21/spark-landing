@@ -63,6 +63,40 @@
     "headline": "Warm paper, fine engravings, zero cringe.",
     "body": "Built like a letterpress postcard, not another app. Works offline, no ads, no clutter."
   },
+  "install": {
+    "eyebrow": "Take it with you",
+    "headline": "Put the game on your home screen and it works without the internet.",
+    "body": "The browser adds the icon itself. No app store, nothing to download. After that the game opens on the metro and on a plane.",
+    "installed": "The game is already on your home screen. You can open it offline.",
+    "button": "Open the game",
+    "buttonHint": "Add it to your screen from the game itself: the icon has to point there, not at this page.",
+    "ios": {
+      "title": "iPhone, Safari",
+      "steps": [
+        "Open the game in Safari — Chrome and Firefox on iPhone cannot do this.",
+        "Tap Share — the button at the bottom of the screen.",
+        "Choose Add to Home Screen.",
+        "Open it from the home screen once while online — after that it works with no network."
+      ]
+    },
+    "android": {
+      "title": "Android, Chrome",
+      "steps": [
+        "Open the game in Chrome.",
+        "In the browser menu (three dots) choose Install app.",
+        "Open it from the home screen once while online — after that it works with no network."
+      ]
+    },
+    "desktop": {
+      "title": "Desktop, Chrome or Edge",
+      "steps": [
+        "Open the game in Chrome or Edge.",
+        "Click the install icon at the right of the address bar.",
+        "Open it once while online — after that it works with no network."
+      ]
+    },
+    "fallback": "This browser cannot add the icon. Open the game in Safari on iPhone, or in Chrome on Android and desktop."
+  },
   "cta": {
     "headline": "Open it now — tonight's conversation hits different.",
     "button": "Play in browser",

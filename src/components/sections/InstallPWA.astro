@@ -1,0 +1,105 @@
+---
+import Section from '../layout/Section.astro';
+import Reveal from '../ui/Reveal.tsx';
+import StampReveal from '../ui/StampReveal.tsx';
+import Parallax from '../ui/Parallax.tsx';
+import SectionDecor from '../ui/SectionDecor.astro';
+import InstallApp from '../ui/InstallApp';
+import { Image } from 'astro:assets';
+import { engraving } from '../../assets/images';
+
+interface Platform {
+  title: string;
+  steps: string[];
+}
+export interface InstallCopy {
+  eyebrow: string;
+  headline: string;
+  body: string;
+  installed: string;
+  button: string;
+  buttonHint: string;
+  ios: Platform;
+  android: Platform;
+  desktop: Platform;
+  fallback: string;
+}
+interface Props {
+  copy: InstallCopy;
+}
+const { copy } = Astro.props;
+const { eyebrow, headline, body } = copy;
+---
+
+<Section id="install" class="install">
+  <SectionDecor
+    slot="decor"
+    layers={[
+      { name: 'postmark', width: 170, bottom: '12%', left: '-2%', speed: 0.6, rotate: 8, opacity: 0.07 },
+    ]}
+  />
+  <div class="grid">
+    <div class="copy">
+      <div class="head">
+        {/* Eyebrow, headline and lead share one reveal instead of two. Each island holds a
+            standing will-change until its reveal plays, and the page budget asserted in
+            tests/layout.spec.ts is 12 — a third island here put the whole page over it. */}
+        <StampReveal client:visible>
+          <p class="eyebrow">{eyebrow}</p>
+          <h2 class="t-h1">{headline}</h2>
+          <p class="t-lead">{body}</p>
+        </StampReveal>
+      </div>
+      {/* No Reveal wrapper around the panel: Section already animates the block in, and every
+          island holds a standing will-change until its reveal plays. The page budget asserted in
+          tests/layout.spec.ts is 12 and this section's third island put the whole page over it. */}
+      <div class="panel">
+        <InstallApp copy={copy} client:visible />
+      </div>
+    </div>
+    <div class="art">
+      <Parallax client:visible distance={70}>
+        <Image src={engraving('parcel')} alt="" widths={[320, 560]} sizes="(max-width: 800px) 70vw, 400px" loading="lazy" />
+      </Parallax>
+    </div>
+  </div>
+</Section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-2xl);
+  }
+  .head :global(.t-lead) {
+    margin-top: var(--space-md);
+  }
+  .panel {
+    margin-top: var(--space-xl);
+  }
+  .art :global(img) {
+    width: 100%;
+    height: auto;
+    max-width: 400px;
+    margin-inline: auto;
+    display: block;
+  }
+  @media (max-width: 800px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    /* Centre the header only. Centring .grid would cascade into the island's
+       numbered steps, which the island then could not win back without an
+       !important — instructions have to stay left-aligned. */
+    .head {
+      text-align: center;
+    }
+    .art {
+      order: -1;
+    }
+    .art :global(img) {
+      max-width: 280px;
+    }
+  }
+</style>
