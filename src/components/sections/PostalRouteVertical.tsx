@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useMotionPrefs } from '../../lib/motion-guards';
 import { createScrollValue } from '../../lib/scroll-progress';
+import { createPathDrawer } from '../../lib/path-draw';
 
 // Serpentine vertical connector for the mobile How steps. The line weaves
 // left→right→left between the stacked steps (so it curves AROUND the centred
@@ -26,31 +27,38 @@ export default function PostalRouteVertical() {
   useEffect(() => {
     const draw = drawRef.current;
     if (!draw) return;
-    const len = draw.getTotalLength();
-    draw.style.strokeDasharray = String(len);
+    const drawer = createPathDrawer(draw);
+    drawer.measure();
 
     if (reduced) {
-      draw.style.strokeDashoffset = '0';
+      drawer.fill();
       return;
     }
 
-    draw.style.strokeDashoffset = String(len);
     const dot = dotRef.current;
     const sv = createScrollValue(['start 80%', 'end 55%']);
     sv.attach(ref.current);
 
     const update = (v: number) => {
-      const p = v < 0 ? 0 : v > 1 ? 1 : v;
-      draw.style.strokeDashoffset = String(len * (1 - p));
+      const pt = drawer.drawTo(v);
       if (dot) {
-        const pt = draw.getPointAtLength(len * p);
         dot.style.left = `${(pt.x / VB_W) * 100}%`;
         dot.style.top = `${(pt.y / VB_H) * 100}%`;
       }
     };
     update(sv.get());
     const unsub = sv.on('change', update);
+
+    // The band is stretched to its container, so its rendered length changes with
+    // the viewport — remeasure or the dash drifts off the dot again.
+    const ro = new ResizeObserver(() => {
+      drawer.measure();
+      update(sv.get());
+    });
+    if (ref.current) ro.observe(ref.current);
+
     return () => {
+      ro.disconnect();
       unsub();
       sv.destroy();
     };

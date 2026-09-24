@@ -1,0 +1,60 @@
+.cta-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--paper);
+  background: var(--wine);
+  border: 1px solid color-mix(in srgb, var(--wine) 70%, #000);
+  /* Square-ish, no tinted glow: this page is a print shop, and a fully rounded
+     pill under a drop shadow belongs to a different century. */
+  border-radius: 2px;
+  box-shadow: none;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+/* The rule printed inside the plate, the way a letterpress label carries one. */
+.cta-btn::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--paper) 40%, transparent);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.cta-btn:hover {
+  background: color-mix(in srgb, var(--wine) 88%, #000);
+}
+.cta-btn:active {
+  transform: translateY(1px);
+}
+
+.cta-btn--sm {
+  font-size: 0.78rem;
+  padding: 11px 20px;
+}
+.cta-btn--md {
+  font-size: 0.92rem;
+  padding: 16px 28px;
+}
+.cta-btn--lg {
+  font-size: 1rem;
+  padding: 19px 34px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn {
+    transition: none;
+  }
+  .cta-btn:active {
+    transform: none;
+  }
+}

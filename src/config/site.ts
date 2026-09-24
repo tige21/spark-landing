@@ -23,105 +23,100 @@ export const NAV_LINKS: NavLink[] = [
   { id: 'order', ru: 'Создать колоду', en: 'Create a deck' },
 ];
 
-export type StampInk = 'blue' | 'ochre' | 'vermillion' | 'wine';
-
 export interface DeckInfo {
   id: string;
   stamp: string;
-  ink: StampInk;
   name: { ru: string; en: string };
   sample: { ru: string; en: string };
 }
 
+// Mirrors the app's catalogue (../spark/assets/data/decks/*.json) deck for deck:
+// names and sample questions are quoted from it. The landing used to advertise
+// «Правда», «Действие» and «Новый год», which do not exist in the game, and to
+// hide «Между нами» and «Давай поболтаем», which do — so anyone who clicked
+// through landed in a different catalogue than the one they had just read.
 export const DECKS: DeckInfo[] = [
   {
-    id: 'icebreaker',
+    id: 'ice-breaker',
     stamp: 'stamp-icebreaker.svg',
-    ink: 'blue',
-    name: { ru: 'Знакомство', en: 'Icebreaker' },
+    name: { ru: 'Знакомство', en: 'Ice Breaker' },
     sample: {
-      ru: 'Что про тебя точно не угадаешь с первого взгляда?',
-      en: "What about you would nobody guess at first sight?",
+      ru: 'Твои мысли после фразы «включите камеру пожалуйста»?',
+      en: "What goes through your head after 'please turn your camera on'?",
     },
   },
   {
-    id: 'classic',
+    id: 'classic-party',
     stamp: 'stamp-classic.svg',
-    ink: 'ochre',
-    name: { ru: 'Классика вечеринок', en: 'Party Classic' },
+    name: { ru: 'Классика вечеринок', en: 'Classic Party' },
     sample: {
-      ru: 'За какой свой поступок тебе до сих пор неловко?',
-      en: 'Which of your own moves still makes you cringe?',
+      ru: 'Что ты чувствуешь, когда тебе пишут «нам надо поговорить»?',
+      en: "How do you feel when someone texts you 'we need to talk'?",
     },
   },
   {
-    id: 'couples',
-    stamp: 'stamp-couples-v2.svg',
-    ink: 'wine',
-    name: { ru: 'Для пар', en: 'Couples' },
-    sample: {
-      ru: 'Когда ты впервые понял(а), что это серьёзно?',
-      en: 'When did you first realise this was serious?',
-    },
-  },
-  {
-    id: 'family',
-    stamp: 'stamp-family.svg',
-    ink: 'ochre',
-    name: { ru: 'Семья', en: 'Family' },
-    sample: {
-      ru: 'Какая семейная традиция тебе дороже всего?',
-      en: 'Which family tradition means the most to you?',
-    },
-  },
-  {
-    id: 'drinking',
-    stamp: 'stamp-drinking.svg',
-    ink: 'vermillion',
-    name: { ru: 'За бокалом', en: 'Drinks' },
-    sample: {
-      ru: 'Признайся в чём-то, о чём узнают только за этим столом.',
-      en: 'Confess something only this table will ever hear.',
-    },
-  },
-  {
-    id: 'truth',
+    id: 'honest-collab',
     stamp: 'stamp-truth.svg',
-    ink: 'blue',
-    name: { ru: 'Правда', en: 'Truth' },
+    name: { ru: 'Давай поболтаем', en: 'Honest Talk' },
     sample: {
-      ru: 'О чём ты молчишь, хотя давно стоило сказать?',
-      en: "What have you stayed silent about for too long?",
+      ru: 'Как ты относишься к культу продуктивности?',
+      en: 'How do you feel about the cult of productivity?',
     },
   },
   {
-    id: 'dare',
+    id: 'couples-love',
+    stamp: 'stamp-couples-v2.svg',
+    name: { ru: 'Связь для пар', en: 'Couples Connection' },
+    sample: {
+      ru: 'Какая моя мелкая привычка тебя умиляет?',
+      en: 'What small habit of mine melts your heart?',
+    },
+  },
+  {
+    id: 'family-fun',
+    stamp: 'stamp-family.svg',
+    name: { ru: 'Семейное веселье', en: 'Family Fun' },
+    sample: {
+      ru: 'Какой запах сразу напоминает тебе о детстве и доме?',
+      en: 'What smell instantly takes you back to childhood and home?',
+    },
+  },
+  {
+    id: 'drinking-games',
+    stamp: 'stamp-drinking.svg',
+    name: { ru: 'Алкогольные игры', en: 'Drinking Games' },
+    sample: {
+      ru: 'Правда или выпей: назови самую глупую трату за этот месяц.',
+      en: 'Truth or drink: name your dumbest purchase this month.',
+    },
+  },
+  {
+    id: 'between-us',
     stamp: 'stamp-dare.svg',
-    ink: 'vermillion',
-    name: { ru: 'Действие', en: 'Dare' },
+    name: { ru: 'Между нами', en: 'Just Between Us' },
     sample: {
-      ru: 'Напиши сейчас сообщение, которое давно откладывал(а).',
-      en: "Send the message you've been putting off — right now.",
+      ru: 'Какой эмодзи ты используешь пассивно-агрессивно?',
+      en: 'Which emoji do you use passive-aggressively?',
     },
   },
   {
-    id: 'newyear',
-    stamp: 'stamp-newyear.svg',
-    ink: 'wine',
-    name: { ru: 'Новый год', en: 'New Year' },
-    sample: {
-      ru: 'Каким был твой лучший Новый год и с кем?',
-      en: 'What was your best New Year, and who was there?',
-    },
-  },
-  {
-    id: 'spicy',
+    id: 'spicy-couples',
     stamp: 'stamp-spicy.svg',
-    ink: 'vermillion',
-    name: { ru: 'Только 18+', en: 'Grown-ups 18+' },
+    name: { ru: 'Пикантное для пар 18+', en: 'Spicy Couples 18+' },
     sample: {
-      ru: 'Что тебя заводит сильнее, чем ты готов(а) признать?',
-      en: "What turns you on more than you'd admit?",
+      ru: 'По какому незаметному сигналу ты понимаешь, что я тебя хочу?',
+      en: 'By which subtle signal do you know that I want you?',
+    },
+  },
+  {
+    // Borrowed mark: the party deck has no engraving of its own yet, so it runs
+    // the chilli one its couples sibling uses. Replace when the mark is drawn.
+    id: 'spicy-party',
+    stamp: 'stamp-spicy.svg',
+    name: { ru: 'Пикантная вечеринка 18+', en: 'Spicy Party 18+' },
+    sample: {
+      ru: 'Ты хоть раз флиртовал(а) на работе?',
+      en: 'Have you ever flirted at work?',
     },
   },
 ];

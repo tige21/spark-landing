@@ -12,17 +12,37 @@
   "hero": {
     "brand": "Spark Cards",
     "title": "Cards that turn small talk into real talk.",
-    "subtitle": "One honest question beats an hour of weather chat.",
+    "subtitle": "A questions app — for two, for a group, or strictly 18+.",
+    "facts": [
+      "9 decks",
+      "501 cards",
+      "offline, no ads"
+    ],
     "ctaPrimary": "Play in browser",
     "ctaSecondary": "See how it feels",
     "ctaTelegram": "Open in Telegram"
   },
   "what": {
-    "headline": "Not a card game. The conversation you've been missing.",
-    "pills": [
-      "Just the two of you",
-      "With friends",
-      "Grown-ups only"
+    "headline": "Questions people don't ask out loud.",
+    "cards": [
+      {
+        "label": "Just the two of you",
+        "occasion": "a first date, or the tenth year in",
+        "sample": "When were you last proud of me — and what for?"
+      },
+      {
+        "label": "With friends",
+        "occasion": "dinner is over and nobody wants to leave",
+        "sample": "Which of your own moves still makes you cringe?"
+      },
+      {
+        "label": "Grown-ups only",
+        "occasion": "late, and only your people are left",
+        "gated": true,
+        "gate": "Questions for the brave. Are you 18, and do you accept the rules?",
+        "confirm": "I'm 18 — show me",
+        "sample": "What have you wanted for years and never said out loud?"
+      }
     ]
   },
   "how": {

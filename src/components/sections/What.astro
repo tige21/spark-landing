@@ -7,6 +7,7 @@ import { stamp } from '../../assets/images';
 
 interface WhatCardInput {
   label: string;
+  occasion: string;
   sample: string;
   gated?: boolean;
   gate?: string;
@@ -14,10 +15,9 @@ interface WhatCardInput {
 }
 interface Props {
   headline: string;
-  pills?: string[];
-  cards?: WhatCardInput[];
+  cards: WhatCardInput[];
 }
-const { headline, pills, cards } = Astro.props;
+const { headline, cards } = Astro.props;
 
 const icons = [
   stamp('stamp-couples-v2'),
@@ -25,10 +25,7 @@ const icons = [
   stamp('stamp-spicy'),
 ];
 
-// Merge the text cards (ru.json) with their resolved icon src. When `cards` is
-// provided (RU) the section renders interactive flip cards; otherwise it falls
-// back to the static pills (EN).
-const cardData = cards?.map((c, i) => ({ ...c, icon: icons[i] }));
+const cardData = cards.map((c, i) => ({ ...c, icon: icons[i] }));
 ---
 
 <Section class="what">
@@ -43,20 +40,7 @@ const cardData = cards?.map((c, i) => ({ ...c, icon: icons[i] }));
     <h2 class="t-h1 headline">{headline}</h2>
   </Reveal>
 
-  {cardData ? (
-    <WhatCards client:visible cards={cardData} />
-  ) : (
-    <div class="pills">
-      {(pills ?? []).map((p, i) => (
-        <Reveal client:visible delay={0.08 * i}>
-          <div class="pill">
-            <img src={icons[i]} alt="" width="72" height="72" loading="lazy" />
-            <span class="t-h3">{p}</span>
-          </div>
-        </Reveal>
-      ))}
-    </div>
-  )}
+  <WhatCards client:visible cards={cardData} />
 </Section>
 
 <style>
@@ -68,84 +52,4 @@ const cardData = cards?.map((c, i) => ({ ...c, icon: icons[i] }));
     margin-inline: auto;
     text-align: center;
   }
-  .pills {
-    margin-top: var(--space-2xl);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xl);
-  }
-  .pill {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-xl);
-    background: var(--paper);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    height: 100%;
-    cursor: pointer;
-    transition: box-shadow var(--dur-normal) var(--ease-out),
-      border-color var(--dur-normal) var(--ease-out),
-      transform var(--dur-normal) var(--ease-out);
-  }
-  /* Same tilt-lift press feedback as the deck cards (perspective() keeps it
-     self-contained — no ancestor 3D context needed through the Reveal island).
-     `.is-tapped` is toggled by JS on touch (iOS :active is unreliable). */
-  .pill:hover,
-  .pill:active,
-  .pill.is-tapped {
-    box-shadow: var(--shadow-float);
-    border-color: color-mix(in srgb, var(--wine) 35%, var(--hairline));
-    transform: perspective(760px) translateY(-8px) rotateX(-6deg);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .pill {
-      transition: none;
-    }
-    .pill:hover,
-    .pill:active,
-    .pill.is-tapped {
-      transform: none;
-    }
-  }
-  .pill img {
-    width: 72px;
-    height: 72px;
-  }
-  @media (max-width: 700px) {
-    .pills {
-      grid-template-columns: 1fr;
-      max-width: 360px;
-      margin-inline: auto;
-      margin-top: var(--space-lg);
-      gap: var(--space-md);
-    }
-    .pill {
-      flex-direction: row;
-      justify-content: center;
-      gap: var(--space-md);
-      padding: var(--space-md) var(--space-lg);
-    }
-    .pill img {
-      width: 48px;
-      height: 48px;
-    }
-  }
 </style>
-
-<script>
-  // Touch tap → lift (mirrors desktop :hover). iOS :active is unreliable, so we
-  // toggle `.is-tapped` on touch pointers only.
-  for (const el of document.querySelectorAll<HTMLElement>('.what .pill')) {
-    const on = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') el.classList.add('is-tapped');
-    };
-    const off = () => el.classList.remove('is-tapped');
-    el.addEventListener('pointerdown', on);
-    el.addEventListener('pointerup', off);
-    el.addEventListener('pointercancel', off);
-    el.addEventListener('pointerleave', off);
-  }
-</script>

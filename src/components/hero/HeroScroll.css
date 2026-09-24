@@ -112,6 +112,30 @@
   color: var(--ink);
   text-shadow: 0 1px 10px color-mix(in srgb, var(--table) 88%, transparent);
 }
+.hero-facts {
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* Full ink, not --meta-strong: the line sits at the bottom edge of the copy's
+     paper plate, where the gradient has already faded out over the dark press. */
+  color: var(--ink);
+  font-weight: 600;
+  text-shadow:
+    0 1px 2px color-mix(in srgb, var(--table) 95%, transparent),
+    0 0 14px color-mix(in srgb, var(--table) 92%, transparent);
+}
+.hero-facts li + li::before {
+  content: '·';
+  margin: 0 0.55em;
+  opacity: 0.55;
+}
 .hero-cta {
   margin-top: var(--space-2xl);
   /* Grid, not flex: the two destinations are an equal choice, so they get equal
@@ -146,6 +170,9 @@
   .hero-content .subtitle {
     margin-inline: 0;
   }
+  .hero-facts {
+    justify-content: flex-start;
+  }
   .hero-cta {
     justify-content: flex-start;
   }
@@ -165,14 +192,37 @@
    scrub plays. padding clears the fixed nav (+ safe-area notch). */
 @media (max-width: 760px) {
   .hero-content {
-    padding-top: calc(env(safe-area-inset-top) + 60px);
+    /* Clears the two-row mobile header (brand row + section links). */
+    padding-top: calc(env(safe-area-inset-top) + 88px);
   }
   .hero-content h1 {
     margin: var(--space-sm) 0 var(--space-md);
+  }
+  .hero-facts {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
   }
   .hero-cta {
     margin-top: var(--space-md);
     /* Stacked on a phone: one column, so both span the same width. */
     grid-auto-flow: row;
+  }
+}
+
+/* Short phones (iPhone SE and friends, 568px tall): the two-row header and the
+   facts line together pushed both buttons under the fold, which they cleared
+   before. Buy the height back from the copy's own air, not from the content. */
+@media (max-width: 760px) and (max-height: 700px) {
+  .hero-content {
+    padding-top: calc(env(safe-area-inset-top) + 60px);
+  }
+  .hero-content h1 {
+    margin: var(--space-xs) 0 var(--space-sm);
+  }
+  .hero-cta {
+    margin-top: var(--space-sm);
+  }
+  .hero-facts {
+    margin-top: var(--space-sm);
   }
 }

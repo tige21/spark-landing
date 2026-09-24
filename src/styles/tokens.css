@@ -87,7 +87,7 @@ html, body {
 }
 /* Anchor jumps clear the fixed nav overlay. */
 html {
-  scroll-padding-top: 64px;
+  scroll-padding-top: 96px;
 }
 
 main {
@@ -234,11 +234,3 @@ html.lenis body {
   .word-reveal > span { animation: none !important; opacity: 1 !important; transform: none !important; }
 }
 
-/* Primary CTA hover/tap (replaces framer whileHover/whileTap). */
-.cta-btn { transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
-.cta-btn:hover { transform: translateY(-1px) scale(1.02); }
-.cta-btn:active { transform: scale(0.98); }
-@media (prefers-reduced-motion: reduce) {
-  .cta-btn { transition: none; }
-  .cta-btn:hover, .cta-btn:active { transform: none; }
-}

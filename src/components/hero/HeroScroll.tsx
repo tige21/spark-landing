@@ -14,6 +14,7 @@ interface HeroScrollProps {
   eyebrow: string;
   title: string;
   subtitle: string;
+  facts: string[];
   ctaLabel: string;
   ctaTelegramLabel: string;
   posterDesktop: string;
@@ -32,6 +33,7 @@ export default function HeroScroll({
   eyebrow,
   title,
   subtitle,
+  facts,
   ctaLabel,
   ctaTelegramLabel,
   posterDesktop,
@@ -50,8 +52,8 @@ export default function HeroScroll({
   const scrub = small ? 1.4 : SCRUB; // shorter pin on mobile (lighter, less scroll-hijack)
 
   // Fade the copy out as the scrub plays so the cinematic frame (rising card/seal)
-  // reveals cleanly and never collides with the CTA. Visible at the very top,
-  // gone by ~45% of the scrub. Header CTA stays for action. Static if not pinned.
+  // reveals cleanly and never collides with the CTA. Header CTA stays for action.
+  // Static if not pinned.
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = contentRef.current;
@@ -71,8 +73,10 @@ export default function HeroScroll({
         el.style.pointerEvents = 'auto';
         return;
       }
-      // Mobile: fade the copy out so the cinematic frame reveals cleanly.
-      const o = Math.max(0, Math.min(1, (0.45 - p) / 0.3));
+      // Mobile: fade only over the last fifth of the scrub. Fading by 45% left
+      // ~1.2 viewports of artwork with no words on it at all — the visitor was
+      // scrolling a picture that no longer said what the product was.
+      const o = Math.max(0, Math.min(1, (1 - p) / 0.2));
       el.style.opacity = String(o);
       el.style.transform = `translateY(${(1 - o) * -24}px)`;
       el.style.pointerEvents = o < 0.05 ? 'none' : 'auto';
@@ -144,6 +148,11 @@ export default function HeroScroll({
               <PlayCTA label={ctaLabel} target="browser" variant="hero" />
               <PlayCTA label={ctaTelegramLabel} target="telegram" variant="hero" />
             </div>
+            <ul className="hero-facts">
+              {facts.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>

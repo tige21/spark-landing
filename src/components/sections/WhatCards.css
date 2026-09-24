@@ -3,146 +3,80 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-xl);
+  align-items: stretch;
 }
 
-/* perspective lives on the outer element; the inner rotates in 3D */
-.flip {
-  perspective: 1200px;
-  transition: transform 0.25s var(--ease-out, ease);
-}
-.flip:hover {
-  transform: translateY(-6px);
-}
-.flip-inner {
-  position: relative;
-  width: 100%;
-  min-height: 188px;
-  transform-style: preserve-3d;
-  transition: transform 0.55s var(--ease-out, ease);
-}
-.flip.is-flipped .flip-inner {
-  transform: rotateY(180deg);
-}
-
-/* both faces stack, only the front-facing one is visible (backface hidden) */
-.flip-face {
-  position: absolute;
-  inset: 0;
+.what-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: var(--space-sm);
   padding: var(--space-xl);
-  width: 100%;
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   text-align: center;
-  cursor: pointer;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  font: inherit;
-  color: inherit;
 }
-.flip-back {
-  transform: rotateY(180deg);
-}
-.flip-icon {
+.what-card-icon {
   width: 72px;
   height: 72px;
 }
-.flip-label {
+.what-card-label {
   margin: 0;
 }
-.flip-hint {
-  font-size: 0.78rem;
+.what-card-occasion {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 0.85rem;
   color: var(--meta);
-  letter-spacing: 0.02em;
+  max-width: 24ch;
 }
-
-/* back: sample question */
-.flip-q {
-  all: unset;
+.what-card-q {
+  margin: auto 0 0;
+  padding-top: var(--space-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
-  cursor: pointer;
-  width: 100%;
-}
-.flip-q-mark {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  line-height: 1;
-  color: var(--wine);
-}
-.flip-q-text {
   font-family: var(--font-serif);
   font-size: 1.05rem;
   line-height: 1.4;
   color: var(--ink);
   max-width: 26ch;
 }
+.what-card-q-mark {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--wine);
+}
 
-/* back: 18+ gate */
-.flip-gate {
+.what-card-gate {
+  margin: auto 0 0;
+  padding-top: var(--space-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
 }
-.flip-gate-text {
+.what-card-gate-text {
   margin: 0;
   font-size: 0.92rem;
   line-height: 1.4;
   color: var(--meta-strong);
   max-width: 26ch;
 }
-.flip-confirm {
+.what-card-confirm {
   appearance: none;
   border: none;
   cursor: pointer;
   background: var(--wine);
-  color: #fff;
+  color: var(--paper);
+  font-family: var(--font-serif);
   font-weight: 600;
   font-size: 0.9rem;
   padding: 10px 18px;
   border-radius: var(--radius-full, 999px);
-}
-.flip-back-link {
-  appearance: none;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--meta);
-  font-size: 0.78rem;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* Reduced-motion: no 3D flip — faces cross-fade in place. */
-.flip.is-reduced .flip-inner {
-  transform: none;
-}
-.flip.is-reduced .flip-face {
-  -webkit-backface-visibility: visible;
-  backface-visibility: visible;
-  transition: opacity 0.25s ease;
-}
-.flip.is-reduced .flip-back {
-  transform: none;
-  opacity: 0;
-  pointer-events: none;
-}
-.flip.is-reduced.is-flipped .flip-front {
-  opacity: 0;
-  pointer-events: none;
-}
-.flip.is-reduced.is-flipped .flip-back {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 @media (max-width: 860px) {
@@ -150,8 +84,19 @@
     grid-template-columns: 1fr;
     max-width: 360px;
     margin-inline: auto;
+    gap: var(--space-md);
   }
-  .flip-inner {
-    min-height: 168px;
+  /* Stacked, three questions in a column cost real height — trim the frame, not
+     the question. */
+  .what-card {
+    padding: var(--space-lg);
+    gap: var(--space-xs);
+  }
+  .what-card-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .what-card-q {
+    font-size: 1rem;
   }
 }
