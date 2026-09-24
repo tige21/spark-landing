@@ -52,21 +52,17 @@ brew install git-lfs && git lfs install && git lfs pull
   чужими проектами на 194. Билд — CI или дев-машина.
 - Секреты (`LANDING_SSH_PASS`, `NL_SSH_PASS`) только в env, никогда в git.
 
-### ⚠️ Расхождение с инфраструктурой (проверено 2026-09-11)
+### Инфраструктура (сверено 2026-09-25)
 
-Репозиторий описывает инфраструктуру состояния июня 2026. По данным `../spark/CLAUDE.md` и
-`../spark/docs/INFRA_GEODNS.md` с тех пор изменилось:
+Деплой идёт на два плеча гео: vdsina `83.217.215.66` (РФ) и 62yun `194.5.65.182` (все остальные,
+включая VPN). Старый бокс `185.214.108.29` выведен 2026-07-09 — упоминания этого адреса где-либо
+считать устаревшими. И `scripts/deploy.sh`, и `.github/workflows/deploy-landing.yml` уже используют
+правильную пару.
 
-| В этом репо | Фактически |
-|---|---|
-| Зарубежное зеркало `185.214.108.29` (62yun NL) — в `scripts/deploy.sh`, `.github/workflows/deploy-landing.yml`, `docs/INFRA-geo-routing.md` | Бокс выведен 2026-07-09. Зарубежное зеркало — **`194.5.65.182`** (62yun, FRA) |
-| Гео-DNS в Bunny (зона 810970) | Зона с 2026-09-10 в **Gcore**, одна динамическая A-запись с фильтрами `geodns → default → first_n` |
-| `certbot --nginx` в DEPLOY.md | На 194 `certbot --nginx` **запрещён**: `:443` занят stream-роутером с `ssl_preread`; vhost ставится на `listen 127.0.0.1:8543 ssl proxy_protocol`, серты только `--webroot` |
-
-С 2026-07-12 в репо не было коммитов, задевающих `paths:` воркфлоу, поэтому расхождение ещё не
-выстрелило. **Первый же пуш в `src/**` уронит второе зеркало в CI.** Чинить до следующего релиза:
-IP в `scripts/deploy.sh` + `deploy-landing.yml`, затем `docs/INFRA-geo-routing.md` и `DEPLOY.md`.
-Перед правкой vhost на 194 снять эталон: `bash ../spark/scripts/check-fra-vhosts.sh /tmp/before.txt`.
+Зона `sparkcards.space` живёт в Gcore (не Bunny), гео-запись — одна динамическая A с фильтрами.
+На 194 `certbot --nginx` **запрещён**: `:443` занят stream-роутером с `ssl_preread`, vhost ставится
+на `listen 127.0.0.1:8543 ssl proxy_protocol`, серты только `--webroot`. Перед правкой vhost там
+снять эталон: `bash ../spark/scripts/check-fra-vhosts.sh /tmp/before.txt`.
 
 ## Поиск по коду
 
