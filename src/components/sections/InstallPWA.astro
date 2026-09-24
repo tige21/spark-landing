@@ -49,18 +49,20 @@ const { eyebrow, headline, body } = copy;
           <p class="t-lead">{body}</p>
         </StampReveal>
       </div>
-      {/* No Reveal wrapper around the panel: Section already animates the block in, and every
-          island holds a standing will-change until its reveal plays. The page budget asserted in
-          tests/layout.spec.ts is 12 and this section's third island put the whole page over it. */}
-      <div class="panel">
-        <InstallApp copy={copy} client:visible />
-      </div>
     </div>
     <div class="art">
       <Parallax client:visible distance={70}>
         <Image src={engraving('parcel')} alt="" widths={[320, 560]} sizes="(max-width: 800px) 70vw, 400px" loading="lazy" />
       </Parallax>
     </div>
+  </div>
+
+  {/* Full width, outside the two-column grid: the two step lists were squeezed into half the page
+      while the space under the engraving sat empty. No Reveal wrapper either - Section already
+      animates the block in, and every island holds a standing will-change until its reveal plays,
+      which the page budget in tests/layout.spec.ts counts. */}
+  <div class="panel">
+    <InstallApp copy={copy} client:visible />
   </div>
 </Section>
 
@@ -77,7 +79,7 @@ const { eyebrow, headline, body } = copy;
     margin-top: var(--space-md);
   }
   .panel {
-    margin-top: var(--space-lg);
+    margin-top: var(--space-2xl);
   }
   .art {
     /* Optically centred against the copy instead of top-aligned with it: the headline starts at the

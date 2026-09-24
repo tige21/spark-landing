@@ -44,26 +44,17 @@ test.describe('install section', () => {
   });
 });
 
-test.describe('install section — iOS', () => {
-  test('shows the Safari steps rather than the generic fallback', async ({ browser }) => {
-    // A chromium context with an iPhone UA, not devices['iPhone 13']: that descriptor switches the
-    // browser to webkit, which forces a new worker and needs a second browser installed. Detection
-    // under test is UA-based anyway, so the UA is the only part that matters here.
-    const context = await browser.newContext({
-      userAgent:
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-      viewport: { width: 390, height: 844 },
-    });
-    const page = await context.newPage();
-
+test.describe('install section — phone guides', () => {
+  test('shows both iPhone and Android steps regardless of the visitor platform', async ({ page }) => {
     await page.goto('/');
     await page.locator('#install').scrollIntoViewIfNeeded();
 
     const section = page.locator('#install');
+    // Read from a laptop as often as from a phone: hiding the other platform made the section
+    // useless for anyone setting the game up for someone else.
     await expect(section).toContainText(ru.install.ios.title);
-    await expect(section).not.toContainText(ru.install.fallback);
-
-    await context.close();
+    await expect(section).toContainText(ru.install.android.title);
+    await expect(section).toContainText(ru.install.desktopNote);
   });
 });
 
@@ -85,7 +76,7 @@ test.describe('install section — already installed', () => {
     const section = page.locator('#install');
     await expect(section).toContainText(ru.install.installed);
     // The guides and the link are the whole point of the other states; none of them belong here.
-    await expect(section).not.toContainText(ru.install.desktop.title);
+    await expect(section).not.toContainText(ru.install.android.title);
     await expect(section.locator(`a[href="${PLAY_URL}"]`)).toHaveCount(0);
   });
 });

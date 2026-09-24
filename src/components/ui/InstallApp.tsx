@@ -18,15 +18,7 @@ export interface InstallCopy {
   fallback: string;
 }
 
-type InstallState = 'installed' | 'ios' | 'ios-other' | 'android' | 'desktop';
-
-const IOS_DEVICE = /iPad|iPhone|iPod/;
-// Chrome, Firefox, Edge, Opera, Yandex and DuckDuckGo on iOS. All of them are
-// WebKit underneath, so no feature test tells them apart from Safari, and none of
-// them can put a real web app on the home screen — they make a bookmark with no
-// service worker, which would leave the visitor without the offline mode we
-// promise. They get the generic fallback ("open it in Safari"), not the iOS steps.
-const IOS_NON_SAFARI = /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|YaBrowser|DuckDuckGo/;
+type InstallState = 'installed' | 'guides';
 
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false;
@@ -36,14 +28,6 @@ function isStandalone(): boolean {
 
 // The one place a User-Agent test is unavoidable: "Add to Home Screen" is a Safari
 // menu item, not a web API, so there is nothing to feature-detect.
-function detectPlatform(): Exclude<InstallState, 'installed'> {
-  if (typeof navigator === 'undefined') return 'desktop';
-  const ua = navigator.userAgent;
-  // iPadOS 13+ sends the desktop Mac UA; touch points are the only tell left.
-  const ios = IOS_DEVICE.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  if (ios) return IOS_NON_SAFARI.test(ua) ? 'ios-other' : 'ios';
-  return /Android/.test(ua) ? 'android' : 'desktop';
-}
 
 // There is no one-tap install button here on purpose, and `beforeinstallprompt`
 // must not be added back: that event only fires for a document covered by the
@@ -61,14 +45,12 @@ export default function InstallApp({ copy }: { copy: InstallCopy }): JSX.Element
   // pre-JS HTML is the manual-instructions state, which is also the right answer
   // for crawlers and for anyone browsing without JavaScript.
   const [installed, setInstalled] = useState(false);
-  const [platform, setPlatform] = useState<Exclude<InstallState, 'installed'>>('desktop');
 
   useEffect(() => {
     setInstalled(isStandalone());
-    setPlatform(detectPlatform());
   }, []);
 
-  const state: InstallState = installed ? 'installed' : platform;
+  const state: InstallState = installed ? 'installed' : 'guides';
 
   if (state === 'installed') {
     return (
@@ -88,13 +70,14 @@ export default function InstallApp({ copy }: { copy: InstallCopy }): JSX.Element
         <p className="install-hint t-caption">{copy.buttonHint}</p>
       </div>
 
-      {/* One guide, not a wall of them: showing Android steps to a desktop visitor was noise, and
-          the old catch-all line claimed "this browser cannot add the icon" to Chrome, which can. */}
-      {state === 'ios-other' ? (
-        <p className="install-note t-caption">{copy.fallback}</p>
-      ) : (
-        <Guide guide={state === 'ios' ? copy.ios : state === 'android' ? copy.android : copy.desktop} />
-      )}
+      {/* Both phone guides are shown to everyone, not just the detected platform: this section is
+          read from a laptop as often as from a phone, and someone setting the game up for a friend
+          needs the other one. Desktop install is a footnote - the game is played on phones. */}
+      <div className="install-guides">
+        <Guide guide={copy.ios} />
+        <Guide guide={copy.android} />
+      </div>
+      <p className="install-note t-caption">{copy.desktopNote}</p>
     </div>
   );
 }
