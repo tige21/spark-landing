@@ -18,7 +18,7 @@ export interface InstallCopy {
   fallback: string;
 }
 
-type InstallState = 'installed' | 'ios' | 'fallback';
+type InstallState = 'installed' | 'ios' | 'ios-other' | 'android' | 'desktop';
 
 const IOS_DEVICE = /iPad|iPhone|iPod/;
 // Chrome, Firefox, Edge, Opera, Yandex and DuckDuckGo on iOS. All of them are
@@ -36,12 +36,13 @@ function isStandalone(): boolean {
 
 // The one place a User-Agent test is unavoidable: "Add to Home Screen" is a Safari
 // menu item, not a web API, so there is nothing to feature-detect.
-function isIosSafari(): boolean {
-  if (typeof navigator === 'undefined') return false;
+function detectPlatform(): Exclude<InstallState, 'installed'> {
+  if (typeof navigator === 'undefined') return 'desktop';
   const ua = navigator.userAgent;
   // iPadOS 13+ sends the desktop Mac UA; touch points are the only tell left.
   const ios = IOS_DEVICE.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  return ios && !IOS_NON_SAFARI.test(ua);
+  if (ios) return IOS_NON_SAFARI.test(ua) ? 'ios-other' : 'ios';
+  return /Android/.test(ua) ? 'android' : 'desktop';
 }
 
 // There is no one-tap install button here on purpose, and `beforeinstallprompt`
@@ -60,14 +61,14 @@ export default function InstallApp({ copy }: { copy: InstallCopy }): JSX.Element
   // pre-JS HTML is the manual-instructions state, which is also the right answer
   // for crawlers and for anyone browsing without JavaScript.
   const [installed, setInstalled] = useState(false);
-  const [ios, setIos] = useState(false);
+  const [platform, setPlatform] = useState<Exclude<InstallState, 'installed'>>('desktop');
 
   useEffect(() => {
     setInstalled(isStandalone());
-    setIos(isIosSafari());
+    setPlatform(detectPlatform());
   }, []);
 
-  const state: InstallState = installed ? 'installed' : ios ? 'ios' : 'fallback';
+  const state: InstallState = installed ? 'installed' : platform;
 
   if (state === 'installed') {
     return (
@@ -87,16 +88,12 @@ export default function InstallApp({ copy }: { copy: InstallCopy }): JSX.Element
         <p className="install-hint t-caption">{copy.buttonHint}</p>
       </div>
 
-      {state === 'ios' ? (
-        <Guide guide={copy.ios} />
+      {/* One guide, not a wall of them: showing Android steps to a desktop visitor was noise, and
+          the old catch-all line claimed "this browser cannot add the icon" to Chrome, which can. */}
+      {state === 'ios-other' ? (
+        <p className="install-note t-caption">{copy.fallback}</p>
       ) : (
-        <>
-          <p className="install-note t-caption">{copy.fallback}</p>
-          <div className="install-guides">
-            <Guide guide={copy.android} />
-            <Guide guide={copy.desktop} />
-          </div>
-        </>
+        <Guide guide={state === 'ios' ? copy.ios : state === 'android' ? copy.android : copy.desktop} />
       )}
     </div>
   );

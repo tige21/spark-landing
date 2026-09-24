@@ -13,10 +13,6 @@ const content = (lang: 'ru' | 'en') =>
 const ru = content('ru');
 const en = content('en');
 
-// Read the copy from the same JSON the page renders: a hardcoded string here would keep passing
-// after the wording changes and stop testing anything.
-const IOS_STEPS = ru.install.ios.steps;
-
 test.describe('install section', () => {
   test('renders on both languages and links into the game, not the landing', async ({ page }) => {
     for (const [path, copy] of [
@@ -42,10 +38,9 @@ test.describe('install section', () => {
     await page.locator('#install').scrollIntoViewIfNeeded();
 
     // The game ships with clientsClaim disabled, so offline only starts working on the second
-    // launch. Without this step people cut the network immediately and conclude we lied.
-    const onlineStep = IOS_STEPS.find((step) => step.includes('с интернетом'));
-    expect(onlineStep, 'iOS steps must keep the "open once online" instruction').toBeTruthy();
-    await expect(page.locator('#install')).toContainText(onlineStep!);
+    // launch. Without this step people cut the network immediately and conclude we lied. Only one
+    // guide renders per platform, so assert on the instruction rather than on a specific list.
+    await expect(page.locator('#install')).toContainText('один раз с интернетом');
   });
 });
 
