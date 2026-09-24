@@ -85,37 +85,31 @@
   },
   "install": {
     "eyebrow": "Take it with you",
-    "headline": "Put the game on your home screen and it works without the internet.",
+    "headline": "Put the game on your home screen - and it works without the internet.",
     "body": "The browser adds the icon itself. No app store, nothing to download.",
     "installed": "The game is already on your home screen. You can open it offline.",
     "button": "Open the game",
     "buttonHint": "Add it from the game itself, not from this page.",
     "ios": {
-      "title": "iPhone, Safari",
+      "title": "iPhone and iPad",
       "steps": [
-        "Open the game in Safari - Chrome and Firefox on iPhone cannot do this.",
-        "Tap Share - the button at the bottom of the screen.",
-        "Choose Add to Home Screen.",
-        "Open it from the home screen once while online - after that it works with no network."
+        "Open the game in Safari. Chrome and Firefox on iPhone cannot do this.",
+        "Tap Share at the bottom of the screen - the square with an arrow.",
+        "Scroll down the list and choose Add to Home Screen.",
+        "Tap Add in the top right corner.",
+        "Open the game from the home screen once while online. After that it works with no network."
       ]
     },
     "android": {
-      "title": "Android, Chrome",
+      "title": "Android",
       "steps": [
         "Open the game in Chrome.",
-        "In the browser menu (three dots) choose Install app.",
-        "Open it from the home screen once while online - after that it works with no network."
+        "Chrome offers to install the app itself. If it does not - open the menu, three dots in the top right.",
+        "Choose Install app or Add to Home screen.",
+        "Open the game from the home screen once while online. After that it works with no network."
       ]
     },
-    "desktop": {
-      "title": "Desktop, Chrome or Edge",
-      "steps": [
-        "Open the game in Chrome or Edge.",
-        "On the game page an install icon appears at the right of the address bar. Click it.",
-        "Open it once while online - after that it works with no network."
-      ]
-    },
-    "fallback": "On iPhone only Safari can add the icon. Open the game there."
+    "desktopNote": "On a computer, Chrome and Edge can install the game too - from the browser menu."
   },
   "cta": {
     "headline": "Open it now - tonight's conversation hits different.",
