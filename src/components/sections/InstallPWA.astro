@@ -101,11 +101,10 @@ const { eyebrow, headline, body } = copy;
     .head {
       text-align: center;
     }
+    /* The engraving is decoration; on a phone it pushed the actual instructions a screen down and
+       added 223px to a page the layout tests cap. The steps are what people came for. */
     .art {
-      order: -1;
-    }
-    .art :global(img) {
-      max-width: 280px;
+      display: none;
     }
   }
 </style>
