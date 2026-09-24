@@ -1,6 +1,5 @@
 ---
 import Section from '../layout/Section.astro';
-import Reveal from '../ui/Reveal.tsx';
 import StampReveal from '../ui/StampReveal.tsx';
 import Parallax from '../ui/Parallax.tsx';
 import SectionDecor from '../ui/SectionDecor.astro';
@@ -68,15 +67,22 @@ const { eyebrow, headline, body } = copy;
 <style>
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
+    /* The copy column carries a four-line headline and a numbered card; an even split left it
+       wrapping early while a gap opened next to the artwork, which only ever needs its own width. */
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    align-items: start;
     gap: var(--space-2xl);
   }
   .head :global(.t-lead) {
     margin-top: var(--space-md);
   }
   .panel {
-    margin-top: var(--space-xl);
+    margin-top: var(--space-lg);
+  }
+  .art {
+    /* Optically centred against the copy instead of top-aligned with it: the headline starts at the
+       cap line, the engraving at its bounding box. */
+    padding-top: var(--space-xl);
   }
   .art :global(img) {
     width: 100%;

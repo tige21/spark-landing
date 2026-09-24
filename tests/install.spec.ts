@@ -13,10 +13,6 @@ const content = (lang: 'ru' | 'en') =>
 const ru = content('ru');
 const en = content('en');
 
-// Read the copy from the same JSON the page renders: a hardcoded string here would keep passing
-// after the wording changes and stop testing anything.
-const IOS_STEPS = ru.install.ios.steps;
-
 test.describe('install section', () => {
   test('renders on both languages and links into the game, not the landing', async ({ page }) => {
     for (const [path, copy] of [
@@ -42,10 +38,9 @@ test.describe('install section', () => {
     await page.locator('#install').scrollIntoViewIfNeeded();
 
     // The game ships with clientsClaim disabled, so offline only starts working on the second
-    // launch. Without this step people cut the network immediately and conclude we lied.
-    const onlineStep = IOS_STEPS.find((step) => step.includes('с интернетом'));
-    expect(onlineStep, 'iOS steps must keep the "open once online" instruction').toBeTruthy();
-    await expect(page.locator('#install')).toContainText(onlineStep!);
+    // launch. Without this step people cut the network immediately and conclude we lied. Only one
+    // guide renders per platform, so assert on the instruction rather than on a specific list.
+    await expect(page.locator('#install')).toContainText('один раз с интернетом');
   });
 });
 
@@ -69,5 +64,28 @@ test.describe('install section — iOS', () => {
     await expect(section).not.toContainText(ru.install.fallback);
 
     await context.close();
+  });
+});
+
+test.describe('install section — already installed', () => {
+  test('collapses to a single line when opened from the home screen', async ({ page }) => {
+    // Playwright cannot emulate display-mode, so override matchMedia before any script runs —
+    // that is the exact signal the island reads to decide the app is already installed.
+    await page.addInitScript(() => {
+      const real = window.matchMedia.bind(window);
+      window.matchMedia = ((query: string) =>
+        query.includes('display-mode: standalone')
+          ? ({ matches: true, media: query, addEventListener() {}, removeEventListener() {} } as unknown as MediaQueryList)
+          : real(query)) as typeof window.matchMedia;
+    });
+
+    await page.goto('/');
+    await page.locator('#install').scrollIntoViewIfNeeded();
+
+    const section = page.locator('#install');
+    await expect(section).toContainText(ru.install.installed);
+    // The guides and the link are the whole point of the other states; none of them belong here.
+    await expect(section).not.toContainText(ru.install.desktop.title);
+    await expect(section.locator(`a[href="${PLAY_URL}"]`)).toHaveCount(0);
   });
 });

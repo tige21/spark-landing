@@ -16,11 +16,19 @@
   color: var(--wine);
 }
 
+.install {
+  display: flex;
+  flex-direction: column;
+  /* One rhythm for the whole island: button, hint and guide were stacking on ad-hoc margins, so
+     the gaps between them read as accidental. */
+  gap: var(--space-xl);
+}
+
 .install-action {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 .install-hint,
