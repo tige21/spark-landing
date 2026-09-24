@@ -66,3 +66,26 @@ test.describe('install section — iOS', () => {
     await context.close();
   });
 });
+
+test.describe('install section — already installed', () => {
+  test('collapses to a single line when opened from the home screen', async ({ page }) => {
+    // Playwright cannot emulate display-mode, so override matchMedia before any script runs —
+    // that is the exact signal the island reads to decide the app is already installed.
+    await page.addInitScript(() => {
+      const real = window.matchMedia.bind(window);
+      window.matchMedia = ((query: string) =>
+        query.includes('display-mode: standalone')
+          ? ({ matches: true, media: query, addEventListener() {}, removeEventListener() {} } as unknown as MediaQueryList)
+          : real(query)) as typeof window.matchMedia;
+    });
+
+    await page.goto('/');
+    await page.locator('#install').scrollIntoViewIfNeeded();
+
+    const section = page.locator('#install');
+    await expect(section).toContainText(ru.install.installed);
+    // The guides and the link are the whole point of the other states; none of them belong here.
+    await expect(section).not.toContainText(ru.install.desktop.title);
+    await expect(section.locator(`a[href="${PLAY_URL}"]`)).toHaveCount(0);
+  });
+});
