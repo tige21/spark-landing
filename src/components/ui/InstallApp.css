@@ -1,0 +1,72 @@
+.install {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.install-done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0;
+  color: var(--meta-strong);
+}
+.install-done svg {
+  flex: none;
+  color: var(--wine);
+}
+
+.install-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.install-hint,
+.install-note {
+  margin: 0;
+  max-width: 52ch;
+}
+.install-note {
+  color: var(--meta-strong);
+}
+
+/* auto-fit, not a viewport breakpoint: the island sits in a half-width column of
+   the section on desktop and full width on phones, so the space it actually has
+   does not follow the screen size. */
+.install-guides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-lg);
+}
+
+.install-guide {
+  padding: var(--space-xl);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+}
+.install-guide-title {
+  margin: 0 0 var(--space-md);
+}
+.install-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0;
+  padding-left: var(--space-xl);
+  color: var(--meta-strong);
+}
+.install-steps li::marker {
+  color: var(--wine);
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .install-guide {
+    padding: var(--space-lg);
+  }
+}
