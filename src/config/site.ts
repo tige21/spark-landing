@@ -151,8 +151,8 @@ export const PRICING = {
   items: [
     {
       amount: '149 ₽',
-      ru: 'Колода — бессрочный доступ',
-      en: 'A deck — lifetime access',
+      ru: 'Колода - бессрочный доступ',
+      en: 'A deck - lifetime access',
     },
     {
       amount: '599 ₽',
@@ -166,7 +166,7 @@ export const PRICING = {
     },
   ],
   note: {
-    ru: 'Оплата банковской картой, доступ к колоде открывается сразу после оплаты. Возврат — в течение 14 дней после покупки, запрос на eeper03@mail.ru.',
+    ru: 'Оплата банковской картой, доступ к колоде открывается сразу после оплаты. Возврат - в течение 14 дней после покупки, запрос на eeper03@mail.ru.',
     en: 'Payment by bank card; the deck unlocks right after payment. Refunds within 14 days of purchase, request at eeper03@mail.ru.',
   },
 };

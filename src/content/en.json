@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Spark Cards — cards that turn small talk into real talk",
+    "title": "Spark Cards - cards that turn small talk into real talk",
     "description": "Not a card game. The conversation you've been missing. Draw a card, answer honestly, and tonight hits different. Nine decks: from first-date safe to strictly grown-ups."
   },
   "nav": {
@@ -12,7 +12,7 @@
   "hero": {
     "brand": "Spark Cards",
     "title": "Cards that turn small talk into real talk.",
-    "subtitle": "A questions app — for two, for a group, or strictly 18+.",
+    "subtitle": "A questions app - for two, for a group, or strictly 18+.",
     "facts": [
       "9 decks",
       "501 cards",
@@ -28,7 +28,7 @@
       {
         "label": "Just the two of you",
         "occasion": "a first date, or the tenth year in",
-        "sample": "When were you last proud of me — and what for?"
+        "sample": "When were you last proud of me - and what for?"
       },
       {
         "label": "With friends",
@@ -40,7 +40,7 @@
         "occasion": "late, and only your people are left",
         "gated": true,
         "gate": "Questions for the brave. Are you 18, and do you accept the rules?",
-        "confirm": "I'm 18 — show me",
+        "confirm": "I'm 18 - show me",
         "sample": "What have you wanted for years and never said out loud?"
       }
     ]
@@ -76,7 +76,7 @@
   },
   "order": {
     "eyebrow": "The Spark Press",
-    "headline": "Your crew, your inside jokes — we'll print a deck just for you.",
+    "headline": "Your crew, your inside jokes - we'll print a deck just for you.",
     "body": "Like a print shop, only smarter: an AI typesetter sets questions for your occasion and your people."
   },
   "premium": {
@@ -93,10 +93,10 @@
     "ios": {
       "title": "iPhone, Safari",
       "steps": [
-        "Open the game in Safari — Chrome and Firefox on iPhone cannot do this.",
-        "Tap Share — the button at the bottom of the screen.",
+        "Open the game in Safari - Chrome and Firefox on iPhone cannot do this.",
+        "Tap Share - the button at the bottom of the screen.",
         "Choose Add to Home Screen.",
-        "Open it from the home screen once while online — after that it works with no network."
+        "Open it from the home screen once while online - after that it works with no network."
       ]
     },
     "android": {
@@ -104,21 +104,21 @@
       "steps": [
         "Open the game in Chrome.",
         "In the browser menu (three dots) choose Install app.",
-        "Open it from the home screen once while online — after that it works with no network."
+        "Open it from the home screen once while online - after that it works with no network."
       ]
     },
     "desktop": {
       "title": "Desktop, Chrome or Edge",
       "steps": [
         "Open the game in Chrome or Edge.",
-        "Click the install icon at the right of the address bar.",
-        "Open it once while online — after that it works with no network."
+        "On the game page an install icon appears at the right of the address bar. Click it.",
+        "Open it once while online - after that it works with no network."
       ]
     },
     "fallback": "On iPhone only Safari can add the icon. Open the game there."
   },
   "cta": {
-    "headline": "Open it now — tonight's conversation hits different.",
+    "headline": "Open it now - tonight's conversation hits different.",
     "button": "Play in browser",
     "buttonTelegram": "Open in Telegram"
   },
