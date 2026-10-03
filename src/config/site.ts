@@ -1,4 +1,6 @@
-export const APP_NAME = 'Spark Cards';
+export const APP_NAME = { ru: 'Искра', en: 'Iskra' };
+
+export const APP_TAGLINE = { ru: 'Разговорная игра', en: 'Conversation game' };
 
 export const TELEGRAM_BOT_URL = 'https://t.me/SparkCardsBot';
 
