@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import { engraving } from '../../assets/images';
-import { NAV_LINKS, APP_NAME } from '../../config/site';
+import { NAV_LINKS, APP_NAME, APP_TAGLINE } from '../../config/site';
 import PlayCTA from '../ui/PlayCTA.tsx';
 
 interface Props {
@@ -17,11 +17,11 @@ const homeHref = lang === 'ru' ? '/' : '/en';
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="brand" href={homeHref} aria-label={APP_NAME}>
+    <a class="brand" href={homeHref} aria-label={APP_NAME[lang]}>
       <Image src={engraving('logo-seal')} alt="" class="brand-logo" loading="eager" widths={[40, 80]} sizes="40px" />
       <span class="brand-text">
-        <span class="brand-name">Spark<span class="brand-cards"> Cards</span></span>
-        <span class="brand-press script">Печатня «Искра»</span>
+        <span class="brand-name">{APP_NAME[lang]}</span>
+        <span class="brand-tagline">{APP_TAGLINE[lang]}</span>
       </span>
     </a>
 
@@ -92,9 +92,10 @@ const homeHref = lang === 'ru' ? '/' : '/en';
     font-size: 1.05rem;
     letter-spacing: -0.01em;
   }
-  .brand-press {
-    font-size: 1rem;
-    margin-top: 1px;
+  .brand-tagline {
+    font-family: var(--font-serif);
+    font-size: 0.78rem;
+    margin-top: 2px;
     color: var(--meta);
   }
   .links {
@@ -159,8 +160,7 @@ const homeHref = lang === 'ru' ? '/' : '/en';
       font-size: 0.85rem;
       white-space: nowrap;
     }
-    .brand-press,
-    .brand-cards {
+    .brand-tagline {
       display: none;
     }
   }
