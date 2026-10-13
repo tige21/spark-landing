@@ -41,7 +41,7 @@ export const DECKS: DeckInfo[] = [
   {
     id: 'ice-breaker',
     stamp: 'stamp-icebreaker.svg',
-    name: { ru: 'Знакомство', en: 'Ice Breaker' },
+    name: { ru: 'После работы', en: 'After Work' },
     sample: {
       ru: 'Твои мысли после фразы «включите камеру пожалуйста»?',
       en: "What goes through your head after 'please turn your camera on'?",
@@ -50,7 +50,7 @@ export const DECKS: DeckInfo[] = [
   {
     id: 'classic-party',
     stamp: 'stamp-classic.svg',
-    name: { ru: 'Классика вечеринок', en: 'Classic Party' },
+    name: { ru: 'Повод собраться', en: 'Reason to Get Together' },
     sample: {
       ru: 'Что ты чувствуешь, когда тебе пишут «нам надо поговорить»?',
       en: "How do you feel when someone texts you 'we need to talk'?",
@@ -68,7 +68,7 @@ export const DECKS: DeckInfo[] = [
   {
     id: 'couples-love',
     stamp: 'stamp-couples-v2.svg',
-    name: { ru: 'Связь для пар', en: 'Couples Connection' },
+    name: { ru: 'Между нами', en: 'Just Between Us' },
     sample: {
       ru: 'Какая моя мелкая привычка тебя умиляет?',
       en: 'What small habit of mine melts your heart?',
@@ -95,7 +95,7 @@ export const DECKS: DeckInfo[] = [
   {
     id: 'between-us',
     stamp: 'stamp-dare.svg',
-    name: { ru: 'Между нами', en: 'Just Between Us' },
+    name: { ru: 'Маленькие тайны', en: 'Little Secrets' },
     sample: {
       ru: 'Какой эмодзи ты используешь пассивно-агрессивно?',
       en: 'Which emoji do you use passive-aggressively?',
@@ -104,7 +104,7 @@ export const DECKS: DeckInfo[] = [
   {
     id: 'spicy-couples',
     stamp: 'stamp-spicy.svg',
-    name: { ru: 'Пикантное для пар 18+', en: 'Spicy Couples 18+' },
+    name: { ru: 'Тайные желания 18+', en: 'Secret Desires 18+' },
     sample: {
       ru: 'По какому незаметному сигналу ты понимаешь, что я тебя хочу?',
       en: 'By which subtle signal do you know that I want you?',
@@ -115,7 +115,7 @@ export const DECKS: DeckInfo[] = [
     // the chilli one its couples sibling uses. Replace when the mark is drawn.
     id: 'spicy-party',
     stamp: 'stamp-spicy.svg',
-    name: { ru: 'Пикантная вечеринка 18+', en: 'Spicy Party 18+' },
+    name: { ru: 'Слишком личное 18+', en: 'Too Personal 18+' },
     sample: {
       ru: 'Ты хоть раз флиртовал(а) на работе?',
       en: 'Have you ever flirted at work?',
